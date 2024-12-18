@@ -1,0 +1,33 @@
+.panel-header {
+  height: 48px;
+  line-height: 48px;
+  background: url('@/assets/images/bg-title.png') no-repeat center center;
+  background-size: 100% 100%;
+
+  .icon {
+    float: left;
+    width: 20px;
+    height: 20px;
+    margin-left: 48px;
+    margin-top: 14px;
+    background: url('@/assets/images/icon-title.png') no-repeat center center;
+    background-size: 100% 100%;
+  }
+
+  .title {
+    float: left;
+    font-size: 18px;
+    color: #FFFFFF;
+  }
+
+  .more {
+    float: right;
+    margin-right: 20px;
+    font-size: 13px;
+    color: #02FDFF;
+  }
+}
+
+.clear {
+  clear: both;
+}

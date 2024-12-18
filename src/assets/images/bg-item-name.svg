@@ -1,0 +1,18 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns:xlink="http://www.w3.org/1999/xlink" width="330px" height="35px" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="25.36" y1="46.66000000000005" x2="357.99999999999994" y2="50.1250000000001" id="LinearGradient706">
+      <stop id="Stop707" stop-color="#54b5f2" stop-opacity="0.6039215686274509" offset="0" />
+      <stop id="Stop708" stop-color="#000000" stop-opacity="0" offset="1" />
+    </linearGradient>
+    <linearGradient gradientUnits="userSpaceOnUse" x1="210.7556561085973" y1="49.162895927601866" x2="28" y2="46.391402714932255" id="LinearGradient709">
+      <stop id="Stop710" stop-color="#54b5f3" stop-opacity="0" offset="0" />
+      <stop id="Stop711" stop-color="#54b5f3" stop-opacity="0.4980392156862745" offset="0.48" />
+      <stop id="Stop712" stop-color="#54b5f3" stop-opacity="0.8" offset="1" />
+    </linearGradient>
+  </defs>
+  <g transform="matrix(1 0 0 1 -28 -30 )">
+    <path d="M 28.5 30.5  L 357.5 30.5  L 357.5 64.5  L 28.5 64.5  L 28.5 30.5  Z " fill-rule="nonzero" fill="url(#LinearGradient706)" stroke="none" />
+    <path d="M 28.5 30.5  L 357.5 30.5  L 357.5 64.5  L 28.5 64.5  L 28.5 30.5  Z " stroke-width="1" stroke="url(#LinearGradient709)" fill="none" />
+  </g>
+</svg>

@@ -1,0 +1,7 @@
+@import './base.css';
+@import './common.scss';
+
+#app {
+  width: 100vw;
+  height: 100vh;
+}
