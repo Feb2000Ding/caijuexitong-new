@@ -6,7 +6,7 @@
       <div class="task-modal-header">
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon">
-          裁决任务数据管理
+          裁决模型数据管理
         </div>
         <button @click="closeModal">X</button>
       </div>
@@ -27,31 +27,46 @@
               <button class="close-button" @click="dialogVisible = false">X</button>
             </div>
             <div class="dialog-content">
-              <div class="left-column">
-              <div class="upload-box">
-                <label for="file-upload" class="upload-label">上传文件</label>
-                <input type="file" id="file-upload" class="file-input">
+                <div class="dialog-column">
+                  <button class="add-file-btn" @click="triggerFileInput">添加文件</button>
+                  <div class="upload-panel">
+                    <div class="icon-container">
+                      <el-icon class="upload-icon">
+                        <i class="el-icon-cloudy"></i>
+                      </el-icon>
+                    </div>
+                    <p class="upload-text">将文件拖到此处，或 <span class="upload-link" @click="triggerFileInput">点击上传</span></p>
+                    <input type="file" id="fileUpload" class="file-input" @change="handleFileUpload" />
+                  </div>
+                  <div class="form-row">
+                    <label for="input1" class="input-label">*输入参数</label>
+                    <input v-model="modelForm.modelName" type="text" id="input1" class="input-field" placeholder="xxxx推演方案" />
+                  </div>
+                  <div class="form-row">
+                    <label for="input2" class="input-label">*已输入参数</label>
+                    <input v-model="modelForm.createTime" type="text" id="input2" class="input-field" placeholder="2024年xx月xx日" />
+                  </div>
+                </div>
+              <div class="dialog-column">
+                <div class="form-row">
+                  <label for="modelName" class="input-label">*模型名称</label>
+                  <input v-model="modelForm.modelName" type="text" id="modelName" class="input-field" placeholder="xxxx推演方案" />
+                </div>
+                <div class="form-row">
+                  <label for="modelType" class="input-label">*模型类型</label>
+                  <select v-model="modelForm.modelType" id="modelType" class="input-field">
+                    <option value="电子干扰">电子干扰</option>
+                    <option value="光学干扰">光学干扰</option>
+                    <option value="通信干扰">通信干扰</option>
+                    <option value="电子对抗">电子对抗</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label for="createTime" class="input-label">*创建时间</label>
+                  <input v-model="modelForm.createTime" type="text" id="createTime" class="input-field" placeholder="2024年xx月xx日" />
+                </div>
               </div>
-              <div class="input-box">
-                <input type="text" placeholder="输入框1" class="text-input">
-                <input type="text" placeholder="输入框2" class="text-input">
-              </div>
-            </div>
-            <div class="right-column">
-              <div class="input-group">
-                <label for="input1" class="input-label">输入框1</label>
-                <input type="text" id="input1" class="text-input">
-              </div>
-              <div class="input-group">
-                <label for="input2" class="input-label">输入框2</label>
-                <input type="text" id="input2" class="text-input">
-              </div>
-              <div class="input-group">
-                <label for="input3" class="input-label">输入框3</label>
-                <input type="text" id="input3" class="text-input">
-              </div>
-            </div>
-<!--              <div class="form-container">-->
+              <!--              <div class="form-container">-->
 <!--                <div class="form-row">-->
 <!--                  <label for="taskName" class="input-label">*任务名称</label>-->
 <!--                  <input type="text" id="taskName" class="input-field" placeholder="请输入任务名称" />-->
@@ -165,8 +180,9 @@
 
 <script setup lang="ts">
 import {defineProps, defineEmits, ref, onMounted, computed} from 'vue';
-import  { ElTable, ElTableColumn, ElPagination, ElButton  } from 'element-plus';
+import  { ElTable, ElTableColumn, ElPagination, ElButton, ElIcon  } from 'element-plus';
 import axios from "axios";
+import 'element-plus/theme-chalk/el-icon.css';
 
 const props = defineProps({
   isShow: Boolean
@@ -401,20 +417,31 @@ const handlePageChange = (newPage) => {
 // 控制添加任务的对话框
 const dialogVisible = ref(false);
 
-const taskForm = ref({
+const modelForm = ref({
   id: 0,
-  taskName: '',
+  modelName: '',
+  modelType: '',
   createTime: '',
-  judgementRule: '',
-  judgementModel: '',
-  judgementEffect: '',
-  judgementMethod: '',
-  taskStatus: '',
 });
+
+// 处理文件上传
+const handleFileUpload = (event: Event) => {
+  const input = event.target as HTMLInputElement;
+  const file = input?.files?.[0];
+  if (file) {
+    console.log("上传的文件:", file);
+  }
+};
+
+// 触发文件选择框
+const triggerFileInput = () => {
+  const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
+  fileInput?.click();
+};
 
 // 编辑任务
 const editTask = (task) => {
-  taskForm.value = { ...task }; // 填充选中的任务数据到表单
+  modelForm.value = { ...task }; // 填充选中的任务数据到表单
   dialogVisible.value = true; // 打开对话框
 };
 
@@ -422,15 +449,11 @@ const editTask = (task) => {
 const submitTask = async () => {
   try {
     const taskData = {
-      id: taskForm.value.id,
-      taskName: taskForm.value.taskName || 'taskName',
-      createTime: taskForm.value.createTime || '2024年xx月xx日',
-      judgementRule: taskForm.value.judgementRule || '电子干扰',
-      judgementModel: taskForm.value.judgementModel || '电子干扰',
-      judgementEffect: taskForm.value.judgementEffect || '电子干扰',
-      judgementMethod: taskForm.value.judgementMethod || '电子干扰',
-      taskStatus: taskForm.value.taskStatus || '未开始',
-      actions: '编辑',
+      id: modelForm.value.id,
+      taskName: modelForm.value.modelName || 'taskName',
+      createTime: modelForm.value.createTime || '2024年xx月xx日',
+      judgementRule: modelForm.value.modelType || '电子干扰',
+
     };
     // // 模拟请求
     // const response = await axios.post(
@@ -648,8 +671,8 @@ onMounted(() => {
 /* 对话框 */
 .custom-dialog {
   background: white;
-  width: 70%;
-  height: 50%;
+  width: 50%;
+  height: 60%;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -696,73 +719,140 @@ onMounted(() => {
   gap: 10px;
 }
 
-.dialog-content .left-column {
-  margin-left: 20px;
+.dialog-column {
   flex: 1;
-  max-width: 50%;
-  padding: 10px;
-  /*border-radius: 8px; */
+  max-width: 48%;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
-.dialog-content .right-column {
-
-  flex: 1;
-  max-width: 50%;
-  padding: 10px;
-  /*border-radius: 8px; */
-}
-
-.form-container {
-  width: 70%;
-  margin: 0 auto;
+.dialog-column:nth-child(2) {
+  margin-top: 38px;
 }
 
 .form-row {
   display: flex;
-  /*flex-wrap: wrap;*/
-  /*justify-content: space-between;*/
   align-items: center;
-  margin-bottom: 15px;
-  gap: 40px;
+  margin-bottom: 5px;
+  gap: 5px;
+}
+
+.input-label {
+  font-size: 16px;
+  color: #fff;
+  text-align: left;
+  width: 100px;
+  white-space: nowrap;
+}
+
+.input-field {
+  flex: 1;
+  background-color: #000;
+  color: #fff;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-column {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.form-row.multi-input .form-column {
+  flex-basis: 48%;
 }
 
 .input-label {
   font-size: 16px;
   color: #fff;
   margin-right: 5px;
-  /*flex-basis: calc(50% - 20px);*/
-  flex-basis: 30%;
-  text-align: right;
+  text-align: left;
+  display: block;
+  width: 100px;
+  white-space: nowrap;
 }
 
 .input-field {
   background-color: #000;
   color: #fff;
   padding: 8px;
-  /*width: 100%;*/
-  /*width: calc(50% - 20px);*/
-  flex-basis: calc(50% - 160px);
   border: 1px solid #ccc;
   border-radius: 4px;
   flex-grow: 1;
-  min-width: 200px;
+  min-width: 80px;
+  width: 70%;
 }
 
-.radio-group {
+.add-file-btn {
+  width: 90px;
+  height: 36px;
+  background: inherit;
+  background-color: rgba(64, 158, 255, 1);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #FFFFFF;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  line-height: 36px;
+  margin-bottom: 5px;
+}
+
+.add-file-btn:hover {
+  background-color: rgba(50, 130, 230, 1);
+}
+
+.upload-panel {
+  background-color: white;
+  border: 2px solid #ccc;
+  padding: 20px;
+  text-align: center;
+  border-radius: 4px;
+  width: 360px;
+  height: 200px;
+  margin: 0 auto;
   display: flex;
+  justify-content: center;
   align-items: center;
-  gap: 20px;
+  min-height: 100px;
+  margin-botton: 5px;
 }
 
-.radio-label {
-  font-size: 16px;
-  color: #fff;
-  margin-right: 10px;
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+  z-index: 10000;
 }
 
-.radio-group label {
-  margin-right: 20px;
-  color: #fff;
+.upload-text {
+  font-family: "Arial Normal", "Arial", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: normal;
+  color: #333333;
+  vertical-align: middle;
+  text-align: center;
+  line-height: normal;
+  text-transform: none;
+}
+
+.upload-link {
+  color: #40A9FF;
+  cursor: pointer;
+}
+
+.upload-link:hover {
+  text-decoration: underline;
+}
+
+.file-input {
+  display: none;
 }
 
 /* 对话框底部 */
@@ -770,8 +860,8 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
-  height: 80px;
+  gap: 10px;
+  height: 50px;
   background-color: #155997;
 }
 
@@ -779,7 +869,7 @@ onMounted(() => {
   width: 100px;
   height: 32px;
   background-color: #1364BE;
-  border: 1px solid #015C87;
+  border: 0.5px solid #01E3FF;
   color: white;
   font-family: "微软雅黑", sans-serif;
   font-weight: 400;

@@ -6,7 +6,7 @@
       <div class="task-modal-header">
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon">
-          裁决任务数据管理
+          效果模型数据管理
         </div>
         <button @click="closeModal">X</button>
       </div>
@@ -14,25 +14,41 @@
       <div class="task-modal-body">
         <!--按钮组-->
         <div class="button-group">
-          <button class="button" style="margin-left: 10px;" @click="editTask">添加任务</button>
-          <input class="input-search" placeholder="Try typing new..." />
-          <button class="button" style="margin-right:20px">搜索</button>
+          <button class="button" style="margin-left: 10px;" @click="editTask">添加模型</button>
+          <!--          <input class="input-search" placeholder="Try typing new..." />-->
+          <!--          <button class="button" style="margin-right:20px">搜索</button>-->
           <button class="button" style="margin-right: 20px; background-color: #C33333">删除</button>
         </div>
         <!--添加任务的弹窗-->
         <div v-if="dialogVisible" class="custom-dialog-overlay">
           <div class="custom-dialog">
             <div class="dialog-header">
-              <span class="header-title">添加裁决任务</span>
+              <span class="header-title">导入模型文件</span>
               <button class="close-button" @click="dialogVisible = false">X</button>
             </div>
             <div class="dialog-content">
-              <div class="form-container">
+              <div class="dialog-column">
                 <div class="form-row">
-                  <label for="taskName" class="input-label">*任务名称</label>
-                  <input type="text" id="taskName" class="input-field" placeholder="请输入任务名称" />
-                  <label for="taskName" class="input-label">*想定任务名称</label>
-                  <select id="taskNameXiangding" class="input-field">
+                  <label for="fileUpload" class="input-label">上传文件</label>
+                  <input type="file" id="fileUpload" class="input-field" @change="handleFileUpload" />
+                </div>
+                <div class="form-row">
+                  <label for="input1" class="input-label">*输入参数</label>
+                  <input v-model="modelForm.modelName" type="text" id="input1" class="input-field" placeholder="效果模型1xxx" />
+                </div>
+                <div class="form-row">
+                  <label for="input2" class="input-label">*输入参数</label>
+                  <input v-model="modelForm.createTime" type="text" id="input2" class="input-field" placeholder="效果模型2xxx" />
+                </div>
+              </div>
+              <div class="dialog-column">
+                <div class="form-row">
+                  <label for="modelName" class="input-label">*模型名称</label>
+                  <input v-model="modelForm.modelName" type="text" id="modelName" class="input-field" placeholder="xxxxx" />
+                </div>
+                <div class="form-row">
+                  <label for="modelType" class="input-label">*效果模型类别</label>
+                  <select v-model="modelForm.modelType" id="modelType" class="input-field">
                     <option value="电子干扰">电子干扰</option>
                     <option value="光学干扰">光学干扰</option>
                     <option value="通信干扰">通信干扰</option>
@@ -41,49 +57,66 @@
                 </div>
                 <div class="form-row">
                   <label for="createTime" class="input-label">*创建时间</label>
-                  <input type="text" id="createTime" class="input-field" placeholder="2024年xx月xx日" />
-                </div>
-                <div class="form-row">
-                  <label for="judgementModel" class="input-label">*裁决模型</label>
-                  <select id="judgementModel" class="input-field">
-                    <option value="电子干扰">电子干扰</option>
-                    <option value="光学干扰">光学干扰</option>
-                    <option value="通信干扰">通信干扰</option>
-                    <option value="电子对抗">电子对抗</option>
-                  </select>
-                  <label for="effectModel" class="input-label">*效果模型</label>
-                  <select id="effectModel" class="input-field">
-                    <option value="电子干扰">电子干扰</option>
-                    <option value="光学干扰">光学干扰</option>
-                    <option value="通信干扰">通信干扰</option>
-                    <option value="电子对抗">电子对抗</option>
-                  </select>
-                </div>
-                <div class="form-row">
-                  <label for="judgementRule" class="input-label">*裁决规则</label>
-                  <select id="judgementRule" class="input-field">
-                    <option value="电子干扰">电子干扰</option>
-                    <option value="光学干扰">光学干扰</option>
-                    <option value="通信干扰">通信干扰</option>
-                    <option value="电子对抗">电子对抗</option>
-                  </select>
-                </div>
-                <div class="form-row">
-                  <label class="radio-label">裁决方式</label>
-                  <div class="radio-group">
-                    <label>
-                      <input type="radio" name="decisionMethod" value="auto" /> 自动裁决
-                    </label>
-                    <label>
-                      <input type="radio" name="decisionMethod" value="manual" /> 手动裁决
-                    </label>
-                  </div>
+                  <input v-model="modelForm.createTime" type="text" id="createTime" class="input-field" placeholder="2024年xx月xx日" />
                 </div>
               </div>
+              <!--              <div class="form-container">-->
+              <!--                <div class="form-row">-->
+              <!--                  <label for="taskName" class="input-label">*任务名称</label>-->
+              <!--                  <input type="text" id="taskName" class="input-field" placeholder="请输入任务名称" />-->
+              <!--                  <label for="taskName" class="input-label">*想定任务名称</label>-->
+              <!--                  <select id="taskNameXiangding" class="input-field">-->
+              <!--                    <option value="电子干扰">电子干扰</option>-->
+              <!--                    <option value="光学干扰">光学干扰</option>-->
+              <!--                    <option value="通信干扰">通信干扰</option>-->
+              <!--                    <option value="电子对抗">电子对抗</option>-->
+              <!--                  </select>-->
+              <!--                </div>-->
+              <!--                <div class="form-row">-->
+              <!--                  <label for="createTime" class="input-label">*创建时间</label>-->
+              <!--                  <input type="text" id="createTime" class="input-field" placeholder="2024年xx月xx日" />-->
+              <!--                </div>-->
+              <!--                <div class="form-row">-->
+              <!--                  <label for="judgementModel" class="input-label">*裁决模型</label>-->
+              <!--                  <select id="judgementModel" class="input-field">-->
+              <!--                    <option value="电子干扰">电子干扰</option>-->
+              <!--                    <option value="光学干扰">光学干扰</option>-->
+              <!--                    <option value="通信干扰">通信干扰</option>-->
+              <!--                    <option value="电子对抗">电子对抗</option>-->
+              <!--                  </select>-->
+              <!--                  <label for="effectModel" class="input-label">*效果模型</label>-->
+              <!--                  <select id="effectModel" class="input-field">-->
+              <!--                    <option value="电子干扰">电子干扰</option>-->
+              <!--                    <option value="光学干扰">光学干扰</option>-->
+              <!--                    <option value="通信干扰">通信干扰</option>-->
+              <!--                    <option value="电子对抗">电子对抗</option>-->
+              <!--                  </select>-->
+              <!--                </div>-->
+              <!--                <div class="form-row">-->
+              <!--                  <label for="judgementRule" class="input-label">*裁决规则</label>-->
+              <!--                  <select id="judgementRule" class="input-field">-->
+              <!--                    <option value="电子干扰">电子干扰</option>-->
+              <!--                    <option value="光学干扰">光学干扰</option>-->
+              <!--                    <option value="通信干扰">通信干扰</option>-->
+              <!--                    <option value="电子对抗">电子对抗</option>-->
+              <!--                  </select>-->
+              <!--                </div>-->
+              <!--                <div class="form-row">-->
+              <!--                  <label class="radio-label">裁决方式</label>-->
+              <!--                  <div class="radio-group">-->
+              <!--                    <label>-->
+              <!--                      <input type="radio" name="decisionMethod" value="auto" /> 自动裁决-->
+              <!--                    </label>-->
+              <!--                    <label>-->
+              <!--                      <input type="radio" name="decisionMethod" value="manual" /> 手动裁决-->
+              <!--                    </label>-->
+              <!--                  </div>-->
+              <!--                </div>-->
+              <!--              </div>-->
             </div>
             <div class="dialog-footer">
               <button class="button"@click="dialogVisible = false">取消</button>
-              <button class="button" @click="submitTask">保存</button>
+              <button class="button" @click="submitTask">确认</button>
             </div>
           </div>
         </div>
@@ -97,46 +130,11 @@
               ref="multipleTableRef"
               @selection-change="handleSelectionChange"
           >
-            <el-table-column type="selection" width="60" />
-            <el-table-column prop="taskName" label="任务名称" width="160" />
-            <el-table-column prop="taskName" label="想定任务名称" width="180" />
-            <el-table-column prop="createTime" label="创建时间" width="180" />
-            <el-table-column prop="judgementModel" label="裁决模型" width="140" />
-            <el-table-column prop="judgementRule" label="裁决规则" width="140" />
-            <el-table-column prop="judgementMethod" label="裁决方式" width="140" />
-            <el-table-column prop="judgementEffect" label="裁决效果" width="160" />
-            <el-table-column prop="taskStatus" label="任务状态" width="160">
-              <template #default="scope">
-                <el-button
-                    :class="[
-              'task-status-btn',
-              scope.row.taskStatus === '已完成' ? 'completed' : 'incomplete'
-            ]"
-                    size="mini"
-                    disabled
-                >
-                  {{ scope.row.taskStatus === '已完成' ? '已完成' : '未执行' }}
-                </el-button>
-              </template>
-            </el-table-column>
-            <el-table-column prop="actions" label="操作" width="188">
-              <template #default="scope">
-                <el-button
-                    class="custom-button"
-                    size="mini"
-                    @click="editTask(scope.row)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                    class="custom-button"
-                    size="mini"
-                    @click="deleteTask(scope.row)"
-                >
-                  执行
-                </el-button>
-              </template>
-            </el-table-column>
+            <el-table-column type="selection" width="80" />
+            <el-table-column prop="modelName" label="效果模型名称" width="240" />
+            <el-table-column prop="modelType" label="模型类型" width="240" />
+            <el-table-column prop="createTime" label="创建时间" width="300" />
+            <el-table-column prop="parameter" label="关联裁决模型" width="648" />
           </el-table>
         </div>
 
@@ -193,223 +191,143 @@ const closeModal = () => {
 let tableData = ref([
   {
     id: 1,
-    taskName: 'xxxxxx方案1',
-    createTime: '24-05-01 10:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则1',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型1',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 2,
-    taskName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案2',
     createTime: '24-05-02 11:00',
-    judgementModel: '雷达反制',
-    judgementRule: '规则2',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型2',
-    taskStatus: '未开始',
-    actions: '编辑',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 3,
-    taskName: 'xxxxxx方案3',
-    createTime: '24-05-03 12:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则3',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型3',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 4,
-    taskName: 'xxxxxx方案4',
-    createTime: '24-05-04 13:00',
-    judgementModel: '通信拦截',
-    judgementRule: '规则4',
-    judgementMethod: '手动裁决',
-    judgementEffect: '多个效果模型',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 5,
-    taskName: 'xxxxxx方案5',
-    createTime: '24-05-05 14:00',
-    judgementModel: '雷达反制',
-    judgementRule: '规则5',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型5',
-    taskStatus: '未开始',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 6,
-    taskName: 'xxxxxx方案6',
-    createTime: '24-05-06 15:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则6',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型6',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 7,
-    taskName: 'xxxxxx方案7',
-    createTime: '24-05-07 16:00',
-    judgementModel: '通信拦截',
-    judgementRule: '规则7',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型7',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 8,
-    taskName: 'xxxxxx方案8',
-    createTime: '24-05-08 17:00',
-    judgementModel: '雷达反制',
-    judgementRule: '规则8',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型8',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 9,
-    taskName: 'xxxxxx方案9',
-    createTime: '24-05-09 18:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则9',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型9',
-    taskStatus: '未开始',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 10,
-    taskName: 'xxxxxx方案10',
-    createTime: '24-05-10 19:00',
-    judgementModel: '通信拦截',
-    judgementRule: '规则10',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型10',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 11,
-    taskName: 'xxxxxx方案11',
-    createTime: '24-05-11 10:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则11',
-    judgementMethod: '手动裁决',
-    judgementEffect: '多个效果模型',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 12,
-    taskName: 'xxxxxx方案12',
-    createTime: '24-05-12 11:30',
-    judgementModel: '电子干扰',
-    judgementRule: '规则12',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型12',
-    taskStatus: '未开始',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 13,
-    taskName: 'xxxxxx方案13',
-    createTime: '24-05-13 12:30',
-    judgementModel: '通信拦截',
-    judgementRule: '规则13',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型13',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 14,
-    taskName: 'xxxxxx方案14',
-    createTime: '24-05-14 13:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则14',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型14',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 15,
-    taskName: 'xxxxxx方案15',
-    createTime: '24-05-15 14:30',
-    judgementModel: '电子干扰',
-    judgementRule: '规则15',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型15',
-    taskStatus: '未开始',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 16,
-    taskName: 'xxxxxx方案16',
-    createTime: '24-05-16 15:30',
-    judgementModel: '通信拦截',
-    judgementRule: '规则16',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型16',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 17,
-    taskName: 'xxxxxx方案17',
-    createTime: '24-05-17 16:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则17',
-    judgementMethod: '手动裁决',
-    judgementEffect: '多个效果模型',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 18,
-    taskName: 'xxxxxx方案18',
-    createTime: '24-05-18 17:30',
-    judgementModel: '电子干扰',
-    judgementRule: '规则18',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型18',
-    taskStatus: '未开始',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 19,
-    taskName: 'xxxxxx方案19',
-    createTime: '24-05-19 18:30',
-    judgementModel: '通信拦截',
-    judgementRule: '规则19',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型19',
-    taskStatus: '已完成',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
   {
     id: 20,
-    taskName: 'xxxxxx方案20',
-    createTime: '24-05-20 19:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则20',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型20',
-    taskStatus: '进行中',
-    actions: '编辑',
+    modelName: 'xxxxxx方案2',
+    createTime: '24-05-02 11:00',
+    modelType: '雷达反制',
+    parameter: '规则2',
   },
 ]);
 
@@ -444,15 +362,15 @@ const fetchTableData = async (
       } else {
         // 添加新数据，保留默认值
         tableData.value.push({
-          id: record.task.taskId || '',      // 任务ID
-          taskName: record.task.taskName,   // 任务名称
-          createTime: record.task.createTime, // 创建时间
-          judgementModel: '',               // 默认值
-          judgementRule: '',                // 默认值
-          judgementMethod: '',              // 默认值
-          judgementEffect: '',              // 默认值
-          taskStatus: '',                   // 默认值
-          actions: '编辑',                  // 操作按钮默认值
+          id: record.task.taskId || '',
+          taskName: record.task.taskName,
+          createTime: record.task.createTime,
+          judgementModel: '',
+          judgementRule: '',
+          judgementMethod: '',
+          judgementEffect: '',
+          taskStatus: '',
+          actions: '编辑',
         });
       }
     });
@@ -492,20 +410,27 @@ const handlePageChange = (newPage) => {
 // 控制添加任务的对话框
 const dialogVisible = ref(false);
 
-const taskForm = ref({
+const modelForm = ref({
   id: 0,
-  taskName: '',
+  modelName: '',
+  modelType: '',
   createTime: '',
-  judgementRule: '',
-  judgementModel: '',
-  judgementEffect: '',
-  judgementMethod: '',
-  taskStatus: '',
 });
+
+// 文件上传方法
+const handleFileUpload = (event: Event) => {
+  const target = event.target as HTMLInputElement;
+  const file = target.files?.[0];
+
+  if (file) {
+    console.log("文件已上传：", file.name);
+
+  }
+};
 
 // 编辑任务
 const editTask = (task) => {
-  taskForm.value = { ...task }; // 填充选中的任务数据到表单
+  modelForm.value = { ...task }; // 填充选中的任务数据到表单
   dialogVisible.value = true; // 打开对话框
 };
 
@@ -513,15 +438,11 @@ const editTask = (task) => {
 const submitTask = async () => {
   try {
     const taskData = {
-      id: taskForm.value.id,
-      taskName: taskForm.value.taskName || 'taskName',
-      createTime: taskForm.value.createTime || '2024年xx月xx日',
-      judgementRule: taskForm.value.judgementRule || '电子干扰',
-      judgementModel: taskForm.value.judgementModel || '电子干扰',
-      judgementEffect: taskForm.value.judgementEffect || '电子干扰',
-      judgementMethod: taskForm.value.judgementMethod || '电子干扰',
-      taskStatus: taskForm.value.taskStatus || '未开始',
-      actions: '编辑',
+      id: modelForm.value.id,
+      taskName: modelForm.value.modelName || 'taskName',
+      createTime: modelForm.value.createTime || '2024年xx月xx日',
+      judgementRule: modelForm.value.modelType || '电子干扰',
+
     };
     // // 模拟请求
     // const response = await axios.post(
@@ -602,7 +523,8 @@ onMounted(() => {
 .task-modal {
   /*width: 60vw;*/
   /*height: 60vh;*/
-  background: linear-gradient(to bottom, #091925, #2C415E);
+  background: linear-gradient(to bottom, rgba(9, 25, 37, 0.75), rgba(44, 65, 94, 0.75));
+  /*background: linear-gradient(to bottom, #091925, #2C415E);*/
   /*background:black;*/
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -669,6 +591,7 @@ onMounted(() => {
   left: 0;
   right: 0;
   bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
   /*background: rgba(0, 0, 0, 0.5);*/
   display: flex;
   justify-content: center;
@@ -766,12 +689,12 @@ onMounted(() => {
   flex-grow: 1;
 }
 
-/* 关闭按钮 */
 .close-button {
   background: none;
   border: none;
   font-size: 20px;
-  color: white;
+  font-weight: 700;
+  color: rgb(1,227,255);
   cursor: pointer;
 }
 
@@ -781,46 +704,78 @@ onMounted(() => {
   padding: 20px;
   overflow-y: auto;
   background-color: #155997;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.form-container {
-  width: 70%;
-  margin: 0 auto;
+.dialog-column {
+  flex: 1; /* 左右各占 50% */
+  max-width: 48%; /* 确保两列宽度不超过容器 */
+  display: flex;
+  flex-direction: column; /* 每列的输入框垂直排列 */
+  gap: 15px; /* 每列内部的输入框间距 */
 }
 
 .form-row {
   display: flex;
-  /*flex-wrap: wrap;*/
-  /*justify-content: space-between;*/
   align-items: center;
   margin-bottom: 15px;
-  gap: 40px;
+  gap: 5px;
+}
+
+.input-label {
+  font-size: 16px;
+  color: #fff;
+  text-align: left;
+  width: 100px;
+  white-space: nowrap;
+}
+
+.input-field {
+  flex: 1;
+  background-color: #000;
+  color: #fff;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.form-column {
+  flex: 1;
+  margin-right: 20px;
+}
+
+.form-row.multi-input .form-column {
+  flex-basis: 48%;
 }
 
 .input-label {
   font-size: 16px;
   color: #fff;
   margin-right: 5px;
-  /*flex-basis: calc(50% - 20px);*/
-  flex-basis: 30%;
-  text-align: right;
+  text-align: left;
+  display: block;
+  width: 100px;
+  white-space: nowrap;
 }
 
 .input-field {
   background-color: #000;
   color: #fff;
   padding: 8px;
-  /*width: 100%;*/
-  /*width: calc(50% - 20px);*/
-  flex-basis: calc(50% - 160px);
   border: 1px solid #ccc;
   border-radius: 4px;
+  flex-grow: 1;
+  min-width: 100px;
+  width: 70%;
 }
 
 .radio-group {
   display: flex;
   align-items: center;
   gap: 20px;
+  font-size: 16px;
 }
 
 .radio-label {

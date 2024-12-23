@@ -22,6 +22,7 @@
       <ModelDialog :isShow="isShowModelDialog" @update:isShow="isShowModelDialog = $event"/>
       <RuleDialog :isShow="isShowRuleDialog" @update:isShow="isShowRuleDialog = $event"/>
       <EffectDialog :isShow="isShowEffectDialog" @update:isShow="isShowEffectDialog = $event"/>
+      <NewRuleDialog :isShow="isShowNewRuleDialog" @update:isShow="isShowNewRuleDialog = $event"/>
     </div>
   </div>
 </template>
@@ -40,12 +41,14 @@ import TaskDialog from './Dialog/TaskDialog.vue'
 import RuleDialog from "./Dialog/RuleDialog.vue"
 import ModelDialog from "./Dialog/ModelDialog.vue"
 import EffectDialog from "./Dialog/EffectDialog.vue"
+import NewRuleDialog from "./Dialog/NewRuleDialog.vue"
 
 // 弹窗控制
 const isShowTaskDialog = ref(false);
 const isShowModelDialog = ref(false);
 const isShowRuleDialog = ref(false);
 const isShowEffectDialog = ref(false);
+const isShowNewRuleDialog = ref(false);
 
 const showTaskDialog = () => {
   isShowTaskDialog.value = true;
@@ -59,6 +62,10 @@ const showRuleDialog = () => {
 const showEffectDialog = () => {
   isShowEffectDialog.value = true;
 };
+
+const showNewRuleDialog = () => {
+  isShowNewRuleDialog.value = true;
+}
 </script>
 
 <style lang="scss" scoped>

@@ -3,7 +3,7 @@
   <div v-if="isShow" class="task-modal-overlay">
     <div class="task-modal">
      <!--头部-->
-      <div class="task-modal-header">
+      <div class="task-modal-header" v-drag>
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon">
           裁决任务数据管理
@@ -27,20 +27,24 @@
           </div>
         <!--添加任务的弹窗-->
         <div v-if="dialogVisible" class="custom-dialog-overlay">
-          <div class="custom-dialog">
-            <div class="dialog-header">
+          <div
+              class="custom-dialog"
+              :style="dialogStyle"
+              v-drag
+          >
+            <div
+                class="dialog-header"
+            >
               <span class="header-title">添加裁决任务</span>
               <button class="close-button" @click="dialogVisible = false">X</button>
             </div>
             <div class="dialog-content">
               <div class="form-container">
-                <!-- 第一列输入框 -->
                 <div class="form-row multi-input">
                   <div class="form-column">
                     <label for="taskName" class="input-label">*任务名称</label>
                     <input v-model="taskForm.taskName" type="text" id="taskName" class="input-field" placeholder="请输入任务名称" />
                   </div>
-                  <!-- 第二列输入框 -->
                   <div class="form-column">
                     <label for="taskNameXiangding" class="input-label">*想定任务名称</label>
                     <select v-model="taskForm.taskNameXiangding" id="taskNameXiangding" class="input-field">
@@ -59,90 +63,68 @@
                   </div>
                 </div>
 
-                <!-- 默认添加一个裁决模型、效果模型和裁决规则 -->
-                <div class="form-row multi-input">
-                  <div class="form-column">
-                    <label for="judgementModel" class="input-label">*裁决模型</label>
-                    <select id="judgementModel" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
+                <hr class="divider" />
+
+                <div v-for="index in count" :key="index">
+                  <div class="form-row multi-input">
+                    <div class="form-column">
+                      <label :for="'judgementModel' + index" class="input-label">*裁决模型</label>
+                      <select :id="'judgementModel' + index" class="input-field" v-model="taskForm.judgementModels[index]">
+                        <option value="电子干扰">电子干扰</option>
+                        <option value="光学干扰">光学干扰</option>
+                        <option value="通信干扰">通信干扰</option>
+                        <option value="电子对抗">电子对抗</option>
+                      </select>
+                    </div>
+                    <div class="form-column">
+                      <label :for="'effectModel' + index" class="input-label">*效果模型</label>
+                      <select :id="'effectModel' + index" class="input-field" v-model="taskForm.effectModels[index]">
+                        <option value="电子干扰">电子干扰</option>
+                        <option value="光学干扰">光学干扰</option>
+                        <option value="通信干扰">通信干扰</option>
+                        <option value="电子对抗">电子对抗</option>
+                      </select>
+                    </div>
                   </div>
-                  <div class="form-column">
-                    <label for="effectModel" class="input-label">*效果模型</label>
-                    <select id="effectModel" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
-                  </div>
-                  <div class="form-column">
-                    <label for="judgementRule" class="input-label">*裁决规则</label>
-                    <select  id="judgementRule" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
+                  <div class="form-row multi-input">
+                    <div class="form-column">
+                      <label :for="'judgementRule' + index" class="input-label">*裁决规则</label>
+                      <select :id="'judgementRule' + index" class="input-field" v-model="taskForm.judgementRules[index]">
+                        <option value="电子干扰">电子干扰</option>
+                        <option value="光学干扰">光学干扰</option>
+                        <option value="通信干扰">通信干扰</option>
+                        <option value="电子对抗">电子对抗</option>
+                      </select>
+                    </div>
+                    <div class="form-column">
+                      <label class="radio-label">裁决方式</label>
+                      <div class="radio-group">
+                        <label>
+                          <input
+                              type="radio"
+                              v-model="taskForm.judgementMethods[index]"
+                              value="自动裁决"
+                          /> 自动裁决
+                        </label>
+                        <label>
+                          <input
+                              type="radio"
+                              v-model="taskForm.judgementMethods[index]"
+                              value="手动裁决"
+                          /> 手动裁决
+                        </label>
+                      </div>
+                    </div>
                   </div>
                 </div>
-
-                <!-- 动态添加的裁决模型、效果模型、裁决规则 -->
-                <div v-for="index in count" :key="index" class="form-row multi-input">
-                  <div class="form-column">
-                    <label :for="'judgementModel' + index" class="input-label">*裁决模型</label>
-                    <select  :id="'judgementModel' + index" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
-                  </div>
-                  <div class="form-column">
-                    <label :for="'effectModel' + index" class="input-label">*效果模型</label>
-                    <select  :id="'effectModel' + index" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
-                  </div>
-                  <div class="form-column">
-                    <label :for="'judgementRule' + index" class="input-label">*裁决规则</label>
-                    <select  :id="'judgementRule' + index" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
-                  </div>
-                </div>
-
-                <!-- 控制动态生成的按钮 -->
-                <button @click="increaseCount">添加更多</button>
-
-                <!-- 裁决方式 -->
-                <div class="form-row">
-                  <label class="radio-label">裁决方式</label>
-                  <div class="radio-group">
-                    <label>
-                      <input v-model="taskForm.judgementMethod" type="radio" value="自动裁决" /> 自动裁决
-                    </label>
-                    <label>
-                      <input v-model="taskForm.judgementMethod" type="radio" value="手动裁决" /> 手动裁决
-                    </label>
-                  </div>
-                </div>
+                <button class="add-button" @click="increaseCount">+</button>
               </div>
             </div>
 
             <!-- 弹窗底部 -->
             <div class="dialog-footer">
               <button class="button" @click="dialogVisible = false">取消</button>
-              <button class="button" @click="submitTask">保存</button>
+              <button class="button" @click="submitTask">确认</button>
             </div>
           </div>
         </div>
@@ -263,6 +245,70 @@ const emit = defineEmits(['update:isShow']);
 const closeModal = () => {
   emit('update:isShow', false);
 };
+
+// 弹窗位置
+const dialogStyle = ref({
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  position: 'absolute',
+});
+
+// 自定义拖拽指令
+const dragDirective = {
+  mounted(el: HTMLElement) {
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+    let intervalId: number | null = null; // 存储定时器的ID
+
+    // 鼠标按下时记录初始位置
+    el.addEventListener('mousedown', (e: MouseEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      isDragging = true;
+
+      // 打印初始位置
+      console.log(`初始位置: left=${el.style.left}, top=${el.style.top}`);
+
+      // 启动定时器，0.5秒打印一次位置
+      intervalId = setInterval(() => {
+        if (isDragging) {
+          // 打印当前位置
+          console.log(`当前位置: left=${el.style.left}, top=${el.style.top}`);
+        }
+      }, 500); // 每500ms打印一次
+    });
+
+    // 鼠标移动时更新元素的位置
+    document.addEventListener('mousemove', (e: MouseEvent) => {
+      if (isDragging) {
+        const left = e.clientX - offsetX;
+        const top = e.clientY - offsetY;
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+      }
+    });
+
+    // 鼠标释放时停止拖动
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      if (intervalId !== null) {
+        // 停止定时器
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    });
+  },
+};
+
+// 注册指令
+defineExpose({
+  directives: {
+    drag: dragDirective
+  }
+});
 
 // 模拟表格数据
 let tableData = ref([
@@ -507,6 +553,14 @@ let tableData = ref([
   },
 ]);
 
+const tableDataRecords = ref([]);
+
+
+// 下拉框选项
+const judgementModels = ref([]);  // 裁决模型选项
+const effectModels = ref([]);     // 效果模型选项
+const judgementRules = ref([]);   // 裁决规则选项
+
 // 查询表格内容
 const fetchTableData = async (
     taskName = "",
@@ -517,40 +571,90 @@ const fetchTableData = async (
 ) => {
   try {
     console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.1.200:3001/api/judgeTask/pageList", {
+
+    //请求体
+    const response = await axios.post(`http://192.168.1.200:3001/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,
       sortOrder,
       taskName,
     });
+
     console.log("response.data.data", response.data.data);
 
+    tableDataRecords.value = response.data.data;
+    console.log("tableDataRecords.value", tableDataRecords.value)
+
     const newData = response.data.data.records;
-    console.log("请求到的新数据:", newData);
+    console.log("response.data.data.records:", newData);
+
+    // judgementModels.value = response.data.judgementModels || [];
+    // effectModels.value = response.data.effectModels || [];
+    // judgementRules.value = response.data.judgementRules || [];
+    //
+    // console.log("裁决模型选项：", judgementModels.value);
+    // console.log("效果模型选项：", effectModels.value);
+    // console.log("裁决规则选项：", judgementRules.value);
+
+    // 裁决方式的映射
+    const judgeModeMap = {
+      auto: '自动裁决',
+      manual: '手动裁决',
+    };
 
     // 遍历返回的数据并更新 tableData
     newData.forEach((record, index) => {
-      // 如果对应索引已有数据，更新指定字段；否则添加新数据
+      const judgementModel = (record.taskRuleRelVOList || [])
+          .map(rule => rule.modelName)
+          .filter(item => item)  // 过滤掉空值
+          .join('; ') || '';
+
+      const judgementRule = (record.taskRuleRelVOList || [])
+          .map(rule => rule.ruleName)
+          .filter(item => item)  // 过滤掉空值
+          .join('; ') || '';
+
+      const judgementMethod = (record.taskRuleRelVOList || [])
+          .map(rule => judgeModeMap[rule.judgeMode])  // 使用映射转换
+          .filter(item => item)  // 过滤掉空值
+          .join('; ') || '';
+
+      const judgementEffect = (record.taskRuleRelVOList || [])
+          .map(rule => rule.effectName)
+          .filter(item => item)  // 过滤掉空值
+          .join('; ') || '';
+
+
       if (tableData.value[index]) {
-        tableData.value[index].taskName = record.task.taskName;
-        tableData.value[index].createTime = record.task.createTime;
+        tableData.value[index].taskName = record.task.taskName || tableData.value[index].taskName;
+        tableData.value[index].taskNameXiangding = record.task.remark || tableData.value[index].taskNameXiangding;
+        tableData.value[index].createTime = record.task.createTime || tableData.value[index].createTime;
+        tableData.value[index].taskStatus = record.task.status || tableData.value[index].taskStatus;
+
+
+        tableData.value[index].judgementModel = judgementModel || tableData.value[index].judgementModel;
+        tableData.value[index].judgementRule = judgementRule || tableData.value[index].judgementRule;
+        tableData.value[index].judgementMethod = judgementMethod || tableData.value[index].judgementMethod;
+        tableData.value[index].judgementEffect = judgementEffect || tableData.value[index].judgementEffect;
       } else {
-        // 添加新数据，保留默认值
+
         tableData.value.push({
           id: record.task.taskId || '',
-          taskName: record.task.taskName,
-          createTime: record.task.createTime,
-          judgementModel: '',
-          judgementRule: '',
-          judgementMethod: '',
-          judgementEffect: '',
-          taskStatus: '',
+          taskName: record.task.taskName || '',
+          taskNameXiangding: record.task.remark || '',
+          createTime: record.task.createTime || '',
+          judgementModel: judgementModel || '',
+          judgementRule: judgementRule || '',
+          judgementMethod: judgementMethod || '',
+          judgementEffect: judgementEffect || '',
+          taskStatus: record.task.status || '',
           actions: '编辑',
         });
       }
     });
 
+    // 如果返回数据少于本地默认数据长度，保留原有数据项，未更新的数据保持原样
     if (newData.length < tableData.value.length) {
       tableData.value.splice(newData.length);
     }
@@ -583,7 +687,10 @@ const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 const filteredData = computed(() => {
   console.log('Filtering data...');
   const filtered = tableData.value.filter(item => {
-    return item.taskName.toLowerCase().includes(searchKeyword.value.toLowerCase());
+    // 先确保 item.taskName 不是 undefined 或 null，并且是字符串
+    return item.taskName && typeof item.taskName === 'string'
+        ? item.taskName.toLowerCase().includes(searchKeyword.value.toLowerCase())
+        : false; // 如果 taskName 不合法，则过滤掉该项
   });
   return filtered;
 });
@@ -630,10 +737,7 @@ const taskForm = ref({
   taskName: '',
   taskNameXiangding: '',
   createTime: '',
-  judgementModel: '',
-  effectModel: '',
-  judgementRule: '',
-  judgementMethod: '',
+  judgementMethods: ['auto'],
   judgementModels: [''],
   effectModels: [''],
   judgementRules: [''],
@@ -644,141 +748,154 @@ const count = ref(0);
 
 // 增加动态生成的下拉框组数
 const increaseCount = () => {
+  console.log("taskForm.value",taskForm.value)
   count.value += 1;
-};
-
-// 添加裁决模型下拉框
-const addJudgementModel = () => {
-  taskForm.value.judgementModels.push({ value: '' });
-};
-
-// 添加效果模型下拉框
-const addEffectModel = () => {
-  taskForm.value.effectModels.push({ value: '' });
-};
-
-// 添加裁决规则下拉框
-const addJudgementRule = () => {
-  taskForm.value.judgementRules.push({ value: '' });
+  taskForm.value.judgementModels.push('');
+  taskForm.value.effectModels.push('');
+  taskForm.value.judgementRules.push('');
+  taskForm.value.judgementMethods.push('');
+  console.log("taskForm.value",taskForm.value)
 };
 
 // 编辑任务
 const editTask = (task) => {
-  taskForm.value = { ...task }; // 填充选中的任务数据到表单
-  dialogVisible.value = true; // 打开对话框
+  console.log("taskForm.value", taskForm.value);
+
+  // 填充基本字段数据
+  taskForm.value = { ...task };
+
+  taskForm.value.judgementModels = task.judgementModel ? [task.judgementModel] : [''];
+  taskForm.value.effectModels = task.judgementEffect ? [task.judgementEffect] : [''];
+  taskForm.value.judgementRules = task.judgementRule ? [task.judgementRule] : [''];
+  taskForm.value.judgementMethods = task.judgementMethod ? [task.judgementMethod] : [''];
+
+  // 打开对话框
+  dialogVisible.value = true;
+
+  console.log("taskForm.value", taskForm.value);
 };
 
 // 提交任务
 const submitTask = async () => {
   try {
-    console.log("原始数据:", toRaw(taskForm.value));
-
-    // 构建请求体
-    const taskData = {
-      task: {
-        createTime: taskForm.value.createTime || "yyyy-MM-dd HH:mm:ss", // 如果没有创建时间则使用默认时间
-        taskId: taskForm.value.id || 0, // 新增时 id 为 0，修改时会有 id
-        taskName: taskForm.value.taskName || "", // 任务名称
-        // remark: taskForm.value.remark || "", // 备注
-        // traceTaskCode: taskForm.value.traceTaskCode || "" // 追踪任务编码
-      },
-      taskRuleRelList: [
-        {
-          id: 0, // 可以根据实际情况填写
-          taskId: taskForm.value.id || 0, // 新增时 id 为 0，修改时会有 id
-          modelId: 0, // 根据需要填充
-          modelType: "", // 根据需要填充
-          judgeMode: "", // 根据需要填充
-          ruleId: 0 // 根据需要填充
-        }
-      ]
+    // 1. 获取表单数据，构建任务对象
+    const newTaskData = {
+      id: taskForm.value.id || new Date().getTime(),  // 如果没有id，生成一个新的ID
+      taskName: taskForm.value.taskName,  // 任务名称
+      taskNameXiangding: taskForm.value.taskNameXiangding,  // 想定任务名称
+      createTime: taskForm.value.createTime || new Date().toLocaleString(),  // 创建时间
+      taskStatus: taskForm.value.taskStatus,  // 任务状态
+      actions: '编辑',  // 默认操作列是“编辑”
+      judgementModel: '',  // 裁决模型，拼接成字符串
+      judgementRule: '',  // 裁决规则，拼接成字符串
+      judgementMethod: '',  // 裁决方式，拼接成字符串
+      judgementEffect: '',  // 裁决效果，拼接成字符串
     };
 
-    // 判断是新增任务还是编辑任务
-    const isNewTask = !taskForm.value.id;
+    // 2. 对于裁决模型、裁决规则等字段，拼接成以 ";" 分隔的字符串
+    const judgementModel = taskForm.value.judgementModels.length > 0
+        ? taskForm.value.judgementModels.join('; ')
+        : '';
+    const judgementRule = taskForm.value.judgementRules.length > 0
+        ? taskForm.value.judgementRules.join('; ')
+        : '';
+    const judgementMethod = taskForm.value.judgementMethods.length > 0
+        ? taskForm.value.judgementMethods.join('; ')
+        : '';
+    const judgementEffect = taskForm.value.effectModels.length > 0
+        ? taskForm.value.effectModels.join('; ')
+        : '';
 
-    // 使用静态的 URL 配置
-    const baseUrl = "http://192.168.1.200:3001"; // API 基本 URL
+    // 3. 将这些拼接好的字段添加到任务数据中
+    newTaskData.judgementModel = judgementModel.replace(/^; /, '');
+    newTaskData.judgementRule = judgementRule.replace(/^; /, '');
+    newTaskData.judgementMethod = judgementMethod.replace(/^; /, '');
+    newTaskData.judgementEffect = judgementEffect.replace(/^; /, '');
 
-    // 设置请求的 URL
-    const url = isNewTask
-        ? `${baseUrl}/judgeTask/add` // 新增任务的接口 URL
-        : `${baseUrl}/judgeTask/update`; // 修改任务的接口 URL
+    // 4. 将新任务数据插入表格的最前面
+    tableData.value.unshift(newTaskData);
 
-    const method = "POST"; // 使用 POST 方法
+    // 2. 判断是新增还是更新任务
+    const url = taskForm.value.id === 0
+        ? `http://192.168.1.200:3001/judgeTask/add`   // 新增任务
+        : `http://192.168.1.200:3001/judgeTask/update`; // 更新任务
 
-    // 发送请求
-    const response = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name: isNewTask ? "添加记录" : "修改记录", // 请求描述
-        request: {
-          method,
-          body: {
-            mode: "raw",
-            raw: JSON.stringify(taskData), // 请求体
-            options: {
-              raw: {
-                language: "json",
-              },
-            },
-          },
-          url: {
-            raw: url, // 使用静态的 URL 地址
-            protocol: "http",
-            host: ["192.168.1.200"], // 静态设置主机地址
-            port: "3001", // 静态设置端口
-            path: [isNewTask ? "judgeTask" : "judgeTask", isNewTask ? "add" : "update"],
-            query: [],
-            variable: [],
-          },
-        },
-        description: isNewTask ? "添加记录" : "修改记录", // 请求描述
-      }),
-    });
+    const method = taskForm.value.id === 0 ? "POST" : "PUT";  // 新增使用 POST，更新使用 PUT
 
-    const result = await response.json();
-
-    if (response.ok) {
-      // 成功处理：获取分页列表并更新表格数据
-      console.log("任务处理成功");
-
-      // 获取分页列表数据
-      const pageListResponse = await fetch(`${baseUrl}/judgeTask/pageList`, {
-        method: "POST",
+    // 3. 发送请求保存到数据库
+    let response;
+    try {
+      response = await fetch(url, {
+        method: method,
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          current: 0, // 页码
-          pageSize: 10, // 每页大小
-          sortField: "", // 排序字段
-          sortOrder: "", // 排序顺序
-          taskName: "", // 搜索条件
-        }),
+        body: JSON.stringify(taskForm.value), // 提交表单数据
       });
+    } catch (error) {
+      console.error("提交请求失败", error);
+      dialogVisible.value = false;  // 确保请求失败时也关闭对话框
+      return; // 如果请求失败，直接返回，不继续执行后续代码
+    }
 
-      const pageListResult = await pageListResponse.json();
+    let result;
+    try {
+      result = await response.json();
+    } catch (error) {
+      console.error("解析响应失败", error);
+      dialogVisible.value = false;  // 确保解析失败时也关闭对话框
+      return;
+    }
+
+    if (response.ok) {
+      console.log("任务保存成功", result);
+
+      // 4. 请求最新任务列表并更新本地数据
+      let pageListResponse;
+      try {
+        pageListResponse = await fetch(`http://192.168.1.200:3001/judgeTask/pageList`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            current: 0, // 页码
+            pageSize: 10, // 每页大小
+          }),
+        });
+      } catch (error) {
+        console.error("请求分页列表失败", error);
+        dialogVisible.value = false;  // 确保请求分页失败时关闭对话框
+        return; // 请求失败时返回，不继续执行
+      }
+
+      let pageListResult;
+      try {
+        pageListResult = await pageListResponse.json();
+      } catch (error) {
+        console.error("解析分页列表响应失败", error);
+        dialogVisible.value = false;  // 确保解析失败时关闭对话框
+        return;
+      }
 
       if (pageListResponse.ok) {
-        // 更新表格数据
+        // 5. 使用请求得到的数据更新本地表格数据
         tableData.value = pageListResult.items || [];
       } else {
         console.error("分页列表请求失败", pageListResult);
+        // 如果分页列表请求失败，保留本地数据不变
       }
 
-      // 关闭对话框并清空表单
-      dialogVisible.value = false;
-      taskForm.value = {}; // 清空表单
+      // 6. 关闭任务编辑窗口
+      dialogVisible.value = false;  // 成功时关闭对话框
     } else {
-      // 错误处理：例如展示错误信息
-      console.error("请求失败", result);
+      console.error("任务保存失败", result);
+      dialogVisible.value = false;  // 保存失败时也关闭对话框
     }
   } catch (error) {
-    console.error("保存任务失败", error);
+    console.error("提交任务失败", error);
+    dialogVisible.value = false;  // 确保捕获异常时关闭对话框
+    // 如果有错误，依然保留新增的任务显示在表格中
   }
 };
 
@@ -913,18 +1030,18 @@ onMounted(() => {
   /*background:black;*/
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  /*z-index: 1000;*/
   position: fixed;
+  /*z-index: 1000;*/
   height:80%;
   width:70%;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  dsplay: flex;
   flex-direction: column;
 }
 
 .task-modal-header {
+  cursor: move;
   position: relative;
   display: flex;
   justify-content: space-between;
@@ -1031,7 +1148,8 @@ onMounted(() => {
 }
 
 .custom-dialog-overlay {
-  position: fixed;
+  /*position: fixed;*/
+  position: absolute;
   top: 0;
   left: 0;
   right: 0;
@@ -1043,7 +1161,6 @@ onMounted(() => {
   z-index: 999;
 }
 
-/* 对话框 */
 .custom-dialog {
   background: white;
   width: 70%;
@@ -1054,7 +1171,6 @@ onMounted(() => {
   justify-content: space-between;
 }
 
-/* 对话框头部 */
 .dialog-header {
   height: 40px;
   background: linear-gradient(to bottom, #0F5B9D, #498ED7);
@@ -1064,7 +1180,6 @@ onMounted(() => {
   padding: 0 10px;
 }
 
-/* 标题文字 */
 .header-title {
   color: white;
   font-family: "微软雅黑 Bold", "微软雅黑", sans-serif;
@@ -1075,21 +1190,65 @@ onMounted(() => {
   flex-grow: 1;
 }
 
-/* 关闭按钮 */
 .close-button {
   background: none;
   border: none;
   font-size: 20px;
-  color: white;
+  font-weight: 700;
+  color: rgb(1,227,255);
   cursor: pointer;
 }
 
-/* 对话框内容 */
 .dialog-content {
   flex: 1;
   padding: 20px;
   overflow-y: auto;
   background-color: rgb(21, 89, 151);
+}
+
+.add-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgb(2, 253, 255);
+  background-color: transparent;
+  color: transparent;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  position: relative;
+}
+
+.add-button::before,
+.add-button::after {
+  content: "";
+  position: absolute;
+  background-color: rgb(2, 253, 255);
+  width: 60%;
+  height: 2px;
+}
+
+.add-button::before {
+  transform: translate(-50%, -50%);
+  top: 50%;
+  left: 50%;
+}
+
+.add-button::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+  top: 50%;
+  left: 50%;
+}
+
+.add-button:hover {
+  background-color: rgba(2, 253, 255, 0.2);
+}
+
+.add-button:active {
+  background-color: rgba(2, 253, 255, 0.4);
 }
 
 .form-container {
@@ -1098,10 +1257,10 @@ onMounted(() => {
 }
 
 .form-row {
-  display: flex; /* 将 label 和 input 放在同一行 */
-  align-items: center; /* 垂直对齐 */
+  display: flex;
+  align-items: center;
   margin-bottom: 15px;
-  gap: 5px; /* 给 label 和 input 之间设置一个间距 */
+  gap: 5px;
 }
 
 .form-column {
@@ -1110,33 +1269,39 @@ onMounted(() => {
 }
 
 .form-row.multi-input .form-column {
-  flex-basis: 48%; /* 确保两列输入框有间距 */
+  flex-basis: 48%;
 }
 
-/* label 放到输入框的左边 */
+.divider {
+  border: none;
+  height: 0.5px;
+  width: 100%;
+  background-color: white;
+  margin-top: 40px;
+  margin-bottom: 20px;
+}
+
 .input-label {
   font-size: 16px;
   color: #fff;
-  margin-right: 5px; /* 给 label 和 input 之间留出5px */
-  text-align: left; /* 对齐到左边 */
-  display: block; /* 使 label 和输入框可以并排显示 */
-  width: 100px; /* 给 label 设置固定宽度 */
+  margin-right: 5px;
+  text-align: left;
+  display: block;
+  width: 100px;
   white-space: nowrap;
 }
 
-/* 输入框样式 */
 .input-field {
   background-color: #000;
   color: #fff;
   padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
+  border-radius: 6px;
   flex-grow: 1;
   min-width: 100px;
-  width: 70%; /* 确保输入框充满剩余的空间 */
+  width: 70%;
+  outline: none;
 }
 
-/* radio-group 样式 */
 .radio-group {
   display: flex;
   align-items: center;
@@ -1155,7 +1320,6 @@ onMounted(() => {
   color: #fff;
 }
 
-/* 对话框底部 */
 .dialog-footer {
   display: flex;
   justify-content: center;
@@ -1169,7 +1333,7 @@ onMounted(() => {
   width: 100px;
   height: 32px;
   background-color: #1364BE;
-  border: 1px solid #015C87;
+  border: 0.5px solid #01E3FF;
   color: white;
   font-family: "微软雅黑", sans-serif;
   font-weight: 400;
@@ -1274,6 +1438,20 @@ onMounted(() => {
 /* 表格头的边框 */
 ::v-deep .el-table .el-table__header th {
   border: 0.3px solid #1B88D7;
+}
+
+::v-deep .el-table .el-table__header th::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border: 1px solid transparent;
+  background: linear-gradient(to center, rgba(27, 136, 215, 1), rgba(27, 136, 215, 0));
+  z-index: -1;
+  margin: -2px;
+  border-radius: inherit;
 }
 
 /* 表格体的单元格边框 */
