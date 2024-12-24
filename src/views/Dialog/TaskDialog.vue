@@ -69,49 +69,36 @@
                   <div class="form-row multi-input">
                     <div class="form-column">
                       <label :for="'judgementModel' + index" class="input-label">*裁决模型</label>
-                      <select :id="'judgementModel' + index" class="input-field" v-model="taskForm.judgementModels[index]">
-                        <option value="电子干扰">电子干扰</option>
-                        <option value="光学干扰">光学干扰</option>
-                        <option value="通信干扰">通信干扰</option>
-                        <option value="电子对抗">电子对抗</option>
+                      <select :id="'judgementModel' + idx" class="input-field" v-model="taskForm.judgementModels[idx]" @change="onJudgementModelChange(idx)">
+                        <option v-for="model in judgementModelOptions" :key="model.modelId" :value="model.modelName">{{ model.modelName }}</option>
+<!--                        <option value="电子干扰">电子干扰</option>-->
+<!--                        <option value="光学干扰">光学干扰</option>-->
+<!--                        <option value="通信干扰">通信干扰</option>-->
+<!--                        <option value="电子对抗">电子对抗</option>-->
                       </select>
                     </div>
                     <div class="form-column">
-                      <label :for="'effectModel' + index" class="input-label">*效果模型</label>
-                      <select :id="'effectModel' + index" class="input-field" v-model="taskForm.effectModels[index]">
-                        <option value="电子干扰">电子干扰</option>
-                        <option value="光学干扰">光学干扰</option>
-                        <option value="通信干扰">通信干扰</option>
-                        <option value="电子对抗">电子对抗</option>
+                      <label :for="'effectModel' + idx" class="input-label">*效果模型</label>
+                      <select :id="'effectModel' + idx" class="input-field" v-model="taskForm.effectModels[idx]">
+                        <option v-for="effect in effectModelOptions[idx]" :key="effect.effectId" :value="effect.effectName">{{ effect.effectName }}</option>
                       </select>
                     </div>
                   </div>
                   <div class="form-row multi-input">
                     <div class="form-column">
-                      <label :for="'judgementRule' + index" class="input-label">*裁决规则</label>
-                      <select :id="'judgementRule' + index" class="input-field" v-model="taskForm.judgementRules[index]">
-                        <option value="电子干扰">电子干扰</option>
-                        <option value="光学干扰">光学干扰</option>
-                        <option value="通信干扰">通信干扰</option>
-                        <option value="电子对抗">电子对抗</option>
+                      <label :for="'judgementRule' + idx" class="input-label">*裁决规则</label>
+                      <select :id="'judgementRule' + idx" class="input-field" v-model="taskForm.judgementRules[idx]">
+                        <option v-for="rule in calculationRuleOptions[idx]" :key="rule.ruleId" :value="rule.ruleName">{{ rule.ruleName }}</option>
                       </select>
                     </div>
                     <div class="form-column">
                       <label class="radio-label">裁决方式</label>
                       <div class="radio-group">
                         <label>
-                          <input
-                              type="radio"
-                              v-model="taskForm.judgementMethods[index]"
-                              value="自动裁决"
-                          /> 自动裁决
+                          <input type="radio" v-model="taskForm.judgementMethods[idx]" value="自动裁决" /> 自动裁决
                         </label>
                         <label>
-                          <input
-                              type="radio"
-                              v-model="taskForm.judgementMethods[index]"
-                              value="手动裁决"
-                          /> 手动裁决
+                          <input type="radio" v-model="taskForm.judgementMethods[idx]" value="手动裁决" /> 手动裁决
                         </label>
                       </div>
                     </div>
@@ -555,7 +542,6 @@ let tableData = ref([
 
 const tableDataRecords = ref([]);
 
-
 // 下拉框选项
 const judgementModels = ref([]);  // 裁决模型选项
 const effectModels = ref([]);     // 效果模型选项
@@ -743,8 +729,88 @@ const taskForm = ref({
   judgementRules: [''],
 });
 
+const judgementModelOptions = ref<string[]>([]); // 裁决模型的下拉选项
+const effectModelOptions = ref<any[][]>([]); // 每个裁决模型对应的效果模型选项
+const calculationRuleOptions = ref<any[][]>([]); // 每个裁决模型对应的裁决规则选项
+const modelNameToIdMap = ref({}); // 存储裁决模型名称到 modelId 的映射
+const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
+
+// 获取裁决任务选项
+const fetchJudgementModels = async () => {
+  try {
+    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
+      current: 0,
+      pageSize: 100,
+      sortField: '',
+      sortOrder: '',
+      modelName: '', // 可以根据需要传入 modelName 来筛选
+      modelType: ''  // 可以根据需要传入 modelType 来筛选
+    });
+
+    // 处理接口返回的数据，将 records 数组中的 modelName 提取出来
+    if (response.data && response.data.data && Array.isArray(response.data.data.records)) {
+      // 提取 modelName 并赋值给下拉框
+      judgementModelOptions.value = response.data.data.records.map((item) => ({
+        modelId: item.modelId,
+        modelName: item.modelName
+      }));
+      console.log("JudgementModels",response.data)
+
+      // 创建映射关系：modelName -> modelId
+      modelNameToIdMap.value = response.data.data.records.reduce((map, item) => {
+        map[item.modelName] = item.modelId;
+        return map;
+      }, {});
+      console.log("modelNameToIdMap.value", modelNameToIdMap.value)
+    }
+  } catch (error) {
+    console.error("获取裁决模型失败:", error);
+  }
+};
+
+// 获取效果模型和裁决规则
+const fetchEffectModelsAndRules = async (modelName, index) => {
+  try {
+    const response = await axios.get('http://192.168.1.200:3001/api/judgeModel/getInfo', {
+      params: {
+        modelName: modelName
+      }
+    });
+
+    if (response.data && response.data.data) {
+      const { effectModels, calculationRules } = response.data.data;
+
+      // 更新对应的效果模型和裁决规则
+      effectModelOptions.value[index] = effectModels.map((effect) => ({
+        effectId: effect.effectId,
+        effectName: effect.effectName
+      })) || [];
+
+      calculationRuleOptions.value[index] = calculationRules.map((rule) => ({
+        ruleId: rule.ruleId,
+        ruleName: rule.ruleName
+      })) || [];
+
+      // 创建映射关系：ruleName -> ruleId
+      ruleNameToIdMap.value[modelName] = calculationRuleOptions.value[index].reduce((map, rule) => {
+        map[rule.ruleName] = rule.ruleId;
+        return map;
+      }, {});
+      console.log("ruleNameToIdMap.value", ruleNameToIdMap.value)
+    }
+  } catch (error) {
+    console.error("获取效果模型和裁决规则失败:", error);
+  }
+};
+
+// 当裁决模型切换时触发效果模型和裁决规则选项的更新
+const onJudgementModelChange = (index: number) => {
+  const selectedModelName = taskForm.value.judgementModels[index];
+  fetchEffectModelsAndRules(selectedModelName, index);
+};
+
 // 控制动态生成下拉框的数量
-const count = ref(0);
+const count = ref(1);
 
 // 增加动态生成的下拉框组数
 const increaseCount = () => {
@@ -764,6 +830,7 @@ const editTask = (task) => {
   // 填充基本字段数据
   taskForm.value = { ...task };
 
+  taskForm.value.taskId = task.id || taskForm.value.taskId;
   taskForm.value.judgementModels = task.judgementModel ? [task.judgementModel] : [''];
   taskForm.value.effectModels = task.judgementEffect ? [task.judgementEffect] : [''];
   taskForm.value.judgementRules = task.judgementRule ? [task.judgementRule] : [''];
@@ -778,126 +845,74 @@ const editTask = (task) => {
 // 提交任务
 const submitTask = async () => {
   try {
-    // 1. 获取表单数据，构建任务对象
     const newTaskData = {
-      id: taskForm.value.id || new Date().getTime(),  // 如果没有id，生成一个新的ID
-      taskName: taskForm.value.taskName,  // 任务名称
-      taskNameXiangding: taskForm.value.taskNameXiangding,  // 想定任务名称
-      createTime: taskForm.value.createTime || new Date().toLocaleString(),  // 创建时间
-      taskStatus: taskForm.value.taskStatus,  // 任务状态
-      actions: '编辑',  // 默认操作列是“编辑”
-      judgementModel: '',  // 裁决模型，拼接成字符串
-      judgementRule: '',  // 裁决规则，拼接成字符串
-      judgementMethod: '',  // 裁决方式，拼接成字符串
-      judgementEffect: '',  // 裁决效果，拼接成字符串
+      task: {
+        createTime: taskForm.value.createTime || new Date().toLocaleString(),
+        taskName: taskForm.value.taskName,
+        remark: '默认', // 你可以根据需要修改这个默认值
+        traceTaskCode: '默认任务编号', // 你可以根据需要修改这个默认值
+      },
+      taskRuleRelList: []  // 存放关联的裁决模型和规则
     };
 
-    // 2. 对于裁决模型、裁决规则等字段，拼接成以 ";" 分隔的字符串
-    const judgementModel = taskForm.value.judgementModels.length > 0
-        ? taskForm.value.judgementModels.join('; ')
-        : '';
-    const judgementRule = taskForm.value.judgementRules.length > 0
-        ? taskForm.value.judgementRules.join('; ')
-        : '';
-    const judgementMethod = taskForm.value.judgementMethods.length > 0
-        ? taskForm.value.judgementMethods.join('; ')
-        : '';
-    const judgementEffect = taskForm.value.effectModels.length > 0
-        ? taskForm.value.effectModels.join('; ')
-        : '';
+    // 裁决方式映射
+    const judgeMethodMapping = {
+      "手动裁决": "manual",
+      "自动裁决": "auto"
+    };
 
-    // 3. 将这些拼接好的字段添加到任务数据中
-    newTaskData.judgementModel = judgementModel.replace(/^; /, '');
-    newTaskData.judgementRule = judgementRule.replace(/^; /, '');
-    newTaskData.judgementMethod = judgementMethod.replace(/^; /, '');
-    newTaskData.judgementEffect = judgementEffect.replace(/^; /, '');
+    // 遍历 taskForm 中的裁决模型、裁决规则等，填充 taskRuleRelList
+    for (let i = 0; i < taskForm.value.judgementModels.length; i++) {
+      const modelName = taskForm.value.judgementModels[i];
+      const ruleName = taskForm.value.judgementRules[i];
+      const judgeMethod = taskForm.value.judgementMethods[i];
 
-    // 4. 将新任务数据插入表格的最前面
-    tableData.value.unshift(newTaskData);
+      // 根据映射关系获取 modelId 和 ruleId
+      const modelId = modelNameToIdMap.value[modelName] || 2;  // 获取 modelId
+      console.log("modelId", modelId, modelNameToIdMap.value[modelName]);
 
-    // 2. 判断是新增还是更新任务
-    const url = taskForm.value.id === 0
-        ? `http://192.168.1.200:3001/judgeTask/add`   // 新增任务
-        : `http://192.168.1.200:3001/judgeTask/update`; // 更新任务
+      const ruleId = 3;  // 这里是静态赋值，修改时可以从其他数据源获取
 
-    const method = taskForm.value.id === 0 ? "POST" : "PUT";  // 新增使用 POST，更新使用 PUT
+      const validJudgeMode = judgeMethodMapping[judgeMethod] || "auto";
 
-    // 3. 发送请求保存到数据库
-    let response;
-    try {
-      response = await fetch(url, {
-        method: method,
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(taskForm.value), // 提交表单数据
+      // 生成 taskRuleRelList 条目
+      newTaskData.taskRuleRelList.push({
+        modelId: modelId,
+        modelType: '',
+        judgeMode: validJudgeMode,
+        ruleId: ruleId
       });
-    } catch (error) {
-      console.error("提交请求失败", error);
-      dialogVisible.value = false;  // 确保请求失败时也关闭对话框
-      return; // 如果请求失败，直接返回，不继续执行后续代码
     }
 
-    let result;
-    try {
-      result = await response.json();
-    } catch (error) {
-      console.error("解析响应失败", error);
-      dialogVisible.value = false;  // 确保解析失败时也关闭对话框
-      return;
+    // 判断是新增任务还是编辑任务
+    const endpoint = taskForm.value.taskName ? '/api/judgeTask/update' : '/api/judgeTask/add';
+    const method = taskForm.value.taskName ? 'POST' : 'POST';
+
+    if (taskForm.value.taskId) {
+      newTaskData.task.taskId = taskForm.value.taskId;  // 如果是编辑任务，传入 taskId
     }
 
+    // 提交任务数据
+    const response = await fetch(`http://192.168.1.200:3001${endpoint}`, {
+      method: method,
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(newTaskData)
+    });
+
+    const result = await response.json();
     if (response.ok) {
-      console.log("任务保存成功", result);
-
-      // 4. 请求最新任务列表并更新本地数据
-      let pageListResponse;
-      try {
-        pageListResponse = await fetch(`http://192.168.1.200:3001/judgeTask/pageList`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            current: 0, // 页码
-            pageSize: 10, // 每页大小
-          }),
-        });
-      } catch (error) {
-        console.error("请求分页列表失败", error);
-        dialogVisible.value = false;  // 确保请求分页失败时关闭对话框
-        return; // 请求失败时返回，不继续执行
-      }
-
-      let pageListResult;
-      try {
-        pageListResult = await pageListResponse.json();
-      } catch (error) {
-        console.error("解析分页列表响应失败", error);
-        dialogVisible.value = false;  // 确保解析失败时关闭对话框
-        return;
-      }
-
-      if (pageListResponse.ok) {
-        // 5. 使用请求得到的数据更新本地表格数据
-        tableData.value = pageListResult.items || [];
-      } else {
-        console.error("分页列表请求失败", pageListResult);
-        // 如果分页列表请求失败，保留本地数据不变
-      }
-
-      // 6. 关闭任务编辑窗口
-      dialogVisible.value = false;  // 成功时关闭对话框
+      console.log('任务保存成功', result);
+      // 可以做一些成功后的处理，如跳转或刷新列表等
     } else {
-      console.error("任务保存失败", result);
-      dialogVisible.value = false;  // 保存失败时也关闭对话框
+      console.error('任务保存失败', result);
     }
   } catch (error) {
-    console.error("提交任务失败", error);
-    dialogVisible.value = false;  // 确保捕获异常时关闭对话框
-    // 如果有错误，依然保留新增的任务显示在表格中
+    console.error('提交任务时发生错误', error);
   }
 };
+
 
 // const submitTask = async () => {
 //   try {
@@ -1019,6 +1034,7 @@ onMounted(() => {
     height: `${parentHeight * 0.8}px`
   };
   fetchTableData();
+  fetchJudgementModels();
 });
 </script>
 

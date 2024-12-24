@@ -20,9 +20,18 @@
       </div>
       <TaskDialog :isShow="isShowTaskDialog" @update:isShow="isShowTaskDialog = $event" />
       <ModelDialog :isShow="isShowModelDialog" @update:isShow="isShowModelDialog = $event"/>
-      <RuleDialog :isShow="isShowRuleDialog" @update:isShow="isShowRuleDialog = $event"/>
+      <RuleDialog
+          :isShow="isShowRuleDialog"
+          @update:isShow="isShowRuleDialog = $event"
+          @openNewRuleDialog="openNewRuleDialog"
+          :ruleData="ruleData"
+      />
       <EffectDialog :isShow="isShowEffectDialog" @update:isShow="isShowEffectDialog = $event"/>
-      <NewRuleDialog :isShow="isShowNewRuleDialog" @update:isShow="isShowNewRuleDialog = $event"/>
+      <NewRuleDialog
+          :isShow="isShowNewRuleDialog"
+          @update:isShow="isShowNewRuleDialog = $event"
+          @saveRuleData="saveRuleData"
+      />
     </div>
   </div>
 </template>
@@ -49,6 +58,7 @@ const isShowModelDialog = ref(false);
 const isShowRuleDialog = ref(false);
 const isShowEffectDialog = ref(false);
 const isShowNewRuleDialog = ref(false);
+const ruleData = ref(null);
 
 const showTaskDialog = () => {
   isShowTaskDialog.value = true;
@@ -66,6 +76,18 @@ const showEffectDialog = () => {
 const showNewRuleDialog = () => {
   isShowNewRuleDialog.value = true;
 }
+
+const openNewRuleDialog = () => {
+  isShowRuleDialog.value = false;  // 关闭 RuleDialog
+  isShowNewRuleDialog.value = true;  // 打开 NewRuleDialog
+};
+
+
+const saveRuleData = (newData) => {
+  ruleData.value = newData;  // 保存数据
+  isShowNewRuleDialog.value = false;  // 关闭 NewRuleDialog
+  isShowRuleDialog.value = true;  // 打开 RuleDialog
+};
 </script>
 
 <style lang="scss" scoped>

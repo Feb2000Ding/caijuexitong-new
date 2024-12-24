@@ -21,75 +21,75 @@
         </div>
 
         <!-- 编辑规则的弹窗 -->
-        <div v-if="dialogVisible" class="custom-dialog-overlay">
-          <div class="custom-dialog">
-            <div class="dialog-header">
-              <span class="header-title">编辑裁决规则</span>
-              <button class="close-button" @click="handleDialogClose">X</button>
-            </div>
-            <div class="dialog-content">
-              <div class="form-container">
-                <div class="form-row">
-                  <label for="ruleName" class="input-label">*规则名称</label>
-                  <input type="text" id="ruleName" class="input-field" v-model="taskForm.ruleName" placeholder="请输入任务名称" />
-                </div>
-                <div class="form-row">
-                  <label for="judgeModel" class="input-label">*裁决模型</label>
-                  <select id="judgeModel" class="input-field" v-model="taskForm.judgeModel">
-                    <option value="电子干扰">电子干扰</option>
-                    <option value="光学干扰">光学干扰</option>
-                    <option value="通信干扰">通信干扰</option>
-                    <option value="电子对抗">电子对抗</option>
-                  </select>
-                </div>
-                <div class="form-row">
-                  <label for="destroyLevel" class="input-label">*毁伤等级</label>
-                  <select id="destroyLevel" class="input-field" v-model="taskForm.destroyLevel">
-                    <option value="轻微">轻微</option>
-                    <option value="严重">严重</option>
-                    <option value="干扰">干扰</option>
-                  </select>
-                </div>
-                <div class="form-row">
-                  <label for="createTime" class="input-label">*创建时间</label>
-                  <input type="text" id="createTime" class="input-field" v-model="taskForm.createTime" placeholder="2024年xx月xx日" />
-                </div>
-                <div class="form-row">
-                  <label for="targetType" class="input-label">*目标类型</label>
-                  <input type="text" id="targetType" class="input-field" v-model="taskForm.targetType" placeholder="电子干扰xxxxxx" />
-                </div>
-                <div class="form-row">
-                  <label for="finalLevel" class="input-label">*最终指标</label>
-                  <input type="text" id="finalLevel" class="input-field" v-model="taskForm.finalLevel" placeholder="电子干扰xxxxxx" />
-                  <select id="shuzhifanwei" class="input-field"  placeholder="数值范围">
-                    <option value="范围1">范围1</option>
-                    <option value="范围2">范围2</option>
-                    <option value="范围3">范围3</option>
-                  </select>
-                  <select id="zuidazhi" class="input-field" placeholder="最大值">
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="300">300</option>
-                  </select>
-                  <select id="zuixiaozhi" class="input-field"  placeholder="最小值">
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="30">30</option>
-                  </select>
-                  <select id="huishangdengji" class="input-field" placeholder="毁伤等级">
-                    <option value="轻微">轻微</option>
-                    <option value="严重">严重</option>
-                    <option value="干扰">干扰</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-            <div class="dialog-footer">
-              <button class="button" @click="handleDialogClose">取消</button>
-              <button class="button" @click="submitTask">确认</button>
-            </div>
-          </div>
-        </div>
+<!--        <div v-if="dialogVisible" class="custom-dialog-overlay">-->
+<!--          <div class="custom-dialog">-->
+<!--            <div class="dialog-header">-->
+<!--              <span class="header-title">编辑裁决规则</span>-->
+<!--              <button class="close-button" @click="handleDialogClose">X</button>-->
+<!--            </div>-->
+<!--            <div class="dialog-content">-->
+<!--              <div class="form-container">-->
+<!--                <div class="form-row">-->
+<!--                  <label for="ruleName" class="input-label">*规则名称</label>-->
+<!--                  <input type="text" id="ruleName" class="input-field" v-model="taskForm.ruleName" placeholder="请输入任务名称" />-->
+<!--                </div>-->
+<!--                <div class="form-row">-->
+<!--                  <label for="judgeModel" class="input-label">*裁决模型</label>-->
+<!--                  <select id="judgeModel" class="input-field" v-model="taskForm.judgeModel">-->
+<!--                    <option value="电子干扰">电子干扰</option>-->
+<!--                    <option value="光学干扰">光学干扰</option>-->
+<!--                    <option value="通信干扰">通信干扰</option>-->
+<!--                    <option value="电子对抗">电子对抗</option>-->
+<!--                  </select>-->
+<!--                </div>-->
+<!--                <div class="form-row">-->
+<!--                  <label for="destroyLevel" class="input-label">*毁伤等级</label>-->
+<!--                  <select id="destroyLevel" class="input-field" v-model="taskForm.destroyLevel">-->
+<!--                    <option value="轻微">轻微</option>-->
+<!--                    <option value="严重">严重</option>-->
+<!--                    <option value="干扰">干扰</option>-->
+<!--                  </select>-->
+<!--                </div>-->
+<!--                <div class="form-row">-->
+<!--                  <label for="createTime" class="input-label">*创建时间</label>-->
+<!--                  <input type="text" id="createTime" class="input-field" v-model="taskForm.createTime" placeholder="2024年xx月xx日" />-->
+<!--                </div>-->
+<!--                <div class="form-row">-->
+<!--                  <label for="targetType" class="input-label">*目标类型</label>-->
+<!--                  <input type="text" id="targetType" class="input-field" v-model="taskForm.targetType" placeholder="电子干扰xxxxxx" />-->
+<!--                </div>-->
+<!--                <div class="form-row">-->
+<!--                  <label for="finalLevel" class="input-label">*最终指标</label>-->
+<!--                  <input type="text" id="finalLevel" class="input-field" v-model="taskForm.finalLevel" placeholder="电子干扰xxxxxx" />-->
+<!--                  <select id="shuzhifanwei" class="input-field"  placeholder="数值范围">-->
+<!--                    <option value="范围1">范围1</option>-->
+<!--                    <option value="范围2">范围2</option>-->
+<!--                    <option value="范围3">范围3</option>-->
+<!--                  </select>-->
+<!--                  <select id="zuidazhi" class="input-field" placeholder="最大值">-->
+<!--                    <option value="100">100</option>-->
+<!--                    <option value="200">200</option>-->
+<!--                    <option value="300">300</option>-->
+<!--                  </select>-->
+<!--                  <select id="zuixiaozhi" class="input-field"  placeholder="最小值">-->
+<!--                    <option value="10">10</option>-->
+<!--                    <option value="20">20</option>-->
+<!--                    <option value="30">30</option>-->
+<!--                  </select>-->
+<!--                  <select id="huishangdengji" class="input-field" placeholder="毁伤等级">-->
+<!--                    <option value="轻微">轻微</option>-->
+<!--                    <option value="严重">严重</option>-->
+<!--                    <option value="干扰">干扰</option>-->
+<!--                  </select>-->
+<!--                </div>-->
+<!--              </div>-->
+<!--            </div>-->
+<!--            <div class="dialog-footer">-->
+<!--              <button class="button" @click="handleDialogClose">取消</button>-->
+<!--              <button class="button" @click="submitTask">确认</button>-->
+<!--            </div>-->
+<!--          </div>-->
+<!--        </div>-->
 
         <!-- el-table -->
         <div class="table-container">
@@ -181,6 +181,7 @@ const fetchTableData = async (
       current,
       pageSize,
       sortField,
+
       sortOrder,
       ruleName,
     });
@@ -195,14 +196,14 @@ const fetchTableData = async (
     newData.forEach((record, index) => {
       // 如果对应索引已有数据，更新指定字段；否则添加新数据
       if (tableData.value[index]) {
-        tableData.value[index].ruleName = record.task.ruleName;  // 替换规则名称
-        tableData.value[index].createTime = record.task.createTime; // 替换创建时间
-        tableData.value[index].judgeModel = record.task.judgeModel; // 替换判定模型
-        tableData.value[index].parameters = record.task.parameters; // 替换参数
-        tableData.value[index].destroyLevel = record.task.destroyLevel; // 替换销毁等级
-        tableData.value[index].judgementMethod = record.task.judgementMethod; // 替换裁决方法
-        tableData.value[index].targetType = record.task.targetType; // 替换目标类型
-        tableData.value[index].finalLevel = record.task.finalLevel; // 替换最终级别
+        tableData.value[index].ruleName = record.task.ruleName;
+        tableData.value[index].createTime = record.task.createTime;
+        tableData.value[index].judgeModel = record.task.judgeModel;
+        tableData.value[index].parameters = record.task.parameters;
+        tableData.value[index].destroyLevel = record.task.destroyLevel;
+        tableData.value[index].judgementMethod = record.task.judgementMethod;
+        tableData.value[index].targetType = record.task.targetType;
+        tableData.value[index].finalLevel = record.task.finalLevel;
       } else {
         // 添加新数据，保留默认值
         tableData.value.push({
@@ -271,7 +272,8 @@ const taskForm = ref({
 // 编辑任务
 const editTask = (task) => {
   taskForm.value = { ...task }; // 填充选中的任务数据到表单
-  dialogVisible.value = true;  // 打开对话框
+  // dialogVisible.value = true;  // 打开对话框
+  emit('openNewRuleDialog');
 };
 
 // 提交任务

@@ -138,35 +138,35 @@ const list = ref([
   },
 ]);
 
-// 请求数据
-const fetchData = async () => {
-  try {
-    // 发起 HTTP 请求
-    const response = await axios.post("http://192.168.1.200:3001/api/judgeRequest/pageList", {
-      current: 1,
-      pageSize: 10,
-      sortField: "",
-      sortOrder: "",
-    });
-
-    // 从响应中提取数据并格式化
-    const records = response.data?.data?.records || [];
-    list.value = records.map((record) => ({
-      taskName: record.taskName || "202100300008",
-      judgeType: record.judgeType || "xxx",
-      requestTime: record.requestTime || "2021-12-15 16:20:30",
-      side: record.side || "红方",
-      judgeMethod: record.judgeMethod || "手动裁决",
-      result: record.result || 1,
-      judgeTime: record.judgeTime || "2021-12-15 16:22:30",
-    }));
-  } catch (error) {
-    console.error("获取数据失败:", error);
-  }
-};
+// // 请求数据
+// const fetchData = async () => {
+//   try {
+//     // 发起 HTTP 请求
+//     const response = await axios.post("http://192.168.1.200:3001/api/judgeRequest/pageList", {
+//       current: 1,
+//       pageSize: 10,
+//       sortField: "",
+//       sortOrder: "",
+//     });
+//
+//     // 从响应中提取数据并格式化
+//     const records = response.data?.data?.records || [];
+//     list.value = records.map((record) => ({
+//       taskName: record.taskName || "202100300008",
+//       judgeType: record.judgeType || "xxx",
+//       requestTime: record.requestTime || "2021-12-15 16:20:30",
+//       side: record.side || "红方",
+//       judgeMethod: record.judgeMethod || "手动裁决",
+//       result: record.result || 1,
+//       judgeTime: record.judgeTime || "2021-12-15 16:22:30",
+//     }));
+//   } catch (error) {
+//     console.error("获取数据失败:", error);
+//   }
+// };
 
 onMounted(() => {
-  fetchData();
+  // fetchData();
 });
 </script>
 
