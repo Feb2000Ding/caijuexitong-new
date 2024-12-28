@@ -1,8 +1,30 @@
 <template>
-<!-- 裁决任务管理弹窗-->
+  <!-- 裁决任务管理弹窗-->
   <div v-if="isShow" class="task-modal-overlay">
+    <!--    裁决结果的弹窗-->
+<!--    <div v-if="isTaskDialogVisible" class="overlay">-->
+<!--      11111111111111111111111111111111111111111111111111111-->
+<!--      <div class="modal">-->
+<!--        <h3>任务执行结果</h3>-->
+<!--        <p>{{ taskDialogMessage }}</p>-->
+<!--        <div class="json-data">-->
+<!--          <ul>-->
+<!--            <li><strong>任务名称:</strong> {{ taskDetails.taskName }}</li>-->
+<!--            <li><strong>裁决类型:</strong> {{ taskDetails.judgeModelType }}</li>-->
+<!--            <li><strong>请求时间:</strong> {{ taskDetails.judgeTime }}</li>-->
+<!--            <li><strong>申请方:</strong> {{ taskDetails.from }}</li>-->
+<!--            <li><strong>裁决方式:</strong> {{ taskDetails.judgeMode }}</li>-->
+<!--            <li><strong>裁决结果:</strong> {{ taskDetails.judgeResult || '暂无裁决结果' }}</li>-->
+<!--            <li><strong>处理时间:</strong> {{ taskDetails.judgeTime }}</li>-->
+<!--          </ul>-->
+<!--        </div>-->
+<!--        <div class="buttons">-->
+<!--          <button @click="closeTaskDialog">关闭</button>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </div>-->
     <div class="task-modal">
-     <!--头部-->
+      <!--头部-->
       <div class="task-modal-header" v-drag>
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon">
@@ -12,9 +34,9 @@
       </div>
       <!--主体-->
       <div class="task-modal-body">
-      <!--按钮组-->
+        <!--按钮组-->
         <div class="button-group">
-        <button class="button" style="margin-left: 10px;" @click="editTask">添加任务</button>
+          <button class="button" style="margin-left: 10px;" @click="editTask1">添加任务</button>
           <input class="input-search" v-model="searchKeyword" placeholder="Try typing new..." />
           <button class="button" style="margin-right:20px" @click="searchTask">搜索</button>
           <el-button
@@ -24,7 +46,7 @@
           >
             删除
           </el-button>
-          </div>
+        </div>
         <!--添加任务的弹窗-->
         <div v-if="dialogVisible" class="custom-dialog-overlay">
           <div
@@ -43,17 +65,20 @@
                 <div class="form-row multi-input">
                   <div class="form-column">
                     <label for="taskName" class="input-label">*任务名称</label>
-                    <input v-model="taskForm.taskName" type="text" id="taskName" class="input-field" placeholder="请输入任务名称" />
+                    <input v-model="taskForm.taskName" type="text" id="taskName" class="input-field" placeholder="请输入任务名称" @input="checkTaskName" />
+                    <span v-if="taskForm.taskNameError" class="error-message" style="color:white; font-size:16px; margin-left: 16px;">
+                    {{ taskForm.taskNameError }}
+                    </span>
                   </div>
-                  <div class="form-column">
-                    <label for="taskNameXiangding" class="input-label">*想定任务名称</label>
-                    <select v-model="taskForm.taskNameXiangding" id="taskNameXiangding" class="input-field">
-                      <option value="电子干扰">电子干扰</option>
-                      <option value="光学干扰">光学干扰</option>
-                      <option value="通信干扰">通信干扰</option>
-                      <option value="电子对抗">电子对抗</option>
-                    </select>
-                  </div>
+                  <!--                  <div class="form-column">-->
+                  <!--                    <label for="taskNameXiangding" class="input-label">*想定任务名称</label>-->
+                  <!--                    <select v-model="taskForm.taskNameXiangding" id="taskNameXiangding" class="input-field">-->
+                  <!--                      <option value="电子干扰">电子干扰</option>-->
+                  <!--                      <option value="光学干扰">光学干扰</option>-->
+                  <!--                      <option value="通信干扰">通信干扰</option>-->
+                  <!--                      <option value="电子对抗">电子对抗</option>-->
+                  <!--                    </select>-->
+                  <!--                  </div>-->
                 </div>
 
                 <div class="form-row">
@@ -65,22 +90,18 @@
 
                 <hr class="divider" />
 
-                <div v-for="index in count" :key="index">
+                <div v-for="(index, idx) in count" :key="idx">
                   <div class="form-row multi-input">
                     <div class="form-column">
-                      <label :for="'judgementModel' + index" class="input-label">*裁决模型</label>
+                      <label :for="'judgementModel' + idx" class="input-label">*裁决模型</label>
                       <select :id="'judgementModel' + idx" class="input-field" v-model="taskForm.judgementModels[idx]" @change="onJudgementModelChange(idx)">
-                        <option v-for="model in judgementModelOptions" :key="model.modelId" :value="model.modelName">{{ model.modelName }}</option>
-<!--                        <option value="电子干扰">电子干扰</option>-->
-<!--                        <option value="光学干扰">光学干扰</option>-->
-<!--                        <option value="通信干扰">通信干扰</option>-->
-<!--                        <option value="电子对抗">电子对抗</option>-->
+                        <option v-for="model in judgementModelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
                       </select>
                     </div>
                     <div class="form-column">
                       <label :for="'effectModel' + idx" class="input-label">*效果模型</label>
                       <select :id="'effectModel' + idx" class="input-field" v-model="taskForm.effectModels[idx]">
-                        <option v-for="effect in effectModelOptions[idx]" :key="effect.effectId" :value="effect.effectName">{{ effect.effectName }}</option>
+                        <option v-for="effect in effectModelOptions[idx]" :key="effect.effectId" :value="effect.effectId">{{ effect.effectName }}</option>
                       </select>
                     </div>
                   </div>
@@ -88,7 +109,7 @@
                     <div class="form-column">
                       <label :for="'judgementRule' + idx" class="input-label">*裁决规则</label>
                       <select :id="'judgementRule' + idx" class="input-field" v-model="taskForm.judgementRules[idx]">
-                        <option v-for="rule in calculationRuleOptions[idx]" :key="rule.ruleId" :value="rule.ruleName">{{ rule.ruleName }}</option>
+                        <option v-for="rule in calculationRuleOptions[idx]" :key="rule.ruleId" :value="rule.ruleId">{{ rule.ruleName }}</option>
                       </select>
                     </div>
                     <div class="form-column">
@@ -105,6 +126,7 @@
                   </div>
                 </div>
                 <button class="add-button" @click="increaseCount">+</button>
+<!--                <button class="add-button" @click="decreaseCount">-</button>-->
               </div>
             </div>
 
@@ -115,7 +137,7 @@
             </div>
           </div>
         </div>
-       <!--el-table-->
+        <!--el-table-->
         <div class="table-container">
           <el-table
               :data="displayData"
@@ -131,19 +153,19 @@
               style="width: 80%"
           >
             <el-table-column type="selection" width="60" />
-            <el-table-column prop="taskName" label="任务名称" width="160" />
-            <el-table-column prop="taskNameXiangding" label="想定任务名称" width="180" />
+            <el-table-column prop="taskName" label="任务名称" width="200" />
+            <!--            <el-table-column prop="taskNameXiangding" label="想定任务名称" width="180" />-->
             <el-table-column
                 prop="createTime"
                 label="创建时间"
                 width="180"
-                sortable
+                sortablef
                 :sort-method="sortCreateTime"
                 @sort-change="handleSortChange"
             />
-            <el-table-column prop="judgementModel" label="裁决模型" width="140" />
-            <el-table-column prop="judgementRule" label="裁决规则" width="140" />
-            <el-table-column prop="judgementMethod" label="裁决方式" width="140" />
+            <el-table-column prop="judgementModel" label="裁决模型" width="180" />
+            <el-table-column prop="judgementRule" label="裁决规则" width="180" />
+            <el-table-column prop="judgementMethod" label="裁决方式" width="180" />
             <el-table-column prop="judgementEffect" label="裁决效果" width="160" />
             <el-table-column prop="taskStatus" label="任务状态" width="160">
               <template #default="scope">
@@ -216,18 +238,28 @@
 </template>
 
 <script setup lang="ts">
-import {defineProps, defineEmits, ref, onMounted, computed, toRaw } from 'vue';
+import {defineProps, defineEmits, ref, onMounted, computed, toRaw, reactive} from 'vue';
 import  { ElTable, ElTableColumn, ElPagination, ElButton  } from 'element-plus';
 import axios from "axios";
+import { eventBus } from '../../utils/eventBus';
+import { useTaskStore } from '../../stores/counter.js';
 
 // 配置环境变量
 // const apiUrl = process.env.VUE_APP_API_BASE_URL;
+
+const isTaskDialogVisible = ref(false);  // 控制任务执行弹窗显示
+const taskDialogMessage = ref('');  // 弹窗内容
+
+// 关闭弹窗
+const closeTaskDialog = () => {
+  isTaskDialogVisible.value = false;  // 关闭弹窗
+};
 
 const props = defineProps({
   isShow: Boolean
 });
 
-const emit = defineEmits(['update:isShow']);
+const emit = defineEmits(['update:isShow','openNewRuleDialog', 'taskCompleted']);
 
 const closeModal = () => {
   emit('update:isShow', false);
@@ -299,245 +331,245 @@ defineExpose({
 
 // 模拟表格数据
 let tableData = ref([
-  {
-    id: 1,
-    taskName: 'xxxxxx方案1',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-01 10:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则1',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型1',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
-  {
-    id: 2,
-    taskName: 'xxxxxx方案2',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-02 11:00',
-    judgementModel: '雷达反制',
-    judgementRule: '规则2',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型2',
-    taskStatus: '未开始',
-    actions: '编辑',
-  },
-  {
-    id: 3,
-    taskName: 'xxxxxx方案3',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-03 12:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则3',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型3',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 4,
-    taskName: 'xxxxxx方案4',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-04 13:00',
-    judgementModel: '通信拦截',
-    judgementRule: '规则4',
-    judgementMethod: '手动裁决',
-    judgementEffect: '多个效果模型',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
-  {
-    id: 5,
-    taskName: 'xxxxxx方案5',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-05 14:00',
-    judgementModel: '雷达反制',
-    judgementRule: '规则5',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型5',
-    taskStatus: '未开始',
-    actions: '编辑',
-  },
-  {
-    id: 6,
-    taskName: 'xxxxxx方案6',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-06 15:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则6',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型6',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 7,
-    taskName: 'xxxxxx方案7',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-07 16:00',
-    judgementModel: '通信拦截',
-    judgementRule: '规则7',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型7',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
-  {
-    id: 8,
-    taskName: 'xxxxxx方案8',
-    createTime: '24-05-08 17:00',
-    judgementModel: '雷达反制',
-    judgementRule: '规则8',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型8',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 9,
-    taskName: 'xxxxxx方案9',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-09 18:00',
-    judgementModel: '电子干扰',
-    judgementRule: '规则9',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型9',
-    taskStatus: '未开始',
-    actions: '编辑',
-  },
-  {
-    id: 10,
-    taskName: 'xxxxxx方案10',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-10 19:00',
-    judgementModel: '通信拦截',
-    judgementRule: '规则10',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型10',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 11,
-    taskName: 'xxxxxx方案11',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-11 10:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则11',
-    judgementMethod: '手动裁决',
-    judgementEffect: '多个效果模型',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
-  {
-    id: 12,
-    taskName: 'xxxxxx方案12',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-12 11:30',
-    judgementModel: '电子干扰',
-    judgementRule: '规则12',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型12',
-    taskStatus: '未开始',
-    actions: '编辑',
-  },
-  {
-    id: 13,
-    taskName: 'xxxxxx方案13',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-13 12:30',
-    judgementModel: '通信拦截',
-    judgementRule: '规则13',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型13',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 14,
-    taskName: 'xxxxxx方案14',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-14 13:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则14',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型14',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
-  {
-    id: 15,
-    taskName: 'xxxxxx方案15',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-15 14:30',
-    judgementModel: '电子干扰',
-    judgementRule: '规则15',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型15',
-    taskStatus: '未开始',
-    actions: '编辑',
-  },
-  {
-    id: 16,
-    taskName: 'xxxxxx方案16',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-16 15:30',
-    judgementModel: '通信拦截',
-    judgementRule: '规则16',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型16',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 17,
-    taskName: 'xxxxxx方案17',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-17 16:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则17',
-    judgementMethod: '手动裁决',
-    judgementEffect: '多个效果模型',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
-  {
-    id: 18,
-    taskName: 'xxxxxx方案18',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-18 17:30',
-    judgementModel: '电子干扰',
-    judgementRule: '规则18',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型18',
-    taskStatus: '未开始',
-    actions: '编辑',
-  },
-  {
-    id: 19,
-    taskName: 'xxxxxx方案19',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-19 18:30',
-    judgementModel: '通信拦截',
-    judgementRule: '规则19',
-    judgementMethod: '手动裁决',
-    judgementEffect: '效果模型19',
-    taskStatus: '已完成',
-    actions: '编辑',
-  },
-  {
-    id: 20,
-    taskName: 'xxxxxx方案20',
-    taskNameXiangding: '电子干扰',
-    createTime: '24-05-20 19:30',
-    judgementModel: '雷达反制',
-    judgementRule: '规则20',
-    judgementMethod: '自动裁决',
-    judgementEffect: '效果模型20',
-    taskStatus: '进行中',
-    actions: '编辑',
-  },
+  // {
+  //   taskId: 1,
+  //   taskName: 'xxxxxx方案1',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-01 10:00',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则1',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型1',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 2,
+  //   taskName: 'xxxxxx方案2',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-02 11:00',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则2',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型2',
+  //   taskStatus: '未开始',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 3,
+  //   taskName: 'xxxxxx方案3',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-03 12:00',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则3',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型3',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 4,
+  //   taskName: 'xxxxxx方案4',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-04 13:00',
+  //   judgementModel: '通信拦截',
+  //   judgementRule: '规则4',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '多个效果模型',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 5,
+  //   taskName: 'xxxxxx方案5',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-05 14:00',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则5',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型5',
+  //   taskStatus: '未开始',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 6,
+  //   taskName: 'xxxxxx方案6',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-06 15:00',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则6',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型6',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 7,
+  //   taskName: 'xxxxxx方案7',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-07 16:00',
+  //   judgementModel: '通信拦截',
+  //   judgementRule: '规则7',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型7',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 8,
+  //   taskName: 'xxxxxx方案8',
+  //   createTime: '24-05-08 17:00',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则8',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型8',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 9,
+  //   taskName: 'xxxxxx方案9',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-09 18:00',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则9',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型9',
+  //   taskStatus: '未开始',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 10,
+  //   taskName: 'xxxxxx方案10',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-10 19:00',
+  //   judgementModel: '通信拦截',
+  //   judgementRule: '规则10',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型10',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 11,
+  //   taskName: 'xxxxxx方案11',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-11 10:30',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则11',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '多个效果模型',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 12,
+  //   taskName: 'xxxxxx方案12',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-12 11:30',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则12',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型12',
+  //   taskStatus: '未开始',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 13,
+  //   taskName: 'xxxxxx方案13',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-13 12:30',
+  //   judgementModel: '通信拦截',
+  //   judgementRule: '规则13',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型13',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 14,
+  //   taskName: 'xxxxxx方案14',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-14 13:30',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则14',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型14',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 15,
+  //   taskName: 'xxxxxx方案15',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-15 14:30',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则15',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型15',
+  //   taskStatus: '未开始',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 16,
+  //   taskName: 'xxxxxx方案16',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-16 15:30',
+  //   judgementModel: '通信拦截',
+  //   judgementRule: '规则16',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型16',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 17,
+  //   taskName: 'xxxxxx方案17',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-17 16:30',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则17',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '多个效果模型',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 18,
+  //   taskName: 'xxxxxx方案18',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-18 17:30',
+  //   judgementModel: '电子干扰',
+  //   judgementRule: '规则18',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型18',
+  //   taskStatus: '未开始',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 19,
+  //   taskName: 'xxxxxx方案19',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-19 18:30',
+  //   judgementModel: '通信拦截',
+  //   judgementRule: '规则19',
+  //   judgementMethod: '手动裁决',
+  //   judgementEffect: '效果模型19',
+  //   taskStatus: '已完成',
+  //   actions: '编辑',
+  // },
+  // {
+  //   taskId: 20,
+  //   taskName: 'xxxxxx方案20',
+  //   taskNameXiangding: '电子干扰',
+  //   createTime: '24-05-20 19:30',
+  //   judgementModel: '雷达反制',
+  //   judgementRule: '规则20',
+  //   judgementMethod: '自动裁决',
+  //   judgementEffect: '效果模型20',
+  //   taskStatus: '进行中',
+  //   actions: '编辑',
+  // },
 ]);
 
 const tableDataRecords = ref([]);
@@ -547,11 +579,26 @@ const judgementModels = ref([]);  // 裁决模型选项
 const effectModels = ref([]);     // 效果模型选项
 const judgementRules = ref([]);   // 裁决规则选项
 
+// // 查询任务名是否重复
+// const checkTaskNameDuplicate = (existingTaskNames) => {
+//   // 获取输入框的任务名称
+//   const taskName = taskForm.taskName.trim().toLowerCase();
+//
+//   // 检查任务名称是否重复
+//   if (existingTaskNames.includes(taskName)) {
+//     taskForm.taskNameError = '任务名称不能重复';
+//   } else {
+//     taskForm.taskNameError = '';
+//   }
+// };
+
+const existingTaskNames = ref([]);
+
 // 查询表格内容
 const fetchTableData = async (
     taskName = "",
     current = 0,
-    pageSize = 10,
+    pageSize = 100,
     sortField = "",
     sortOrder = ""
 ) => {
@@ -559,7 +606,7 @@ const fetchTableData = async (
     console.log("正在请求数据...");
 
     //请求体
-    const response = await axios.post(`http://192.168.1.200:3001/api/judgeTask/pageList`, {
+    const response = await axios.post(`http://192.168.43.234:3001/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,
@@ -569,8 +616,12 @@ const fetchTableData = async (
 
     console.log("response.data.data", response.data.data);
 
-    tableDataRecords.value = response.data.data;
+    tableDataRecords.value = response.data.data.records;
     console.log("tableDataRecords.value", tableDataRecords.value)
+
+    const existingTaskNames = tableDataRecords.value.map(record => record.task.taskName.toLowerCase());
+    // checkTaskNameDuplicate(existingTaskNames);
+    console.log("existingTaskNames",existingTaskNames)
 
     const newData = response.data.data.records;
     console.log("response.data.data.records:", newData);
@@ -593,28 +644,29 @@ const fetchTableData = async (
     newData.forEach((record, index) => {
       const judgementModel = (record.taskRuleRelVOList || [])
           .map(rule => rule.modelName)
-          .filter(item => item)  // 过滤掉空值
+          .filter(item => item)
           .join('; ') || '';
 
       const judgementRule = (record.taskRuleRelVOList || [])
           .map(rule => rule.ruleName)
-          .filter(item => item)  // 过滤掉空值
+          .filter(item => item)
           .join('; ') || '';
 
       const judgementMethod = (record.taskRuleRelVOList || [])
-          .map(rule => judgeModeMap[rule.judgeMode])  // 使用映射转换
-          .filter(item => item)  // 过滤掉空值
+          .map(rule => judgeModeMap[rule.judgeMode])
+          .filter(item => item)
           .join('; ') || '';
 
       const judgementEffect = (record.taskRuleRelVOList || [])
           .map(rule => rule.effectName)
-          .filter(item => item)  // 过滤掉空值
+          .filter(item => item)
           .join('; ') || '';
 
 
       if (tableData.value[index]) {
+        tableData.value[index].taskId = record.task.id || tableData.value[index].taskId;
         tableData.value[index].taskName = record.task.taskName || tableData.value[index].taskName;
-        tableData.value[index].taskNameXiangding = record.task.remark || tableData.value[index].taskNameXiangding;
+        // tableData.value[index].taskNameXiangding = record.task.remark || tableData.value[index].taskNameXiangding;
         tableData.value[index].createTime = record.task.createTime || tableData.value[index].createTime;
         tableData.value[index].taskStatus = record.task.status || tableData.value[index].taskStatus;
 
@@ -630,7 +682,7 @@ const fetchTableData = async (
           taskName: record.task.taskName || '',
           taskNameXiangding: record.task.remark || '',
           createTime: record.task.createTime || '',
-          judgementModel: judgementModel || '',
+          judgementModel: judgementModel || '光能模型',
           judgementRule: judgementRule || '',
           judgementMethod: judgementMethod || '',
           judgementEffect: judgementEffect || '',
@@ -648,6 +700,18 @@ const fetchTableData = async (
     console.log("更新后的表格数据:", tableData.value);
   } catch (err) {
     console.error("请求数据失败:", err);
+  }
+};
+
+const checkTaskName = () => {
+  // 如果输入的任务名称与现有任务名称重复，设置错误信息
+  console.log(777777777777777777777777)
+  if (existingTaskNames.value.includes(taskForm.taskName)) {
+    console.log('存在')
+    taskForm.taskNameError = '任务名称已存在';
+  } else {
+    taskForm.taskNameError = ''; // 没有重复时清除错误信息
+    console.log("不存在")
   }
 };
 
@@ -719,14 +783,14 @@ const handleSelectionChange = (selectedRows) => {
 // 控制添加任务的对话框
 const dialogVisible = ref(false);
 
-const taskForm = ref({
+const taskForm = reactive({
   taskName: '',
-  taskNameXiangding: '',
+  taskNameError: '',
   createTime: '',
-  judgementMethods: ['auto'],
-  judgementModels: [''],
-  effectModels: [''],
-  judgementRules: [''],
+  judgementModels: [] as string[],
+  effectModels: [] as string[][],
+  judgementRules: [] as string[],
+  judgementMethods: [] as string[],
 });
 
 const judgementModelOptions = ref<string[]>([]); // 裁决模型的下拉选项
@@ -738,7 +802,7 @@ const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
 // 获取裁决任务选项
 const fetchJudgementModels = async () => {
   try {
-    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: '',
@@ -747,31 +811,34 @@ const fetchJudgementModels = async () => {
       modelType: ''  // 可以根据需要传入 modelType 来筛选
     });
 
-    // 处理接口返回的数据，将 records 数组中的 modelName 提取出来
     if (response.data && response.data.data && Array.isArray(response.data.data.records)) {
       // 提取 modelName 并赋值给下拉框
       judgementModelOptions.value = response.data.data.records.map((item) => ({
         modelId: item.modelId,
         modelName: item.modelName
       }));
-      console.log("JudgementModels",response.data)
+      console.log("JudgementModels", response.data,  judgementModelOptions.value) ;
 
       // 创建映射关系：modelName -> modelId
       modelNameToIdMap.value = response.data.data.records.reduce((map, item) => {
         map[item.modelName] = item.modelId;
         return map;
       }, {});
-      console.log("modelNameToIdMap.value", modelNameToIdMap.value)
+      console.log("modelNameToIdMap.value", modelNameToIdMap.value);
     }
   } catch (error) {
     console.error("获取裁决模型失败:", error);
   }
 };
 
+const ruleRecords = ref([]);
+
+// const ruleNameToIdMap = ref({});
+
 // 获取效果模型和裁决规则
 const fetchEffectModelsAndRules = async (modelName, index) => {
   try {
-    const response = await axios.get('http://192.168.1.200:3001/api/judgeModel/getInfo', {
+    const response = await axios.get('http://192.168.43.234:3001/api/judgeModel/getInfo', {
       params: {
         modelName: modelName
       }
@@ -792,11 +859,11 @@ const fetchEffectModelsAndRules = async (modelName, index) => {
       })) || [];
 
       // 创建映射关系：ruleName -> ruleId
-      ruleNameToIdMap.value[modelName] = calculationRuleOptions.value[index].reduce((map, rule) => {
+      ruleNameToIdMap.value[modelName] = calculationRules.reduce((map, rule) => {
         map[rule.ruleName] = rule.ruleId;
         return map;
       }, {});
-      console.log("ruleNameToIdMap.value", ruleNameToIdMap.value)
+      console.log("ruleNameToIdMap.value", ruleNameToIdMap.value);
     }
   } catch (error) {
     console.error("获取效果模型和裁决规则失败:", error);
@@ -805,8 +872,10 @@ const fetchEffectModelsAndRules = async (modelName, index) => {
 
 // 当裁决模型切换时触发效果模型和裁决规则选项的更新
 const onJudgementModelChange = (index: number) => {
-  const selectedModelName = taskForm.value.judgementModels[index];
-  fetchEffectModelsAndRules(selectedModelName, index);
+  const modelName = judgementModelOptions.value.find(model => model.modelId === taskForm.judgementModels[index])?.modelName;
+  if (modelName) {
+    fetchEffectModelsAndRules(modelName, index);
+  }
 };
 
 // 控制动态生成下拉框的数量
@@ -814,18 +883,19 @@ const count = ref(1);
 
 // 增加动态生成的下拉框组数
 const increaseCount = () => {
-  console.log("taskForm.value",taskForm.value)
-  count.value += 1;
-  taskForm.value.judgementModels.push('');
-  taskForm.value.effectModels.push('');
-  taskForm.value.judgementRules.push('');
-  taskForm.value.judgementMethods.push('');
-  console.log("taskForm.value",taskForm.value)
+  count.value++; // 增加组数
+  taskForm.judgementModels.push('');  // 为每组裁决模型新增空项
+  taskForm.effectModels.push('');     // 为每组效果模型新增空数组
+  taskForm.judgementRules.push('');   // 为每组裁决规则新增空项
+  taskForm.judgementMethods.push(''); // 为每组裁决方式新增空项
 };
+
+let endPoint = ref('');
 
 // 编辑任务
 const editTask = (task) => {
   console.log("taskForm.value", taskForm.value);
+  endPoint.value = 'update';
 
   // 填充基本字段数据
   taskForm.value = { ...task };
@@ -842,17 +912,54 @@ const editTask = (task) => {
   console.log("taskForm.value", taskForm.value);
 };
 
+const editTask1 = (task) => {
+
+  endPoint.value = 'add';
+
+
+  // // 填充基本字段数据
+  // taskForm.value = { ...task };
+  //
+  // taskForm.value.taskId = task.id || taskForm.value.taskId;
+  // taskForm.value.judgementModels = task.judgementModel ? [task.judgementModel] : [''];
+  // taskForm.value.effectModels = task.judgementEffect ? [task.judgementEffect] : [''];
+  // taskForm.value.judgementRules = task.judgementRule ? [task.judgementRule] : [''];
+  // taskForm.value.judgementMethods = task.judgementMethod ? [task.judgementMethod] : [''];
+  const now = new Date();
+  const formattedDate = now.getFullYear() + '-' +
+      (now.getMonth() + 1).toString().padStart(2, '0') + '-' +
+      now.getDate().toString().padStart(2, '0') + ' ' +
+      now.getHours().toString().padStart(2, '0') + ':' +
+      now.getMinutes().toString().padStart(2, '0') + ':' +
+      now.getSeconds().toString().padStart(2, '0');
+
+  // 默认设置创建时间
+  taskForm.createTime = formattedDate;
+
+  // 打开对话框
+  dialogVisible.value = true;
+
+};
+
 // 提交任务
 const submitTask = async () => {
   try {
+    checkTaskName();
+    if (taskForm.taskNameError) {
+      // 如果任务名称已存在，阻止提交并显示错误
+      console.error('任务名称已存在');
+      return;
+    }
+
     const newTaskData = {
       task: {
-        createTime: taskForm.value.createTime || new Date().toLocaleString(),
-        taskName: taskForm.value.taskName,
-        remark: '默认', // 你可以根据需要修改这个默认值
-        traceTaskCode: '默认任务编号', // 你可以根据需要修改这个默认值
+        taskId: '',
+        createTime: taskForm.createTime || new Date().toLocaleString(),
+        taskName: taskForm.taskName,
+        remark: '默认',
+        traceTaskCode: '101',
       },
-      taskRuleRelList: []  // 存放关联的裁决模型和规则
+      taskRuleRelList: []
     };
 
     // 裁决方式映射
@@ -862,38 +969,61 @@ const submitTask = async () => {
     };
 
     // 遍历 taskForm 中的裁决模型、裁决规则等，填充 taskRuleRelList
-    for (let i = 0; i < taskForm.value.judgementModels.length; i++) {
-      const modelName = taskForm.value.judgementModels[i];
-      const ruleName = taskForm.value.judgementRules[i];
-      const judgeMethod = taskForm.value.judgementMethods[i];
+    for (let i = 0; i < taskForm.judgementModels.length; i++) {
+      const modelName = taskForm.judgementModels[i];
+      const ruleId = taskForm.judgementRules[i];
+      const judgeMethod = taskForm.judgementMethods[i];
+      const judgeEffect = taskForm.effectModels[i];
 
-      // 根据映射关系获取 modelId 和 ruleId
-      const modelId = modelNameToIdMap.value[modelName] || 2;  // 获取 modelId
-      console.log("modelId", modelId, modelNameToIdMap.value[modelName]);
+      // 获取裁决模式
+      const validJudgeMode = judgeMethodMapping[judgeMethod] || "manual";  // 选择裁决方式
 
-      const ruleId = 3;  // 这里是静态赋值，修改时可以从其他数据源获取
-
-      const validJudgeMode = judgeMethodMapping[judgeMethod] || "auto";
-
-      // 生成 taskRuleRelList 条目
+      // 将 ruleId 和 modelId 等数据推送到 taskRuleRelList
       newTaskData.taskRuleRelList.push({
-        modelId: modelId,
-        modelType: '',
-        judgeMode: validJudgeMode,
-        ruleId: ruleId
+        modelId: modelName,  // 使用 modelName（裁决模型名称）直接传递
+        modelType: judgeEffect,  // 裁决效果模型
+        judgeMode: validJudgeMode,  // 裁决方式
+        ruleId: ruleId  // 直接传递 ruleId
       });
+      console.log("newTaskData.taskRuleRelList", newTaskData.taskRuleRelList);
     }
 
-    // 判断是新增任务还是编辑任务
-    const endpoint = taskForm.value.taskName ? '/api/judgeTask/update' : '/api/judgeTask/add';
-    const method = taskForm.value.taskName ? 'POST' : 'POST';
+    console.log("taskForm.value.taskName ", taskForm.taskName);
 
-    if (taskForm.value.taskId) {
-      newTaskData.task.taskId = taskForm.value.taskId;  // 如果是编辑任务，传入 taskId
+    // 判断是新增任务还是编辑任务
+    const endpoint = endPoint.value;
+    console.log("endPoint", endPoint);
+    console.log("typeof endPoint.value:", typeof endPoint.value);
+    const method = taskForm.taskName ? 'POST' : 'POST';
+    console.log("tableDataRecords", tableDataRecords.value);
+
+    if (endPoint.value === 'update') {
+      console.log(11111111111111111);
+      // 将 tableDataRecords.value 转换为数组
+      const records = Array.from(tableDataRecords.value);
+      let foundTask = null;
+      for (let i = 0; i < records.length; i++) {
+        if (records[i].task.taskName === taskForm.taskName) {
+          foundTask = records[i];
+          break;
+        }
+      }
+      if (foundTask) {
+        newTaskData.task.taskId = foundTask.task.taskId;
+        console.log("taskId", newTaskData.task.taskId);
+        delete newTaskData.task.createTime;
+      } else {
+        console.error('未找到对应的任务');
+        return;
+      }
+    }
+
+    if (endpoint === 'add') {
+      delete newTaskData.task.taskId;
     }
 
     // 提交任务数据
-    const response = await fetch(`http://192.168.1.200:3001${endpoint}`, {
+    const response = await fetch(`http://192.168.43.234:3001/api/judgeTask/${endpoint}`, {
       method: method,
       headers: {
         'Content-Type': 'application/json'
@@ -904,15 +1034,18 @@ const submitTask = async () => {
     const result = await response.json();
     if (response.ok) {
       console.log('任务保存成功', result);
-      // 可以做一些成功后的处理，如跳转或刷新列表等
+      dialogVisible.value = false;
+      fetchTableData();
     } else {
+      // 当后端返回的响应不是200时弹出提示框
       console.error('任务保存失败', result);
+      alert('任务保存失败，请重新输入');
     }
   } catch (error) {
     console.error('提交任务时发生错误', error);
+    alert('发生错误，请稍后再试');
   }
 };
-
 
 // const submitTask = async () => {
 //   try {
@@ -959,7 +1092,7 @@ const handleDialogClose = () => {
   taskForm.value = {
     id: 0,
     taskName: "",
-    taskNameXiangding: "",
+    // taskNameXiangding: "",
     createTime: "",
     judgementRule: "",
     judgementModel: "",
@@ -1016,10 +1149,91 @@ const deleteTask = async (row: any) => {
 };
 
 // 执行按钮
-const executeTask = (row) => {
-  const taskIndex = tableData.value.findIndex((task) => task.id === row.id);
-  if (taskIndex !== -1) {
-    tableData.value[taskIndex].taskStatus = "已完成";
+const executeTask = async (row) => {
+  const taskName = row.taskName;  // 获取选中的任务名称
+
+  // 先请求任务列表
+  try {
+    const response = await axios.post('http://192.168.43.234:3001/api/judgeTask/pageList', {
+      current: 1,  // 这里的 current 和 pageSize 可以根据需要设置
+      pageSize: 10,
+      sortField: '',  // 可按需传入
+      sortOrder: '',  // 可按需传入
+      taskName: taskName,  // 用 taskName 进行筛选
+    });
+
+    // 假设返回的数据结构是： response.data.data.records
+    const tasks = response.data.data.records;
+    console.log("tasks",tasks)
+
+    // 在任务列表中找到对应的任务
+    const task = tasks.find((item) => item.task.taskName === taskName);
+
+    if (task) {
+      // 更新任务状态为已完成
+      const taskIndex = tableData.value.findIndex((task) => task.id === row.id);
+      if (taskIndex !== -1) {
+        tableData.value[taskIndex].taskStatus = '已完成';
+      }
+
+      // 延迟 0.5 秒后发送事件
+      setTimeout(() => {
+        emit('taskCompleted', row);  // 发送任务完成事件
+        emit('update:isShow', false);  // 关闭显示对话框
+
+        // 准备请求体并发送到后端
+        setTimeout(async () => {
+          try {
+            const requestData = {
+              task: {
+                createTime: task.task.createTime,  // 从获取到的任务数据中填充
+                taskName: task.task.taskName,
+                remark: task.task.remark || '',
+                traceTaskCode: task.task.traceTaskCode || '101',  // 默认值或从任务中提取
+              },
+              taskRuleRelList: task.taskRuleRelVOList.map((model, index) => ({
+                modelId: model.modelId,  // 假设 taskRuleRelVOList 是任务中的数组
+                modelType: model.modelType || '',  // 如果有 modelType 字段
+                judgeMode: model.judgeMode || 'manual',  // 如果有 judgeMode 字段
+                ruleId: model.ruleId || 1,  // 默认 ruleId
+              })),
+            };
+
+            // 发送 POST 请求到后端
+            const executeResponse = await axios.post('http://192.168.43.234:3001/api/judgeTask/execute', requestData);
+            if (executeResponse.status === 200) {
+              console.log('请求成功', executeResponse.data);
+              // alert('任务执行成功!');
+              const responseData = executeResponse.data;
+              console.log("responseData", responseData)
+              const fromValue = executeResponse.data.data.from;
+              console.log("fromValue",fromValue)
+              const taskStore = useTaskStore();
+              taskStore.setFrom(fromValue);
+              taskStore.setResponseData(responseData);
+              // eventBus.$emit('fromDataReceived', fromValue);
+
+              // 显示自定义弹窗
+              taskDialogMessage.value = `任务执行成功! 返回数据: ${fromValue}`;
+              console.log("taskDialogMessage",taskDialogMessage.value)
+              isTaskDialogVisible.value = true;
+              console.log("isTaskDialogVisible.value", isTaskDialogVisible.value)
+            } else {
+              console.error('请求失败', executeResponse.data);
+            }
+          } catch (error) {
+            console.error('执行任务时发生错误', error);
+          }
+        }, 500);  // 延迟500ms发送请求
+
+      }, 500);  // 延迟500ms后发送 emit 事件
+
+    } else {
+      console.error('未找到对应的任务');
+    }
+
+  } catch (error) {
+    console.error('获取任务列表时发生错误', error);
   }
 };
 
@@ -1539,4 +1753,83 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
+
+/*!* 遮罩层样式 *!*/
+/*.overlay {*/
+/*  position: fixed;*/
+/*  height: 500px;*/
+/*  width: 500px;*/
+/*  top: 0;*/
+/*  left: 0;*/
+/*  right: 0;*/
+/*  bottom: 0;*/
+/*  background: white;*/
+/*  display: flex;*/
+/*  justify-content: center;*/
+/*  align-items: center;*/
+/*  z-index: 1000;  !* 保证弹窗在最前面 *!*/
+/*}*/
+
+/*!* 弹窗样式 *!*/
+/*.modal {*/
+/*  background-color: white;*/
+/*  padding: 20px;*/
+/*  border-radius: 8px;*/
+/*  width: 600px;*/
+/*  max-height: 80%;*/
+/*  overflow-y: auto;*/
+/*  text-align: left;*/
+/*  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
+/*  z-index: 1001;*/
+/*}*/
+
+/*!* 弹窗标题样式 *!*/
+/*h3 {*/
+/*  margin-bottom: 20px;*/
+/*  font-size: 20px;*/
+/*  font-weight: bold;*/
+/*  color: #333;*/
+/*}*/
+
+/*!* 弹窗消息内容样式 *!*/
+/*p {*/
+/*  font-size: 16px;*/
+/*  color: #555;*/
+/*  margin-bottom: 20px;*/
+/*}*/
+
+/*!* 列表项样式 *!*/
+/*.json-data ul {*/
+/*  list-style-type: none;*/
+/*  padding: 0;*/
+/*}*/
+
+/*.json-data li {*/
+/*  margin-bottom: 10px;*/
+/*}*/
+
+/*.json-data li strong {*/
+/*  color: #333;*/
+/*  font-weight: 600;*/
+/*}*/
+
+/*!* 按钮样式 *!*/
+/*.buttons {*/
+/*  text-align: center;*/
+/*  margin-top: 20px;*/
+/*}*/
+
+/*.buttons button {*/
+/*  padding: 10px 20px;*/
+/*  border: none;*/
+/*  background-color: #007BFF;*/
+/*  color: white;*/
+/*  cursor: pointer;*/
+/*  border-radius: 5px;*/
+/*  font-size: 16px;*/
+/*}*/
+
+/*.buttons button:hover {*/
+/*  background-color: #0056b3;*/
+/*}*/
 </style>

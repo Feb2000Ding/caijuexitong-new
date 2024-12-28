@@ -16,8 +16,7 @@
           </ul>
         </div>
         <div class="scroll-content">
-          <vue3-seamless-scroll class="scroll-list" :list="list" :hover="true" :step="0.4" :wheel="true"
-            :isWatch="true">
+          <vue3-seamless-scroll class="scroll-list" :list="list" :hover="true" :step="0.4" :wheel="true" :isWatch="true">
             <ul class="scroll-ul" v-for="(item, index) in list" :key="index">
               <li class="scroll-li">
                 <span class="taskName">{{ item.taskName }}</span>
@@ -50,127 +49,87 @@
 </template>
 
 <script setup>
-import { Vue3SeamlessScroll } from "vue3-seamless-scroll"
-import { ref, onMounted } from "vue";
-import axios from "axios";
+import { Vue3SeamlessScroll } from "vue3-seamless-scroll";
+import {ref, onMounted, watch} from "vue";
+import { useTaskStore } from "@/stores/counter.js";
 
+// 引入 Pinia store
+const taskStore = useTaskStore();
+
+// 定义 list 变量，用于存储裁决结果列表
 const list = ref([
   {
-    taskName: '202100300001',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '红方',
-    judgeMethod: '自动裁决',
-    result: 1,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300002',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '红方',
-    judgeMethod: '自动裁决',
-    result: 2,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300003',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '蓝方',
-    judgeMethod: '自动裁决',
-    result: 3,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300004',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '红方',
-    judgeMethod: '自动裁决',
-    result: 1,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300005',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '蓝方',
-    judgeMethod: '手动裁决',
-    result: 2,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300006',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '红方',
-    judgeMethod: '手动裁决',
-    result: 1,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300007',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '蓝方',
-    judgeMethod: '自动裁决',
-    result: 2,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300008',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '红方',
-    judgeMethod: '手动裁决',
-    result: 1,
-    judgeTime: '2021-12-15 16:22:30'
-  },
-  {
-    taskName: '202100300009',
-    judgeType: 'xxx',
-    requestTime: '2021-12-15 16:20:30',
-    side: '蓝方',
-    judgeMethod: '手动裁决',
-    result: 2,
-    judgeTime: '2021-12-15 16:22:30'
-  },
+    taskName: "任务1",
+    judgeType: "裁决类型1",
+    requestTime: "2024-12-27 10:00:00",
+    side: "红方",
+    judgeMethod: "手动裁决",
+    result: 1, // 1 表示毁伤
+    judgeTime: "2024-12-27 10:05:00",
+  }
 ]);
 
-// // 请求数据
-// const fetchData = async () => {
-//   try {
-//     // 发起 HTTP 请求
-//     const response = await axios.post("http://192.168.1.200:3001/api/judgeRequest/pageList", {
-//       current: 1,
-//       pageSize: 10,
-//       sortField: "",
-//       sortOrder: "",
-//     });
-//
-//     // 从响应中提取数据并格式化
-//     const records = response.data?.data?.records || [];
-//     list.value = records.map((record) => ({
-//       taskName: record.taskName || "202100300008",
-//       judgeType: record.judgeType || "xxx",
-//       requestTime: record.requestTime || "2021-12-15 16:20:30",
-//       side: record.side || "红方",
-//       judgeMethod: record.judgeMethod || "手动裁决",
-//       result: record.result || 1,
-//       judgeTime: record.judgeTime || "2021-12-15 16:22:30",
-//     }));
-//   } catch (error) {
-//     console.error("获取数据失败:", error);
-//   }
-// };
+// 裁决方式映射
+const judgeModeMapping = {
+  manual: "手动裁决",
+  Aotu: "自动裁决",
+  // 你可以根据需要增加其他类型的映射
+  default: "未知裁决方式"
+};
 
-onMounted(() => {
-  // fetchData();
-});
+// 监听 taskStore.responseData 变化
+watch(
+    () => taskStore.responseData,
+
+    (newResponseData) => {
+      const responseData = newResponseData?.data;
+      console.log("responseData", responseData);
+
+      // 判断 responseData 是否是一个对象，并将其转换为数组
+      if (responseData && typeof responseData === 'object' && !Array.isArray(responseData)) {
+        console.log("Wrapping responseData into an array", responseData);
+
+        // 根据裁决方式映射
+        const newItem = {
+          taskName: responseData.taskName || "未定义任务",  // 任务名称
+          judgeType: responseData.judgeModelType || "未知类型",  // 裁决类型
+          requestTime: responseData.requestTime || "2021-12-15 16:20:30",  // 请求时间
+          side: responseData.from || "红方",  // 申请方
+          judgeMethod: judgeModeMapping[responseData.judgeMode] || judgeModeMapping.default,  // 裁决方式
+          result: responseData.judgeResult ? responseData.judgeResult.targetResults[0] : 1,  // 裁决结果
+          judgeTime: responseData.judgeTime || "2021-12-15 16:22:30",  // 处理时间
+        };
+
+        // 将新的任务添加到 list 中
+        list.value.push(newItem);
+        console.log("list.value", list.value);
+
+      } else if (Array.isArray(responseData)) {
+        // 如果 responseData 本身就是数组，遍历并追加每一项
+        responseData.forEach((item) => {
+          // 根据裁决方式映射
+          const newItem = {
+            taskName: item.taskName || "未定义任务",  // 任务名称
+            judgeType: item.judgeModelType || "未知类型",  // 裁决类型
+            requestTime: item.requestTime || "2021-12-15 16:20:30",  // 请求时间
+            side: item.from || "红方",  // 申请方
+            judgeMethod: judgeModeMapping[item.judgeMode] || judgeModeMapping.default,  // 裁决方式
+            result: item.judgeResult ? item.judgeResult.targetResults[0] : 1,  // 裁决结果
+            judgeTime: item.judgeTime || "2021-12-15 16:22:30",  // 处理时间
+          };
+
+          // 将每个新的任务添加到 list 中
+          list.value.push(newItem);
+        });
+        console.log("list.value", list.value);
+      }
+    },
+    { immediate: true }  // 让它在组件加载时也立即执行一次
+);
 </script>
 
 <style lang="scss" scoped>
+/* 样式保持不变 */
 .table-panel {
   height: 100%;
   overflow: hidden;

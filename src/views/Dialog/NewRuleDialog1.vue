@@ -74,7 +74,7 @@
                 </select>
                 <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
               </div>
-<!--              <div style="background-color: black;width:200px;height:200px;"></div>-->
+              <!--              <div style="background-color: black;width:200px;height:200px;"></div>-->
               <!-- 在每个范围数据行添加删除范围按钮 -->
               <div class="indicater-container" v-for="(indicator, indicatorIndex) in condition.indicators" :key="indicatorIndex">
                 <!-- 第一行：指标名称和最大值 -->
@@ -174,11 +174,18 @@
 <script setup>
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue';
 import axios from 'axios';
-import { useTaskStore } from '../../stores/counter.js';
+import { useTaskStore } from '@/stores/counter.js';
+import { useRuleStore } from '@/stores/counter.js';
 
 // 获取 store
 const taskStore = useTaskStore()
 const taskForm = taskStore.getTaskForm
+console.log("taskForm", taskForm)
+
+const ruleStore = useRuleStore()
+console.log("ruleStoreinnewDialog",ruleStore)
+const ruleId = ruleStore.ruleId;
+console.log("ruleId",ruleId)
 
 const props = defineProps({
   isShow: Boolean,
@@ -517,7 +524,7 @@ const removeTargetType = (index) => {
 const saveRuleData = async () => {
   const payload = {
     rule: {
-      ruleName: formData.value.ruleName,  // 规则名称
+      ruleId: rule,
       modelId: 1,  // 模型ID (你可以根据需要调整)
       damageLevels: formData.value.damageLevels.map(level => ({
         name: level.name  // 对应的毁伤等级
@@ -556,7 +563,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.43.234:3001/api/calRule/add', payload);
+    const response = await axios.post('http://192.168.43.234:3001/api/calRule/update', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -571,6 +578,23 @@ const saveRuleData = async () => {
   }
 };
 
+// const ruleStore = useRuleStore();
+// console.log("ruleStore",ruleStore)
+
+const fetchRuleData = async (ruleId) => {
+  try {
+    console.log(111111111111111111)
+    const response = await fetch(`http://192.168.43.234:3001/api/calRule/view/${ruleId}`);
+    const data = await response.json();
+    console.log("ruledata",data)
+    if (data.code === 0) {
+      taskForm.value = data.data;  // 更新 taskForm 数据
+    }
+  } catch (error) {
+    console.error('Error fetching rule data:', error);
+  }
+};
+
 // 关闭对话框
 const closeDialog = () => {
   emit('update:isShow', false);
@@ -578,7 +602,13 @@ const closeDialog = () => {
 
 onMounted(() => {
   getModels();
-
+  const ruleStore = useRuleStore()
+  console.log("ruleStoreinnewDialog",ruleStore)
+  const ruleId = ruleStore.ruleId;
+  console.log("ruleId",ruleId)
+  if (ruleId) {
+    fetchRuleData(ruleId);
+  }
 });
 </script>
 

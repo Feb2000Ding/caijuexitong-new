@@ -16,81 +16,9 @@
         <!-- 按钮组 -->
         <div class="button-group">
           <button class="button" style="margin-left: 10px;" @click="exportRule">导出规则</button>
-          <button class="button" style="margin-right: 20px" @click="editTask">添加规则</button>
+          <button class="button" style="margin-right: 20px" @click="editTask1">添加规则</button>
 <!--          <button class="button" style="margin-right: 20px; background-color: #C33333" @click="deleteTask">删除</button>-->
         </div>
-
-        <!-- 编辑规则的弹窗 -->
-<!--        <div v-if="dialogVisible" class="custom-dialog-overlay">-->
-<!--          <div class="custom-dialog">-->
-<!--            <div class="dialog-header">-->
-<!--              <span class="header-title">编辑裁决规则</span>-->
-<!--              <button class="close-button" @click="handleDialogClose">X</button>-->
-<!--            </div>-->
-<!--            <div class="dialog-content">-->
-<!--              <div class="form-container">-->
-<!--                <div class="form-row">-->
-<!--                  <label for="ruleName" class="input-label">*规则名称</label>-->
-<!--                  <input type="text" id="ruleName" class="input-field" v-model="taskForm.ruleName" placeholder="请输入任务名称" />-->
-<!--                </div>-->
-<!--                <div class="form-row">-->
-<!--                  <label for="judgeModel" class="input-label">*裁决模型</label>-->
-<!--                  <select id="judgeModel" class="input-field" v-model="taskForm.judgeModel">-->
-<!--                    <option value="电子干扰">电子干扰</option>-->
-<!--                    <option value="光学干扰">光学干扰</option>-->
-<!--                    <option value="通信干扰">通信干扰</option>-->
-<!--                    <option value="电子对抗">电子对抗</option>-->
-<!--                  </select>-->
-<!--                </div>-->
-<!--                <div class="form-row">-->
-<!--                  <label for="destroyLevel" class="input-label">*毁伤等级</label>-->
-<!--                  <select id="destroyLevel" class="input-field" v-model="taskForm.destroyLevel">-->
-<!--                    <option value="轻微">轻微</option>-->
-<!--                    <option value="严重">严重</option>-->
-<!--                    <option value="干扰">干扰</option>-->
-<!--                  </select>-->
-<!--                </div>-->
-<!--                <div class="form-row">-->
-<!--                  <label for="createTime" class="input-label">*创建时间</label>-->
-<!--                  <input type="text" id="createTime" class="input-field" v-model="taskForm.createTime" placeholder="2024年xx月xx日" />-->
-<!--                </div>-->
-<!--                <div class="form-row">-->
-<!--                  <label for="targetType" class="input-label">*目标类型</label>-->
-<!--                  <input type="text" id="targetType" class="input-field" v-model="taskForm.targetType" placeholder="电子干扰xxxxxx" />-->
-<!--                </div>-->
-<!--                <div class="form-row">-->
-<!--                  <label for="finalLevel" class="input-label">*最终指标</label>-->
-<!--                  <input type="text" id="finalLevel" class="input-field" v-model="taskForm.finalLevel" placeholder="电子干扰xxxxxx" />-->
-<!--                  <select id="shuzhifanwei" class="input-field"  placeholder="数值范围">-->
-<!--                    <option value="范围1">范围1</option>-->
-<!--                    <option value="范围2">范围2</option>-->
-<!--                    <option value="范围3">范围3</option>-->
-<!--                  </select>-->
-<!--                  <select id="zuidazhi" class="input-field" placeholder="最大值">-->
-<!--                    <option value="100">100</option>-->
-<!--                    <option value="200">200</option>-->
-<!--                    <option value="300">300</option>-->
-<!--                  </select>-->
-<!--                  <select id="zuixiaozhi" class="input-field"  placeholder="最小值">-->
-<!--                    <option value="10">10</option>-->
-<!--                    <option value="20">20</option>-->
-<!--                    <option value="30">30</option>-->
-<!--                  </select>-->
-<!--                  <select id="huishangdengji" class="input-field" placeholder="毁伤等级">-->
-<!--                    <option value="轻微">轻微</option>-->
-<!--                    <option value="严重">严重</option>-->
-<!--                    <option value="干扰">干扰</option>-->
-<!--                  </select>-->
-<!--                </div>-->
-<!--              </div>-->
-<!--            </div>-->
-<!--            <div class="dialog-footer">-->
-<!--              <button class="button" @click="handleDialogClose">取消</button>-->
-<!--              <button class="button" @click="submitTask">确认</button>-->
-<!--            </div>-->
-<!--          </div>-->
-<!--        </div>-->
-
         <!-- el-table -->
         <div class="table-container">
           <el-table :data="paginatedData" class="custom-table" :head-cell-style="{ height: '80px', lineHeight: '80px' }" :row-style="{ height: '55px' }" ref="multipleTableRef">
@@ -98,7 +26,38 @@
             <el-table-column prop="ruleName" label="规则名称" width="210" />
             <el-table-column prop="judgeModel" label="裁决模型" width="280" />
             <el-table-column prop="createTime" label="创建时间" width="250" />
-            <el-table-column prop="parameters" label="参数" width="700" />
+<!--            <el-table-column prop="parameters" label="参数" width="700" />-->
+            <!-- 缩略显示模式：显示部分内容 -->
+            <el-table-column v-if="!isExpandedView" prop="parameters" label="参数" width="700">
+              <template #default="scope">
+                <div
+                    class="text-container"
+                    :style="{ height: scope.row.isExpanded ? 'auto' : '40px' }"
+                >
+                    <div
+                        class="text-content"
+                        @click="toggleExpand(scope.row)"
+                    >
+                      {{ scope.row.parameters }}
+                    </div>
+                </div>
+              </template>
+            </el-table-column>
+
+            <!-- 展开显示模式：显示完整内容 -->
+            <el-table-column
+                v-if="isExpandedView"
+                prop="parameters"
+                label="参数"
+                width="700"
+            >
+              <template #default="scope">
+                <div class="expanded-content" @click="toggleExpand(scope.row)">
+                  <p>{{ scope.row.parameters }}</p>
+                  <!-- 提示消息 -->
+                </div>
+              </template>
+            </el-table-column>
             <el-table-column prop="actions" label="操作" width="250">
               <template #default="scope">
                 <el-button class="custom-button" size="mini" @click="editTask(scope.row)">编辑</el-button>
@@ -124,16 +83,19 @@
 
 
 <script setup lang="ts">
-import {defineProps, defineEmits, ref, onMounted, computed, toRaw} from 'vue';
-import  { ElTable, ElTableColumn, ElPagination, ElButton  } from 'element-plus';
+import {defineProps, defineEmits, ref, onMounted, computed, toRaw, watch} from 'vue';
+import  { ElTable, ElTableColumn, ElPagination, ElButton,  ElTooltip  } from 'element-plus';
 import axios from "axios";
+import { useTaskStore } from '../../stores/counter.js';
 // import {toRaw} from "vue/dist/vue";
 
 const props = defineProps({
-  isShow: Boolean
+  isShow: Boolean,  // 控制弹窗显示与否
+  ruleData: Object,  // 规则数据
+  editModeMessage: String,  // 编辑模式信息
 });
 
-const emit = defineEmits(['update:isShow']);
+const emit = defineEmits(['update:isShow', 'openNewRuleDialog']);
 
 const closeModal = () => {
   emit('update:isShow', false);
@@ -143,92 +105,117 @@ const exportRule = () => {
   alert('导出成功！');
 };
 
+// const toggleExpand = (row) => {
+//   row.isExpanded = !row.isExpanded;
+// }
+
+// 控制是否切换到展开视图
+const isExpandedView = ref(false);
+
+// 切换参数列的视图
+function toggleExpand(row) {
+  isExpandedView.value = !isExpandedView.value;  // 切换视图显示方式
+  console.log("isExpandedView.value", isExpandedView.value)
+}
+
+// 获取简略文本
+function getShortenedText(text) {
+  const maxLength = 50;
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
 // 模拟表格数据
 let tableData = ref([
-  { id: 1, ruleName: 'xxxxxx方案1', createTime: '24-05-01 10:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 2, ruleName: 'xxxxxx方案2', createTime: '24-05-02 11:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 3, ruleName: 'xxxxxx方案3', createTime: '24-05-03 12:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 4, ruleName: 'xxxxxx方案4', createTime: '24-05-04 13:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 5, ruleName: 'xxxxxx方案5', createTime: '24-05-05 14:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 6, ruleName: 'xxxxxx方案6', createTime: '24-05-06 15:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 7, ruleName: 'xxxxxx方案7', createTime: '24-05-07 16:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 8, ruleName: 'xxxxxx方案8', createTime: '24-05-08 17:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 9, ruleName: 'xxxxxx方案9', createTime: '24-05-09 18:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 10, ruleName: 'xxxxxx方案10', createTime: '24-05-10 19:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 11, ruleName: 'xxxxxx方案11', createTime: '24-05-11 20:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 12, ruleName: 'xxxxxx方案12', createTime: '24-05-12 21:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 13, ruleName: 'xxxxxx方案13', createTime: '24-05-13 22:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 14, ruleName: 'xxxxxx方案14', createTime: '24-05-14 23:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 15, ruleName: 'xxxxxx方案15', createTime: '24-05-15 24:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 16, ruleName: 'xxxxxx方案16', createTime: '24-05-16 01:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 17, ruleName: 'xxxxxx方案17', createTime: '24-05-17 02:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 18, ruleName: 'xxxxxx方案18', createTime: '24-05-18 03:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 19, ruleName: 'xxxxxx方案19', createTime: '24-05-19 04:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
-  { id: 20, ruleName: 'xxxxxx方案20', createTime: '24-05-20 05:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' }
+  // { id: 1, ruleName: 'xxxxxx方案1', createTime: '24-05-01 10:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 2, ruleName: 'xxxxxx方案2', createTime: '24-05-02 11:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 3, ruleName: 'xxxxxx方案3', createTime: '24-05-03 12:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 4, ruleName: 'xxxxxx方案4', createTime: '24-05-04 13:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 5, ruleName: 'xxxxxx方案5', createTime: '24-05-05 14:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 6, ruleName: 'xxxxxx方案6', createTime: '24-05-06 15:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 7, ruleName: 'xxxxxx方案7', createTime: '24-05-07 16:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 8, ruleName: 'xxxxxx方案8', createTime: '24-05-08 17:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 9, ruleName: 'xxxxxx方案9', createTime: '24-05-09 18:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 10, ruleName: 'xxxxxx方案10', createTime: '24-05-10 19:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 11, ruleName: 'xxxxxx方案11', createTime: '24-05-11 20:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 12, ruleName: 'xxxxxx方案12', createTime: '24-05-12 21:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 13, ruleName: 'xxxxxx方案13', createTime: '24-05-13 22:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 14, ruleName: 'xxxxxx方案14', createTime: '24-05-14 23:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 15, ruleName: 'xxxxxx方案15', createTime: '24-05-15 24:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 16, ruleName: 'xxxxxx方案16', createTime: '24-05-16 01:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 17, ruleName: 'xxxxxx方案17', createTime: '24-05-17 02:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 18, ruleName: 'xxxxxx方案18', createTime: '24-05-18 03:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 19, ruleName: 'xxxxxx方案19', createTime: '24-05-19 04:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 20, ruleName: 'xxxxxx方案20', createTime: '24-05-20 05:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' }
 ]);
 
-// 分页查询方法
-const fetchTableData = async (
-    ruleName = "",
-    current = 0,
-    pageSize = 10,
-    sortField = "",
-    sortOrder = ""
-) => {
-  try {
-    console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.1.200:3001/api/calRule/pageList", {
-      current,
-      pageSize,
-      sortField,
+// 格式化 parameters 字段（你可以修改这个函数来适应需要的格式）
+const formatParameters = (targetTypes: any[]) => {
+  let formattedParameters = "";
 
-      sortOrder,
-      ruleName,
-    });
-
-    console.log("response.data.data", response.data.data);
-    console.log("response.data.data.records", response.data.data.records);
-
-    const newData = response.data.data.records;
-    console.log("请求到的新数据:", newData);
-
-    // 遍历返回的数据并更新 tableData
-    newData.forEach((record, index) => {
-      // 如果对应索引已有数据，更新指定字段；否则添加新数据
-      if (tableData.value[index]) {
-        tableData.value[index].ruleName = record.task.ruleName;
-        tableData.value[index].createTime = record.task.createTime;
-        tableData.value[index].judgeModel = record.task.judgeModel;
-        tableData.value[index].parameters = record.task.parameters;
-        tableData.value[index].destroyLevel = record.task.destroyLevel;
-        tableData.value[index].judgementMethod = record.task.judgementMethod;
-        tableData.value[index].targetType = record.task.targetType;
-        tableData.value[index].finalLevel = record.task.finalLevel;
-      } else {
-        // 添加新数据，保留默认值
-        tableData.value.push({
-          id: record.task.taskId || '',
-          ruleName: record.task.ruleName,
-          createTime: record.task.createTime,
-          judgeModel: record.task.judgeModel,
-          parameters: record.task.parameters,
-          destroyLevel: record.task.destroyLevel,
-          judgementMethod: record.task.judgementMethod,
-          targetType: record.task.targetType,
-          finalLevel: record.task.finalLevel,
-          actions: '编辑',
-        });
-      }
-    });
-
-    // 如果返回的数据少于现有数据，截断多余数据
-    if (newData.length < tableData.value.length) {
-      tableData.value.splice(newData.length);
+  targetTypes.forEach((target, targetIndex) => {
+    if (targetIndex > 0) {
+      formattedParameters += "\n"; // 每个目标类型之间换行
     }
 
+    formattedParameters += `目标类型: ${target.targetType}\n`;
+
+    target.groups.forEach((group: any) => {
+      formattedParameters += `  指标组: ${group.groupName}\n`;
+
+      group.indicators.forEach((indicator: any) => {
+        const indicatorRanges = indicator.ranges.map((range: any) => {
+          return `    ${indicator.indicatorName}: ${range.minValue} - ${range.maxValue} (权重: ${range.weight})`;
+        }).join("\n");
+
+        formattedParameters += indicatorRanges + "\n";
+      });
+    });
+  });
+
+  return formattedParameters;
+};
+
+// 请求表格数据的函数（如果需要从后端获取数据）
+const fetchTableData = async () => {
+  try {
+    console.log("正在请求数据...");
+    const response = await axios.post("http://192.168.43.234:3001/api/calRule/pageList", {
+      current: 1,
+      pageSize: 100,
+    });
+
+    const newData = response.data.data.records;
+    tableData.value = [];
+
+    // 定义一个映射对象来存储 ruleName 和 ruleId 的关系
+    const ruleNameToIdMap = {};
+
+    newData.forEach((record) => {
+      const parameters = formatParameters(record.targetTypes);  // 格式化 parameters 字段
+
+      // 将 ruleName 和 ruleId 存入映射对象
+      ruleNameToIdMap[record.ruleName] = record.ruleId;
+
+      tableData.value.push({
+        id: record.id,
+        ruleName: record.ruleName,
+        judgeModel: record.modelName,
+        createTime: record.createTime,
+        parameters,
+        destroyLevel: record.destroyLevel,
+        judgementMethod: record.judgementMethod,
+        targetType: record.targetType,
+        finalLevel: record.finalLevel,
+        actions: '编辑',
+      });
+    });
+
+    // 将映射关系存储到组件的响应式变量或 Pinia store
+    tableData.value.ruleNameToIdMap = ruleNameToIdMap;
+
     console.log("更新后的表格数据:", tableData.value);
-  } catch (err) {
-    console.error("请求数据失败:", err);
+  } catch (error) {
+    console.error("请求数据失败:", error);
   }
 };
 
@@ -259,21 +246,44 @@ const dialogVisible = ref(false);
 const taskForm = ref({
   id: 0,
   ruleName: '',
-  createTime: '',
-  judgeModel: '',
-  parameters: '',
-  destroyLevel: '',
-  judgementMethod: '',
-  targetType: '',
+  model: '',        // 裁决模型
+  addTime: '',      // 添加时间
+  destroyLevel: '', // 毁伤等级
+  targetType: '',   // 目标类型
   finalLevel: '进行中',
   actions: '编辑',
+  damageLevels: [{ name: '', definition: 'level1' }],  // 毁伤等级列表
+  conditions: [{ group: '', logic: 'AND', indicators: [{ minValue: '', maxValue: 'numeric', ranges: [] }] }], // 条件和指标列表
+  ranges: [{ minValue: '', maxValue: '', destroyLevel: '' }],  // 范围
 });
 
+const type = ref('');
 // 编辑任务
 const editTask = (task) => {
-  taskForm.value = { ...task }; // 填充选中的任务数据到表单
+  const taskStore = useTaskStore();
+  taskStore.setTaskForm(task);
+  taskForm.value = { ...task };
+  // 获取选中行的 ruleName
+  const ruleName = task.ruleName;
+  console.log("ruleName",ruleName)
+
+  // 获取对应的 ruleId
+  const ruleId = tableData.value.ruleNameToIdMap[ruleName];
+  console.log("ruleID",ruleId)
+
+  // 使用 Pinia store 更新 ruleId
+  taskStore.setRuleId(ruleId);
+  // dialogVisible.value = true;
+  // type.value = 'edit';
+  emit('openNewRuleDialog1', );
+};
+
+// 添加任务
+const editTask1 = (task) => {
+  // taskForm.value = { ...task }; // 填充选中的任务数据到表单
   // dialogVisible.value = true;  // 打开对话框
-  emit('openNewRuleDialog');
+  type.value = 'add';
+  emit('openNewRuleDialog', );
 };
 
 // 提交任务
@@ -322,10 +332,14 @@ const submitTask = async () => {
 // 删除任务
 const deleteTask = async (row) => {
   try {
-    console.log("要删除的任务ID:", row.id);
+    console.log("要删除的项",tableData,tableData[row.id])
+    console.log("要删除的任务对象:", row);  // 打印选中的任务对象
+    console.log("要删除的任务ID:", row.id);  // 打印选中的任务的 id
 
-    // 删除本地的数据
+    // 确认 tableData.value 和 row.id 是否匹配
     const index = tableData.value.findIndex(item => item.id === row.id);
+    console.log("找到的索引:", index);  // 打印找到的索引，查看是否匹配正确
+
     if (index !== -1) {
       tableData.value.splice(index, 1);  // 删除对应的任务项
       console.log("删除后的 tableData:", tableData.value);
@@ -372,7 +386,15 @@ onMounted(() => {
     width: `${parentWidth * 0.8}px`,
     height: `${parentHeight * 0.8}px`
   };
-  fetchTableData();
+  if (props.isShow) {
+    fetchTableData();
+  }
+});
+
+watch(() => props.isShow, (newVal) => {
+  if (newVal) {
+    fetchTableData();
+  }
 });
 </script>
 
@@ -380,7 +402,7 @@ onMounted(() => {
 .task-modal {
   /*width: 60vw;*/
   /*height: 60vh;*/
-  background: linear-gradient(to bottom, rgba(9, 25, 37, 0.75), rgba(44, 65, 94, 0.75));
+  /*background: linear-gradient(to bottom, rgba(9, 25, 37, 0.75), rgba(44, 65, 94, 0.75));*/
   /*background:black;*/
   border-radius: 8px;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
@@ -457,7 +479,11 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
+  height: 100%;
   padding: 0 20px;
+  padding-bottom: 20px;
+  background: linear-gradient(to bottom, rgba(9, 25, 37, 0.75), rgba(44, 65, 94, 0.75));
 }
 
 .button-group {
@@ -482,131 +508,6 @@ onMounted(() => {
   font-size: 17px;
   cursor: pointer;
   transition: background-color 0.3s;
-}
-
-.input-search {
-  flex: 1;
-  background-color: white;
-  margin-left: 700px;
-  margin-right: 20px;
-  color: black;
-  font-size: 14px;
-  font-weight: 500px;
-  border: none;
-  border-radius: 5px;
-  padding: 8px;
-}
-
-.input-field::placeholder {
-  color: #ccc;
-}
-
-.custom-dialog-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(0, 0, 0, 0.5);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 999;
-}
-
-/* 对话框 */
-.custom-dialog {
-  background: white;
-  width: 70%;
-  height: 50%;
-  border-radius: 8px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* 对话框头部 */
-.dialog-header {
-  height: 40px;
-  background: linear-gradient(to bottom, #0F5B9D, #498ED7);
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  padding: 0 10px;
-}
-
-/* 标题文字 */
-.header-title {
-  color: white;
-  font-family: "微软雅黑 Bold", "微软雅黑", sans-serif;
-  font-weight: 700;
-  font-style: normal;
-  font-size: 16px;
-  margin-left: 10px;
-  flex-grow: 1;
-}
-
-/* 关闭按钮 */
-.close-button {
-  background: none;
-  border: none;
-  font-size: 20px;
-  color: white;
-  cursor: pointer;
-}
-
-/* 对话框内容 */
-.dialog-content {
-  flex: 1;
-  padding: 20px;
-  overflow-y: auto;
-  background-color: #155997;
-}
-
-.form-container {
-  width: 70%;
-  margin: 0 auto;
-}
-
-.form-row {
-  display: flex;
-  /*flex-wrap: wrap;*/
-  /*justify-content: space-between;*/
-  align-items: center;
-  margin-bottom: 15px;
-  gap: 40px;
-}
-
-.input-label {
-  font-size: 16px;
-  color: #fff;
-  margin-right: 5px;
-  /*flex-basis: calc(50% - 20px);*/
-  flex-basis: 30%;
-  text-align: right;
-}
-
-.input-field {
-  background-color: #000;
-  color: #fff;
-  padding: 8px;
-  /*width: 100%;*/
-  /*width: calc(50% - 20px);*/
-  flex-basis: calc(50% - 160px);
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.radio-group {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-}
-
-.radio-label {
-  font-size: 16px;
-  color: #fff;
-  margin-right: 10px;
 }
 
 .radio-group label {
@@ -647,14 +548,62 @@ onMounted(() => {
 
 .table-container {
   width: calc(100% - 30px);
-  max-width: calc(100% );
+  /*max-width: calc(100% );*/
   margin: 15px 15px;
-  padding: 0;
   box-sizing: border-box;
+  padding-bottom: 20px;
+  flex-grow: 1;
+  overflow-y: auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-container::-webkit-scrollbar {
+  width: 0;  /* 隐藏垂直滚动条 */
+  height: 0; /* 隐藏水平滚动条 */
 }
 
 .custom-table {
   width: 100%;
+}
+
+.text-container {
+  transition: height 0.3s ease-in-out; /* 添加过渡效果 */
+  overflow: hidden; /* 隐藏超出部分 */
+  height: 40px; /* 默认收缩的高度，可以根据需要调整 */
+  display: block;
+}
+
+.text-container.expanded {
+  height: auto; /* 展开时高度自适应 */
+}
+
+.text-content {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  max-width: 100%;
+}
+
+.text-content.expanded {
+  white-space: normal; /* 允许换行 */
+  word-wrap: break-word; /* 防止长单词不换行 */
+  max-width: 700px; /* 宽度扩展 */
+  line-height: 20px;
+}
+
+.text-content {
+  max-width: 680px;
+  height: 20px;
+  line-height: 20px;
+  display: block;
+}
+
+.text-content.expanded {
+  max-width: 700px;
+  line-height: normal;
 }
 
 /*.custom-table .el-table__header-wrapper {*/
@@ -677,12 +626,17 @@ onMounted(() => {
 }
 
 .custom-pagination {
-  margin-top: 20px;
-  margin-bottom: 15px;
+  margin-top: 10px;
   display: flex;
   justify-content: center;
   align-items: center;
-  bottom: 0;
+  margin-bottom: 10px;
+  /*margin-top: 20px;*/
+  /*margin-bottom: 15px;*/
+  /*display: flex;*/
+  /*justify-content: center;*/
+  /*align-items: center;*/
+  /*bottom: 0;*/
 }
 
 .custom-pagination .el-button {

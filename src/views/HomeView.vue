@@ -2,6 +2,7 @@
   <div class="home-page">
     <div class="pg-header">裁决及效果模拟软件</div>
     <div class="pg-content">
+      <HeadPanel />
       <div class="left-border"></div>
       <div class="right-border"></div>
       <div class="bottom-border"></div>
@@ -24,13 +25,22 @@
           :isShow="isShowRuleDialog"
           @update:isShow="isShowRuleDialog = $event"
           @openNewRuleDialog="openNewRuleDialog"
+          @openNewRuleDialog1="openNewRuleDialog1"
           :ruleData="ruleData"
+          @taskCompleted="handleTaskCompleted"
       />
       <EffectDialog :isShow="isShowEffectDialog" @update:isShow="isShowEffectDialog = $event"/>
       <NewRuleDialog
           :isShow="isShowNewRuleDialog"
           @update:isShow="isShowNewRuleDialog = $event"
           @saveRuleData="saveRuleData"
+          :isEditMode="isEditMode"
+          :currentTaskData="currentTaskData"
+      />
+      <NewRuleDialog1
+          :isShow="isShowNewRuleDialog1"
+          @update:isShow="isShowNewRuleDialog1 = $event"
+          @saveRuleData1="saveRuleData1"
       />
     </div>
   </div>
@@ -51,6 +61,8 @@ import RuleDialog from "./Dialog/RuleDialog.vue"
 import ModelDialog from "./Dialog/ModelDialog.vue"
 import EffectDialog from "./Dialog/EffectDialog.vue"
 import NewRuleDialog from "./Dialog/NewRuleDialog.vue"
+import NewRuleDialog1 from "./Dialog/NewRuleDialog1.vue"
+import HeadPanel from './HeadPanel/HeadPanel.vue'
 
 // 弹窗控制
 const isShowTaskDialog = ref(false);
@@ -58,7 +70,10 @@ const isShowModelDialog = ref(false);
 const isShowRuleDialog = ref(false);
 const isShowEffectDialog = ref(false);
 const isShowNewRuleDialog = ref(false);
+const isShowNewRuleDialog1 = ref(false);
 const ruleData = ref(null);
+const isEditMode = ref(false);
+const currentTaskData = ref(null);
 
 const showTaskDialog = () => {
   isShowTaskDialog.value = true;
@@ -77,16 +92,58 @@ const showNewRuleDialog = () => {
   isShowNewRuleDialog.value = true;
 }
 
+const showNewRuleDialog1 = () => {
+  isShowNewRuleDialog1.value = true;
+}
+
 const openNewRuleDialog = () => {
   isShowRuleDialog.value = false;  // 关闭 RuleDialog
   isShowNewRuleDialog.value = true;  // 打开 NewRuleDialog
+  console.log(99999999999999999999999999999)
+  console.log(isShowRuleDialog.value,isShowNewRuleDialog.value)
+  // console.log("mode",mode)
+  console.log("type",type)
+  // console.log('Received actionType:', actionType);  // 打印 'editTask' 或 'addTask'
+  // console.log('Received task:', task);  // 打印任务数据
+  // console.log('Received type:', type);  // 打印 'edit' 或 'add'
+  isEditMode.value = type === 'editTask';
+  currentTaskData.value = task || null;
+  // isEditMode.value = !!task;  // 如果传递了 task 则为编辑模式
+  // currentTaskData.value = task ? { ...task } : null;  // 编辑时填充数据
 };
 
+const openNewRuleDialog1 = () => {
+  isShowRuleDialog.value = false;  // 关闭 RuleDialog
+  isShowNewRuleDialog1.value = true;  // 打开 NewRuleDialog
+  console.log(88888888888888888888888)
+  console.log(isShowRuleDialog.value,isShowNewRuleDialog.value)
+  // console.log("mode",mode)
+  console.log("type",type)
+  // console.log('Received actionType:', actionType);  // 打印 'editTask' 或 'addTask'
+  // console.log('Received task:', task);  // 打印任务数据
+  // console.log('Received type:', type);  // 打印 'edit' 或 'add'
+  isEditMode.value = type === 'editTask';
+  currentTaskData.value = task || null;
+  // isEditMode.value = !!task;  // 如果传递了 task 则为编辑模式
+  // currentTaskData.value = task ? { ...task } : null;  // 编辑时填充数据
+};
 
 const saveRuleData = (newData) => {
   ruleData.value = newData;  // 保存数据
   isShowNewRuleDialog.value = false;  // 关闭 NewRuleDialog
+  isShowNewRuleDialog1.value = false;
   isShowRuleDialog.value = true;  // 打开 RuleDialog
+};
+
+const saveRuleData1 = (newData) => {
+  ruleData.value = newData;  // 保存数据
+  isShowNewRuleDialog1.value = false;  // 关闭 NewRuleDialog
+  isShowRuleDialog.value = true;  // 打开 RuleDialog
+};
+
+
+const handleTaskCompleted = () => {
+  isShowRuleDialog.value = false;
 };
 </script>
 
@@ -113,66 +170,71 @@ const saveRuleData = (newData) => {
   .pg-content {
     flex: 1;
     position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    overflow: hidden;
+  }
 
-    .left-border {
-      position: absolute;
-      left: 0;
-      top: calc(50% - 322.5px);
-      width: 42px;
-      height: 645px;
-      background: url('@/assets/images/bg-border-left.png') no-repeat center center;
-      background-size: 100% 100%;
-    }
+  .left-border {
+    position: absolute;
+    left: 0;
+    top: calc(50% - 322.5px);
+    width: 42px;
+    height: 645px;
+    background: url('@/assets/images/bg-border-left.png') no-repeat center center;
+    background-size: 100% 100%;
+  }
 
-    .right-border {
-      position: absolute;
-      right: 0;
-      top: calc(50% - 322.5px);
-      width: 42px;
-      height: 645px;
-      background: url('@/assets/images/bg-border-right.png') no-repeat center center;
-      background-size: 100% 100%;
-    }
+  .right-border {
+    position: absolute;
+    right: 0;
+    top: calc(50% - 322.5px);
+    width: 42px;
+    height: 645px;
+    background: url('@/assets/images/bg-border-right.png') no-repeat center center;
+    background-size: 100% 100%;
+  }
 
-    .bottom-border {
-      position: absolute;
-      bottom: 0;
-      left: calc(50% - 930px);
-      width: 1860px;
-      height: 32px;
-      background: url('@/assets/images/bg-border-bottom.png') no-repeat center center;
-      background-size: 100% 100%;
-    }
+  .bottom-border {
+    position: absolute;
+    bottom: 0;
+    left: calc(50% - 930px);
+    width: 1860px;
+    height: 32px;
+    background: url('@/assets/images/bg-border-bottom.png') no-repeat center center;
+    background-size: 100% 100%;
+  }
 
-    .left-panel {
-      position: absolute;
-      left: 42px;
-      top: -30px;
-      bottom: 32px;
-      width: 460px;
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      background-color: rgba(0, 0, 0, 0.2);
-    }
+  .left-panel {
+    position: absolute;
+    left: 42px;
+    top: -30px;
+    bottom: 32px;
+    width: 460px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
 
-    .right-panel {
-      position: absolute;
-      right: 42px;
-      top: -30px;
-      bottom: 32px;
-      width: 460px;
-      padding: 10px;
-      background-color: rgba(0, 0, 0, 0.2);
-    }
+  .right-panel {
+    position: absolute;
+    right: 42px;
+    top: -30px;
+    bottom: 32px;
+    width: 460px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+  }
 
-    .bottom-panel {
-      position: absolute;
-      left: 510px;
-      right: 510px;
-      bottom: 32px;
-      height: 200px;
-    }
+  .bottom-panel {
+    position: absolute;
+    left: 510px;
+    right: 510px;
+    bottom: 32px;
+    height: 200px;
   }
 }
 </style>
