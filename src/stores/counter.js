@@ -45,6 +45,7 @@ export const useTaskStore = defineStore('task', {
     },
     setRuleId(ruleId) {
       this.ruleId = ruleId;
+      console.log("this.ruleId", this.ruleId);
     }
   },
   getters: {
@@ -60,6 +61,7 @@ export const useRuleStore = defineStore('rule', () => {
   // 设置 ruleId
   const setRuleId = (id) => {
     ruleId.value = id;
+    console.log("this.ruleId", this.ruleId);
   };
 
   return {

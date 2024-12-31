@@ -1,28 +1,6 @@
 <template>
   <!-- 裁决任务管理弹窗-->
   <div v-if="isShow" class="task-modal-overlay">
-    <!--    裁决结果的弹窗-->
-<!--    <div v-if="isTaskDialogVisible" class="overlay">-->
-<!--      11111111111111111111111111111111111111111111111111111-->
-<!--      <div class="modal">-->
-<!--        <h3>任务执行结果</h3>-->
-<!--        <p>{{ taskDialogMessage }}</p>-->
-<!--        <div class="json-data">-->
-<!--          <ul>-->
-<!--            <li><strong>任务名称:</strong> {{ taskDetails.taskName }}</li>-->
-<!--            <li><strong>裁决类型:</strong> {{ taskDetails.judgeModelType }}</li>-->
-<!--            <li><strong>请求时间:</strong> {{ taskDetails.judgeTime }}</li>-->
-<!--            <li><strong>申请方:</strong> {{ taskDetails.from }}</li>-->
-<!--            <li><strong>裁决方式:</strong> {{ taskDetails.judgeMode }}</li>-->
-<!--            <li><strong>裁决结果:</strong> {{ taskDetails.judgeResult || '暂无裁决结果' }}</li>-->
-<!--            <li><strong>处理时间:</strong> {{ taskDetails.judgeTime }}</li>-->
-<!--          </ul>-->
-<!--        </div>-->
-<!--        <div class="buttons">-->
-<!--          <button @click="closeTaskDialog">关闭</button>-->
-<!--        </div>-->
-<!--      </div>-->
-<!--    </div>-->
     <div class="task-modal">
       <!--头部-->
       <div class="task-modal-header" v-drag>
@@ -90,7 +68,7 @@
 
                 <hr class="divider" />
 
-                <div v-for="(index, idx) in count" :key="idx">
+                <div v-for="(item, idx) in count" :key="idx">
                   <div class="form-row multi-input">
                     <div class="form-column">
                       <label :for="'judgementModel' + idx" class="input-label">*裁决模型</label>
@@ -606,7 +584,7 @@ const fetchTableData = async (
     console.log("正在请求数据...");
 
     //请求体
-    const response = await axios.post(`http://192.168.43.234:3001/api/judgeTask/pageList`, {
+    const response = await axios.post(`http://192.168.1.200:3001/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,
@@ -802,7 +780,7 @@ const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
 // 获取裁决任务选项
 const fetchJudgementModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: '',
@@ -838,7 +816,7 @@ const ruleRecords = ref([]);
 // 获取效果模型和裁决规则
 const fetchEffectModelsAndRules = async (modelName, index) => {
   try {
-    const response = await axios.get('http://192.168.43.234:3001/api/judgeModel/getInfo', {
+    const response = await axios.get('http://192.168.1.200:3001/api/judgeModel/getInfo', {
       params: {
         modelName: modelName
       }
@@ -893,38 +871,57 @@ const increaseCount = () => {
 let endPoint = ref('');
 
 // 编辑任务
-const editTask = (task) => {
-  console.log("taskForm.value", taskForm.value);
+const editTask = async (task) => {
+  console.log("taskForm", taskForm);
   endPoint.value = 'update';
 
-  // 填充基本字段数据
-  taskForm.value = { ...task };
+  const taskId = task.id || task.taskId;
 
-  taskForm.value.taskId = task.id || taskForm.value.taskId;
-  taskForm.value.judgementModels = task.judgementModel ? [task.judgementModel] : [''];
-  taskForm.value.effectModels = task.judgementEffect ? [task.judgementEffect] : [''];
-  taskForm.value.judgementRules = task.judgementRule ? [task.judgementRule] : [''];
-  taskForm.value.judgementMethods = task.judgementMethod ? [task.judgementMethod] : [''];
+  try {
+    const response = await axios.get(`http://192.168.1.200:3001/api/judgeTask/view/${taskId}`);
 
-  // 打开对话框
-  dialogVisible.value = true;
+    if (response.data.code === 0) {
+      const taskData = response.data.data.task;
+      const taskRuleRelVOList = response.data.data.taskRuleRelVOList;
 
-  console.log("taskForm.value", taskForm.value);
+      // 将任务详情信息赋值到表单
+      Object.assign(taskForm, taskData);
+
+      // 解析任务关联的裁决模型、效果模型和裁决规则
+      taskForm.judgementModels = taskRuleRelVOList.map(item => item.modelName); // 使用 modelName 而不是 modelId
+      taskForm.effectModels = taskRuleRelVOList.map(item => item.effectId);
+      taskForm.judgementRules = taskRuleRelVOList.map(item => item.ruleId);
+      taskForm.judgementMethods = taskRuleRelVOList.map(item => item.judgeMode);
+      console.log("taskForm", taskForm)
+
+      count.value = taskForm.judgementModels.length;
+
+      // 动态获取效果模型和裁决规则
+      for (let index = 0; index < taskForm.judgementModels.length; index++) {
+        const modelName = taskForm.judgementModels[index];
+        await fetchEffectModelsAndRules(modelName, index); // 根据模型名称获取下拉框选项
+      }
+
+      dialogVisible.value = true;
+      console.log("taskForm", taskForm);
+    } else {
+      console.error('Error fetching task details:', response.data.message);
+    }
+  } catch (error) {
+    console.error('Error fetching task details:', error);
+  }
 };
 
+// 添加
 const editTask1 = (task) => {
-
   endPoint.value = 'add';
 
+  // 初始化 taskForm 数据
+  taskForm.judgementModels = task.judgementModel ? [task.judgementModel] : [''];
+  taskForm.effectModels = task.judgementEffect ? [task.judgementEffect] : [''];
+  taskForm.judgementRules = task.judgementRule ? [task.judgementRule] : [''];
+  taskForm.judgementMethods = task.judgementMethod ? [task.judgementMethod] : [''];
 
-  // // 填充基本字段数据
-  // taskForm.value = { ...task };
-  //
-  // taskForm.value.taskId = task.id || taskForm.value.taskId;
-  // taskForm.value.judgementModels = task.judgementModel ? [task.judgementModel] : [''];
-  // taskForm.value.effectModels = task.judgementEffect ? [task.judgementEffect] : [''];
-  // taskForm.value.judgementRules = task.judgementRule ? [task.judgementRule] : [''];
-  // taskForm.value.judgementMethods = task.judgementMethod ? [task.judgementMethod] : [''];
   const now = new Date();
   const formattedDate = now.getFullYear() + '-' +
       (now.getMonth() + 1).toString().padStart(2, '0') + '-' +
@@ -936,9 +933,11 @@ const editTask1 = (task) => {
   // 默认设置创建时间
   taskForm.createTime = formattedDate;
 
+  // 更新count，确保表单项数量与数据一致
+  count.value = taskForm.judgementModels.length;
+
   // 打开对话框
   dialogVisible.value = true;
-
 };
 
 // 提交任务
@@ -1023,7 +1022,7 @@ const submitTask = async () => {
     }
 
     // 提交任务数据
-    const response = await fetch(`http://192.168.43.234:3001/api/judgeTask/${endpoint}`, {
+    const response = await fetch(`http://192.168.1.200:3001/api/judgeTask/${endpoint}`, {
       method: method,
       headers: {
         'Content-Type': 'application/json'
@@ -1154,7 +1153,7 @@ const executeTask = async (row) => {
 
   // 先请求任务列表
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeTask/pageList', {
+    const response = await axios.post('http://192.168.1.200:3001/api/judgeTask/pageList', {
       current: 1,  // 这里的 current 和 pageSize 可以根据需要设置
       pageSize: 10,
       sortField: '',  // 可按需传入
@@ -1164,18 +1163,12 @@ const executeTask = async (row) => {
 
     // 假设返回的数据结构是： response.data.data.records
     const tasks = response.data.data.records;
-    console.log("tasks",tasks)
+    console.log("tasks", tasks)
 
     // 在任务列表中找到对应的任务
     const task = tasks.find((item) => item.task.taskName === taskName);
 
     if (task) {
-      // 更新任务状态为已完成
-      const taskIndex = tableData.value.findIndex((task) => task.id === row.id);
-      if (taskIndex !== -1) {
-        tableData.value[taskIndex].taskStatus = '已完成';
-      }
-
       // 延迟 0.5 秒后发送事件
       setTimeout(() => {
         emit('taskCompleted', row);  // 发送任务完成事件
@@ -1200,24 +1193,32 @@ const executeTask = async (row) => {
             };
 
             // 发送 POST 请求到后端
-            const executeResponse = await axios.post('http://192.168.43.234:3001/api/judgeTask/execute', requestData);
+            const executeResponse = await axios.post('http://192.168.1.200:3001/api/judgeTask/execute', requestData);
             if (executeResponse.status === 200) {
               console.log('请求成功', executeResponse.data);
-              // alert('任务执行成功!');
               const responseData = executeResponse.data;
               console.log("responseData", responseData)
               const fromValue = executeResponse.data.data.from;
-              console.log("fromValue",fromValue)
+              console.log("fromValue", fromValue)
               const taskStore = useTaskStore();
               taskStore.setFrom(fromValue);
               taskStore.setResponseData(responseData);
-              // eventBus.$emit('fromDataReceived', fromValue);
 
               // 显示自定义弹窗
               taskDialogMessage.value = `任务执行成功! 返回数据: ${fromValue}`;
-              console.log("taskDialogMessage",taskDialogMessage.value)
+              console.log("taskDialogMessage", taskDialogMessage.value)
               isTaskDialogVisible.value = true;
               console.log("isTaskDialogVisible.value", isTaskDialogVisible.value)
+              emit('taskExecuted', { fromValue, responseData });
+
+              // 延迟 2 秒后更新任务状态为已完成
+              setTimeout(() => {
+                const taskIndex = tableData.value.findIndex((task) => task.id === row.id);
+                if (taskIndex !== -1) {
+                  tableData.value[taskIndex].taskStatus = '已完成';
+                }
+              }, 2000); // 延迟2秒更新任务状态
+
             } else {
               console.error('请求失败', executeResponse.data);
             }
@@ -1388,7 +1389,7 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 999;
+  z-index: 999999;
 }
 
 .custom-dialog {

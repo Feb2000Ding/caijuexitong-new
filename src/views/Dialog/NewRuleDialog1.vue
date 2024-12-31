@@ -34,7 +34,18 @@
           </div>
 
           <!-- 毁伤等级 -->
-          <div v-for="(damageLevel, index) in damageLevels" :key="index" class="form-row">
+<!--          <div class="form-row">-->
+<!--            <div class="form-column">-->
+<!--              <label for="newInputField">新的输入框</label>-->
+<!--              <input-->
+<!--                  id="newInputField"-->
+<!--                  type="text"-->
+<!--                  v-model="formData.damageLevels[0].name"-->
+<!--              placeholder="请输入新的字段值"-->
+<!--              />-->
+<!--            </div>-->
+<!--          </div>-->
+          <div v-for="(damageLevel, index) in formData.damageLevels" :key="index" class="form-row">
             <div class="form-column">
               <label :for="'damageLevelName' + index">毁伤等级定义</label>
               <div class="input-with-button">
@@ -61,15 +72,15 @@
           <!-- 目标类型容器 -->
           <div v-for="(targetType, index) in formData.targetTypes" :key="index" class="target-container">
             <div class="input-container">
-              <input type="text" class="input-field" placeholder="默认目标类型" v-model="targetType.type" />
+              <input type="text" class="input-field" placeholder="默认目标类型" v-model="targetType.targetType" />
             </div>
 
-            <!-- 条件组和指标 -->
+            <!-- 条件组 -->
             <div v-for="(condition, conditionIndex) in targetType.conditions" :key="conditionIndex" class="condition-container">
               <div class="input-container">
                 <input type="text" class="input-field" placeholder="条件组" v-model="condition.group" />
                 <select class="select-box" v-model="condition.logic">
-                  <option value="" disabled selected>AND</option>
+                  <option value="" selected>AND</option>
                   <option value="OR">OR</option>
                 </select>
                 <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
@@ -122,22 +133,22 @@
             <!-- 添加条件组按钮 -->
             <button class="add-button3" @click="addCondition(index)">添加条件组</button>
 
-            <!-- 指标 -->
-            <div v-for="(indexItem, indexItemIndex) in targetType.indexes" :key="indexItemIndex" class="index-container">
+            <!-- 最终指标 -->
+            <div v-for="(index, indexIndex) in targetType.indexes" :key="indexIndex" class="index-container">
               <div class="input-container">
-                <input type="text" class="input-field" placeholder="指标名称" v-model="indexItem.name" />
-                <select class="select-box" v-model="indexItem.select">
+                <input type="text" class="input-field" placeholder="指标名称" v-model="index.indexName" />
+                <select class="select-box" v-model="index.valueRange">
                   <option value="" disabled selected>数值范围</option>
                   <option value="index2">概率模型</option>
                 </select>
               </div>
 
               <!-- 添加和删除范围 -->
-              <button class="add-button2" @click="addRange(index, indexItemIndex)">添加范围</button>
-              <button class="delete-button" @click="removeRange(index, indexItemIndex)">删除范围</button>
+              <button class="add-button2" @click="addRange(index, indexIndex)">添加范围</button>
+              <button class="delete-button" @click="removeRange(index, indexIndex)">删除范围</button>
 
               <!-- 范围容器 -->
-              <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1">
+              <div v-for="(range, rangeIndex) in index.ranges" :key="rangeIndex" class="form-row1">
                 <div class="form-column1">
                   <label for="minValue">最小值</label>
                   <input type="text" id="minValue" v-model="range.minValue" />
@@ -172,37 +183,17 @@
 </template>
 
 <script setup>
-import {ref, defineProps, defineEmits, onMounted, watch} from 'vue';
+import {ref, defineProps, defineEmits, onMounted, watch,} from 'vue';
 import axios from 'axios';
 import { useTaskStore } from '@/stores/counter.js';
-import { useRuleStore } from '@/stores/counter.js';
+// import { useRuleStore } from '@/stores/counter.js';
 
 // 获取 store
 const taskStore = useTaskStore()
 const taskForm = taskStore.getTaskForm
 console.log("taskForm", taskForm)
-
-const ruleStore = useRuleStore()
-console.log("ruleStoreinnewDialog",ruleStore)
-const ruleId = ruleStore.ruleId;
-console.log("ruleId",ruleId)
-
-const props = defineProps({
-  isShow: Boolean,
-  isEditMode: Boolean,
-  currentTaskData: Object
-});
-console.log("isEditMode", props.isEditMode, props.currentTaskData);
-
-watch(() => props.isEditMode, (newVal) => {
-  console.log("是否编辑模式:", newVal);  // 打印是否是编辑模式
-});
-
-watch(() => props.currentTaskData, (newVal) => {
-  console.log("接收到的任务数据:", newVal);  // 打印接收到的任务数据
-});
-
-const emit = defineEmits(['update:isShow', 'saveRuleData']);
+const ruleId = ref(taskStore.ruleId);
+console.log("taskStore.ruleId", taskStore.ruleId)
 
 // 表单数据
 const formData = ref({
@@ -217,7 +208,7 @@ const formData = ref({
       conditions: [
         {
           group: '',
-          logic: '',
+          logic: 'AND',
           indicators: [
             {
               minValue: '',
@@ -259,11 +250,108 @@ const formData = ref({
     }
   ],
   damageLevels: [
-    { name: '轻微' },
-    { name: '中等' },
-    { name: '严重' },
+    { name: '' },
   ]
 });
+
+// const ruleStore = useRuleStore()
+// console.log("ruleStoreinnewDialog",ruleStore)
+// const ruleId = taskStore.ruleId;
+watch(
+    () => taskStore.ruleId,
+    async (newVal) => {
+      console.log('Rule ID 更新为:', newVal);
+      ruleId.value = newVal;
+
+      if (newVal) {
+        try {
+          const response = await fetch(`http://192.168.1.200:3001/api/calRule/view/${newVal}`);
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          const data = await response.json();
+          console.log("Rule Details:", data);
+
+          const ruleData = data.data.rule;
+
+          // 更新规则名称和创建时间
+          formData.value.ruleName = ruleData.ruleName || "";
+          formData.value.addTime = ruleData.createTime || "";
+
+          // 更新损伤等级
+          formData.value.damageLevels = ruleData.damageLevels.map(damageLevel => ({
+            name: damageLevel.name || ""
+          }));
+
+          // 更新目标类型及其条件
+          formData.value.targetTypes = ruleData.targetTypes.map(target => ({
+            targetType: target.targetType || "",
+            conditions: target.groups
+                ? target.groups.map(group => ({
+                  group: group.groupName || "",
+                  logic: group.operator || "AND",
+                  indicators: group.indicators
+                      ? group.indicators.map(indicator => ({
+                        minValue: indicator.indicatorName || "",
+                        maxValue: indicator.dataType || "numeric",
+                        ranges: indicator.ranges
+                            ? indicator.ranges.map(range => ({
+                              minValue: range.minValue || null,
+                              maxValue: range.maxValue || null,
+                              impactFactor: range.weight || null
+                            }))
+                            : []
+                      }))
+                      : []
+                }))
+                : [],
+            indexs: target.finalIndicator
+                ? {
+                  indexName: target.finalIndicator.indicatorName || "",
+                  valueRange: target.finalIndicator.dataType || "",
+                  ranges: target.finalIndicator.ranges
+                      ? target.finalIndicator.ranges.map(range => ({
+                        minValue: range.minValue || null,
+                        maxValue: range.maxValue || null,
+                        destroyLevel: range.damageLevel || ""
+                      }))
+                      : []
+                }
+                : {
+                  indicatorName: "",
+                  dataType: "",
+                  ranges: []
+                }
+          }));
+
+          console.log("formData.value.targetTypes", formData.value.targetTypes);
+        } catch (error) {
+          console.error("Error fetching rule data:", error);
+        }
+      }
+    }
+);
+
+// 暴露 ruleId 供模板使用
+// const { ruleId } = taskStore;
+console.log("111111111111111111111111111111111111ruleId",ruleId)
+
+const props = defineProps({
+  isShow: Boolean,
+  isEditMode: Boolean,
+  currentTaskData: Object
+});
+console.log("isEditMode", props.isEditMode, props.currentTaskData);
+
+watch(() => props.isEditMode, (newVal) => {
+  console.log("是否编辑模式:", newVal);  // 打印是否是编辑模式
+});
+
+watch(() => props.currentTaskData, (newVal) => {
+  console.log("接收到的任务数据:", newVal);  // 打印接收到的任务数据
+});
+
+const emit = defineEmits(['update:isShow', 'saveRuleData']);
 
 // 裁决模型的下拉框数据
 const modelOptions = ref([]);
@@ -271,7 +359,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -298,15 +386,15 @@ const damageLevels = ref([
 
 // 添加一个新的毁伤等级定义
 const addDamageLevel = () => {
-  damageLevels.value.push({
+  formData.value.damageLevels.push({
     name: ''
   });
 };
 
 // 删除指定的毁伤等级定义（从下方开始删除）
 const removeDamageLevel = () => {
-  if (damageLevels.value.length > 1) {
-    damageLevels.value.pop();
+  if (formData.value.damageLevels.length > 1) {
+    formData.value.damageLevels.pop();
   }
 };
 
@@ -381,11 +469,13 @@ const removeIndicator = (targetIndex, conditionIndex, indicatorIndex) => {
   const targetType = formData.value.targetTypes[targetIndex];
   const condition = targetType.conditions[conditionIndex];
 
-  // 确保 indicators 数组存在且不为空
+  console.log('indicatorIndex:', indicatorIndex);
+  console.log('indicators:', condition.indicators);
+
   if (condition.indicators && condition.indicators.length > 0) {
-    // 删除指定索引的指标
     condition.indicators.splice(indicatorIndex, 1);
   }
+  formData.value = { ...formData.value };
 };
 
 // 范围
@@ -451,7 +541,7 @@ const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
   });
 
   // 确保 Vue 的响应式更新
-  formData.value = { ...formData.value };
+  // formData.value = { ...formData.value };
 };
 
 // 删除指定范围
@@ -466,7 +556,7 @@ const removeRange1 = (targetIndex, conditionIndex, indicatorIndex, rangeIndex) =
     indicator.ranges.splice(rangeIndex, 1);
 
     // 确保 Vue 的响应式更新
-    formData.value = { ...formData.value };
+    // formData.value = { ...formData.value };
   }
 };
 
@@ -563,7 +653,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.43.234:3001/api/calRule/update', payload);
+    const response = await axios.post('http://192.168.1.200:3001/api/calRule/update', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -584,7 +674,7 @@ const saveRuleData = async () => {
 const fetchRuleData = async (ruleId) => {
   try {
     console.log(111111111111111111)
-    const response = await fetch(`http://192.168.43.234:3001/api/calRule/view/${ruleId}`);
+    const response = await fetch(`http://192.168.1.200:3001/api/calRule/view/${ruleId}`);
     const data = await response.json();
     console.log("ruledata",data)
     if (data.code === 0) {
@@ -602,10 +692,18 @@ const closeDialog = () => {
 
 onMounted(() => {
   getModels();
-  const ruleStore = useRuleStore()
-  console.log("ruleStoreinnewDialog",ruleStore)
-  const ruleId = ruleStore.ruleId;
-  console.log("ruleId",ruleId)
+  // const ruleStore = useRuleStore()
+  // console.log("ruleStoreinnewDialog",ruleStore)
+  // const ruleId = ruleStore.ruleId;
+  // console.log("ruleId",ruleId)
+  const taskStore = useTaskStore()
+  const taskForm = taskStore.getTaskForm
+  console.log("taskForm", taskForm)
+
+// const ruleStore = useRuleStore()
+// console.log("ruleStoreinnewDialog",ruleStore)
+  const ruleId = taskStore.ruleId;
+  console.log("mounted111111111111111111111111111111111111ruleId",ruleId)
   if (ruleId) {
     fetchRuleData(ruleId);
   }

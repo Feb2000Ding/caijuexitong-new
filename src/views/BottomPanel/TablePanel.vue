@@ -55,6 +55,7 @@ import { useTaskStore } from "@/stores/counter.js";
 
 // 引入 Pinia store
 const taskStore = useTaskStore();
+console.log(taskStore.responseData)
 
 // 定义 list 变量，用于存储裁决结果列表
 const list = ref([

@@ -264,7 +264,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -389,6 +389,7 @@ const ranges = ref([
 // 添加范围
 const addRange = (targetIndex, indexItemIndex) => {
   const targetType = formData.value.targetTypes[targetIndex];
+  console.log("targetType", targetType)
   const indexItem = targetType.indexes[indexItemIndex];
 
   // 确保每个 index 的 ranges 数组存在
@@ -426,9 +427,13 @@ const indicators = ref([]);
 
 // 添加一组数据
 const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
+  console.log("formData.value",formData.value)
   const targetType = formData.value.targetTypes[targetIndex];
+  console.log("targetType",targetType)
   const condition = targetType.conditions[conditionIndex];
+  console.log("condition",condition)
   const indicator = condition.indicators[indicatorIndex];
+  console.log("indicator",indicator)
 
   // 确保每个 indicator 的 ranges 数组存在
   if (!indicator.ranges) {
@@ -444,7 +449,7 @@ const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
   });
 
   // 确保 Vue 的响应式更新
-  formData.value = { ...formData.value };
+  // formData.value = { ...formData.value };
 };
 
 // 删除指定范围
@@ -556,7 +561,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.43.234:3001/api/calRule/add', payload);
+    const response = await axios.post('http://192.168.1.200:3001/api/calRule/add', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -947,8 +952,8 @@ onMounted(() => {
 }
 
 .delete-button1 {
-  left: 1055px;
-  top: 190px;
+  left: 530px;
+  top: 187px;
 }
 
 .delete-button2 {
