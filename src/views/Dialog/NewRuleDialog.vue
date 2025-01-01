@@ -44,11 +44,20 @@
                     v-model="damageLevel.name"
                 />
                 <!-- 添加毁伤等级按钮 -->
-                <button v-if="index === damageLevels.length - 1" @click="addDamageLevel" class="add-button">
+                <button
+                    v-if="index === damageLevels.length - 1"
+                    @click="addDamageLevel"
+                    class="add-button"
+                >
                   添加毁伤等级
                 </button>
                 <!-- 删除毁伤等级按钮 -->
-                <button v-if="damageLevels.length > 1 && index === damageLevels.length - 1" @click="removeDamageLevel" class="delete-button1">
+                <button
+                    v-if="damageLevels.length > 1 && index === damageLevels.length - 1"
+                    @click="removeDamageLevel"
+                    class="delete-button1"
+                    :style="{ top: deleteButtonTop + 'px' }"
+                >
                   删除毁伤等级
                 </button>
               </div>
@@ -75,7 +84,6 @@
                 <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
               </div>
 <!--              <div style="background-color: black;width:200px;height:200px;"></div>-->
-              <!-- 在每个范围数据行添加删除范围按钮 -->
               <div class="indicater-container" v-for="(indicator, indicatorIndex) in condition.indicators" :key="indicatorIndex">
                 <!-- 第一行：指标名称和最大值 -->
                 <div class="form-row1">
@@ -90,8 +98,8 @@
                       <option value="probability">概率型</option>
                     </select>
                   </div>
-                  <button class="add-button4" @click="addRange1(targetIndex, conditionIndex, indicatorIndex)">添加范围</button>
-                  <button class="delete-button2" @click="removeIndicator(targetIndex, conditionIndex, indicatorIndex)">删除指标</button>
+                  <button class="add-button4" @click="addRange1(index, conditionIndex, indicatorIndex)">添加范围</button>
+                  <button class="delete-button2" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
                 </div>
 
                 <!-- 第二行：范围数据 -->
@@ -112,10 +120,18 @@
                     <label for="stop">终止判断</label>
                     <input type="radio" id="stop" v-model="range.stop" :value="true" style="height:15px; width:15px;" />
                   </div>
-                  <!-- 删除范围按钮，传递 rangeIndex 作为参数 -->
-                  <button class="delete-button" @click="removeRange1(targetIndex, conditionIndex, indicatorIndex, rangeIndex)">删除范围</button>
+
+                  <!-- 删除按钮逻辑 -->
+                  <button v-if="range.deleteButton" class="delete-button3" @click="removeRange1(index, conditionIndex, indicatorIndex, rangeIndex)">
+                    删除范围
+                  </button>
                 </div>
+
+                <!-- 每个 indicater-container 里都应有添加范围和删除指标按钮 -->
+                <button class="add-button4" @click="addRange1(index, conditionIndex, indicatorIndex)">添加范围</button>
+                <button class="delete-button2" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
               </div>
+
               <button class="add-button2" @click="addIndex(index, conditionIndex)">添加指标</button>
             </div>
 
@@ -174,7 +190,7 @@
 <script setup>
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue';
 import axios from 'axios';
-import { useTaskStore } from '../../stores/counter.js';
+import { useTaskStore } from '@/stores/counter.js';
 
 // 获取 store
 const taskStore = useTaskStore()
@@ -194,6 +210,83 @@ watch(() => props.isEditMode, (newVal) => {
 watch(() => props.currentTaskData, (newVal) => {
   console.log("接收到的任务数据:", newVal);  // 打印接收到的任务数据
 });
+
+// 每次打开这个组件时重置表单
+const defaultFormData = {
+  ruleName: '',
+  model: '',
+  addTime: '',
+  targetTypes: [
+    {
+      targetType: '',
+      indexName: '',
+      select: '',
+      conditions: [
+        {
+          group: '',
+          logic: '',
+          indicators: [
+            {
+              minValue: '',
+              maxValue: 'numeric',
+              ranges: [
+                {
+                  minValue: '',
+                  maxValue: '',
+                  impactFactor: '',
+                  stop: false,
+                  deleteButton:''
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      indexes: [
+        {
+          indexName: '', // 指标名称
+          valueRange: '',
+          ranges: [
+            {
+              minValue: '', // 最小值
+              maxValue: '', // 最大值
+              destroyLevel: '', // 毁伤等级
+            },
+          ],
+        },
+      ],
+    },
+  ],
+  damageLevels: [
+    { name: '' },
+  ],
+};
+
+watch(
+    () => props.isShow,
+    (newVal) => {
+      if (newVal) {
+        resetFormData();
+      }
+    }
+);
+
+const resetFormData = () => {
+  formData.value = JSON.parse(JSON.stringify(defaultFormData)); // 深拷贝默认值
+  formData.value.addTime = getCurrentTime();
+};
+
+// 获取当前时间
+const getCurrentTime = () => {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const date = String(now.getDate()).padStart(2, '0');
+  const hours = String(now.getHours()).padStart(2, '0');
+  const minutes = String(now.getMinutes()).padStart(2, '0');
+  const seconds = String(now.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${date} ${hours}:${minutes}:${seconds}`;
+};
 
 const emit = defineEmits(['update:isShow', 'saveRuleData']);
 
@@ -220,7 +313,8 @@ const formData = ref({
                   minValue: '',
                   maxValue: '',
                   impactFactor: '',
-                  stop: false
+                  stop: false,
+                  deleteButton:''
                 }
               ]
             }
@@ -289,17 +383,19 @@ const damageLevels = ref([
   { name: '' }
 ]);
 
-// 添加一个新的毁伤等级定义
+const deleteButtonTop = ref(137);
+
+// 添加毁伤等级
 const addDamageLevel = () => {
-  damageLevels.value.push({
-    name: ''
-  });
+  damageLevels.value.push({ name: '' });
+  deleteButtonTop.value += 50;
 };
 
-// 删除指定的毁伤等级定义（从下方开始删除）
+// 删除毁伤等级
 const removeDamageLevel = () => {
   if (damageLevels.value.length > 1) {
     damageLevels.value.pop();
+    deleteButtonTop.value -= 50;
   }
 };
 
@@ -370,14 +466,17 @@ const addIndex = (targetIndex, conditionIndex) => {
 };
 
 // 删除指定条件下的指标
-const removeIndicator = (targetIndex, conditionIndex, indicatorIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const removeIndicator = (index, conditionIndex, indicatorIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const condition = targetType.conditions[conditionIndex];
 
-  // 确保 indicators 数组存在且不为空
-  if (condition.indicators && condition.indicators.length > 0) {
-    // 删除指定索引的指标
-    condition.indicators.splice(indicatorIndex, 1);
+  // 检查条件是否存在，并且包含 indicators 数组
+  if (condition && Array.isArray(condition.indicators)) {
+    // 确保索引有效
+    if (indicatorIndex >= 0 && indicatorIndex < condition.indicators.length) {
+      // 删除指定的指标，并将后续元素前移
+      condition.indicators.splice(indicatorIndex, 1);
+    }
   }
 };
 
@@ -426,9 +525,10 @@ const removeRange = (targetIndex, indexItemIndex, rangeIndex = null) => {
 const indicators = ref([]);
 
 // 添加一组数据
-const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
+const addRange1 = (index, conditionIndex, indicatorIndex) => {
   console.log("formData.value",formData.value)
-  const targetType = formData.value.targetTypes[targetIndex];
+  console.log("targetIndex",index)
+  const targetType = formData.value.targetTypes[index];
   console.log("targetType",targetType)
   const condition = targetType.conditions[conditionIndex];
   console.log("condition",condition)
@@ -445,7 +545,8 @@ const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
     minValue: '',         // 最小值
     maxValue: '',         // 最大值
     impactFactor: '',     // 影响系数
-    stop: false           // 是否终止
+    stop: false,           // 是否终止
+    deleteButton: true    // 标志是否显示删除按钮
   });
 
   // 确保 Vue 的响应式更新
@@ -453,18 +554,18 @@ const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
 };
 
 // 删除指定范围
-const removeRange1 = (targetIndex, conditionIndex, indicatorIndex, rangeIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const removeRange1 = (index, conditionIndex, indicatorIndex, rangeIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const condition = targetType.conditions[conditionIndex];
   const indicator = condition.indicators[indicatorIndex];
 
   // 确保 ranges 数组存在且不为空
-  if (indicator.ranges && indicator.ranges.length > 0) {
-    // 删除指定索引的范围
-    indicator.ranges.splice(rangeIndex, 1);
-
-    // 确保 Vue 的响应式更新
-    formData.value = { ...formData.value };
+  if (indicator && Array.isArray(indicator.ranges)) {
+    // 检查索引有效性
+    if (rangeIndex >= 0 && rangeIndex < indicator.ranges.length) {
+      // 删除指定索引的范围，并前移后续元素
+      indicator.ranges.splice(rangeIndex, 1);
+    }
   }
 };
 
@@ -792,6 +893,12 @@ onMounted(() => {
   /*margin-top: 20px;*/
 }
 
+.add-button4 {
+  position: absolute;
+  left: 790px;
+  top: 80px;
+}
+
 .target-type-definition {
   width: 138px;
   height: 29px;
@@ -908,6 +1015,7 @@ onMounted(() => {
   border-radius: 10px;
   margin: 20px;
   padding-bottom:20px;
+  position: relative;
 }
 
 .index-container {
@@ -930,7 +1038,7 @@ onMounted(() => {
   background: rgba(31, 255, 215, 0.30);
 }
 
-.delete-button, .delete-button1, .delete-button2 {
+.delete-button, .delete-button1, .delete-button2, .delete-button3 {
   width: 121px;
   height: 32px;
   flex-shrink: 0;
@@ -957,8 +1065,13 @@ onMounted(() => {
 }
 
 .delete-button2 {
-  left: 800px;
+  left: 930px;
   top: 80px;
+}
+
+.delete-button3 {
+  left: 1180px;
+  top: 130px;
 }
 
 .dialog-footer {

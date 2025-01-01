@@ -5,7 +5,7 @@
       <div class="task-modal-header">
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon" />
-          添加裁决规则
+          编辑裁决规则
         </div>
         <button @click="closeDialog" class="close-button">X</button>
       </div>
@@ -34,17 +34,6 @@
           </div>
 
           <!-- 毁伤等级 -->
-<!--          <div class="form-row">-->
-<!--            <div class="form-column">-->
-<!--              <label for="newInputField">新的输入框</label>-->
-<!--              <input-->
-<!--                  id="newInputField"-->
-<!--                  type="text"-->
-<!--                  v-model="formData.damageLevels[0].name"-->
-<!--              placeholder="请输入新的字段值"-->
-<!--              />-->
-<!--            </div>-->
-<!--          </div>-->
           <div v-for="(damageLevel, index) in formData.damageLevels" :key="index" class="form-row">
             <div class="form-column">
               <label :for="'damageLevelName' + index">毁伤等级定义</label>
@@ -55,11 +44,11 @@
                     v-model="damageLevel.name"
                 />
                 <!-- 添加毁伤等级按钮 -->
-                <button v-if="index === damageLevels.length - 1" @click="addDamageLevel" class="add-button">
+                <button v-if="index === damageLevels.length - 1" @click="addDamageLevel" class="add-damage-level-button">
                   添加毁伤等级
                 </button>
                 <!-- 删除毁伤等级按钮 -->
-                <button v-if="damageLevels.length > 1 && index === damageLevels.length - 1" @click="removeDamageLevel" class="delete-button1">
+                <button v-if="damageLevels.length > 1 && index === damageLevels.length - 1" @click="removeDamageLevel" class="remove-damage-level-button">
                   删除毁伤等级
                 </button>
               </div>
@@ -83,12 +72,9 @@
                   <option value="" selected>AND</option>
                   <option value="OR">OR</option>
                 </select>
-                <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
+                <button class="remove-condition-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
               </div>
-              <!--              <div style="background-color: black;width:200px;height:200px;"></div>-->
-              <!-- 在每个范围数据行添加删除范围按钮 -->
               <div class="indicater-container" v-for="(indicator, indicatorIndex) in condition.indicators" :key="indicatorIndex">
-                <!-- 第一行：指标名称和最大值 -->
                 <div class="form-row1">
                   <div class="form-column1">
                     <label for="minValue1">指标名称</label>
@@ -101,11 +87,10 @@
                       <option value="probability">概率型</option>
                     </select>
                   </div>
-                  <button class="add-button4" @click="addRange1(targetIndex, conditionIndex, indicatorIndex)">添加范围</button>
-                  <button class="delete-button2" @click="removeIndicator(targetIndex, conditionIndex, indicatorIndex)">删除指标</button>
+                  <button class="add-range-button" @click="addRange1(index, conditionIndex, indicatorIndex)">添加范围</button>
+                  <button class="remove-indicator-button" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
                 </div>
 
-                <!-- 第二行：范围数据 -->
                 <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1">
                   <div class="form-column1">
                     <label for="minValue1">最小值</label>
@@ -123,17 +108,14 @@
                     <label for="stop">终止判断</label>
                     <input type="radio" id="stop" v-model="range.stop" :value="true" style="height:15px; width:15px;" />
                   </div>
-                  <!-- 删除范围按钮，传递 rangeIndex 作为参数 -->
-                  <button class="delete-button" @click="removeRange1(targetIndex, conditionIndex, indicatorIndex, rangeIndex)">删除范围</button>
+                  <button class="remove-range-button" @click="removeRange1(index, conditionIndex, indicatorIndex, rangeIndex)">删除范围</button>
                 </div>
               </div>
-              <button class="add-button2" @click="addIndex(index, conditionIndex)">添加指标</button>
+              <button class="add-indicator-button" @click="addIndex(index, conditionIndex)">添加指标</button>
             </div>
 
-            <!-- 添加条件组按钮 -->
-            <button class="add-button3" @click="addCondition(index)">添加条件组</button>
+            <button class="add-condition-button" @click="addCondition(index)">添加条件组</button>
 
-            <!-- 最终指标 -->
             <div v-for="(index, indexIndex) in targetType.indexes" :key="indexIndex" class="index-container">
               <div class="input-container">
                 <input type="text" class="input-field" placeholder="指标名称" v-model="index.indexName" />
@@ -143,11 +125,9 @@
                 </select>
               </div>
 
-              <!-- 添加和删除范围 -->
-              <button class="add-button2" @click="addRange(index, indexIndex)">添加范围</button>
-              <button class="delete-button" @click="removeRange(index, indexIndex)">删除范围</button>
+              <button class="add-range-button" @click="addRange(index, indexIndex)">添加范围</button>
+              <button class="remove-range-button" @click="removeRange(index, indexIndex)">删除范围</button>
 
-              <!-- 范围容器 -->
               <div v-for="(range, rangeIndex) in index.ranges" :key="rangeIndex" class="form-row1">
                 <div class="form-column1">
                   <label for="minValue">最小值</label>
@@ -169,8 +149,7 @@
             </div>
           </div>
 
-          <!-- 添加目标类型按钮 -->
-          <button class="add-button3" @click="addTargetType" style="position: relative; left: 20px;">添加目标类型</button>
+          <button class="add-target-type-button" @click="addTargetType" style="position: relative; left: 20px;">添加目标类型</button>
         </div>
       </div>
 
@@ -431,17 +410,17 @@ const addCondition = (targetTypeIndex) => {
 };
 
 // 删除指定目标类型下的指定条件组
-const removeCondition = (targetIndex, conditionIndex) => {
+const removeCondition = (index, conditionIndex) => {
   // 确保条件组数组至少有一个元素时才能删除
-  if (formData.value.targetTypes[targetIndex].conditions.length > 1) {
+  if (formData.value.targetTypes[index].conditions.length > 1) {
     // 删除指定索引的条件组
-    formData.value.targetTypes[targetIndex].conditions.splice(conditionIndex, 1);
+    formData.value.targetTypes[index].conditions.splice(conditionIndex, 1);
   }
 };
 
 // 添加一个新的指标到指定目标类型的 conditions 数组
-const addIndex = (targetIndex, conditionIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const addIndex = (index, conditionIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const condition = targetType.conditions[conditionIndex];
 
   // 只添加指标，如果没有 indicators 则初始化为空数组
@@ -465,8 +444,8 @@ const addIndex = (targetIndex, conditionIndex) => {
 };
 
 // 删除指定条件下的指标
-const removeIndicator = (targetIndex, conditionIndex, indicatorIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const removeIndicator = (index, conditionIndex, indicatorIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const condition = targetType.conditions[conditionIndex];
 
   console.log('indicatorIndex:', indicatorIndex);
@@ -484,8 +463,8 @@ const ranges = ref([
 ]);
 
 // 添加范围
-const addRange = (targetIndex, indexItemIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const addRange = (index, indexItemIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const indexItem = targetType.indexes[indexItemIndex];
 
   // 确保每个 index 的 ranges 数组存在
@@ -502,8 +481,8 @@ const addRange = (targetIndex, indexItemIndex) => {
 };
 
 // 删除最后一组范围
-const removeRange = (targetIndex, indexItemIndex, rangeIndex = null) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const removeRange = (index, indexItemIndex, rangeIndex = null) => {
+  const targetType = formData.value.targetTypes[index];
   const indexItem = targetType.indexes[indexItemIndex];
 
   // 确保 ranges 数组存在且不为空
@@ -522,8 +501,8 @@ const removeRange = (targetIndex, indexItemIndex, rangeIndex = null) => {
 const indicators = ref([]);
 
 // 添加一组数据
-const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const addRange1 = (index, conditionIndex, indicatorIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const condition = targetType.conditions[conditionIndex];
   const indicator = condition.indicators[indicatorIndex];
 
@@ -545,8 +524,8 @@ const addRange1 = (targetIndex, conditionIndex, indicatorIndex) => {
 };
 
 // 删除指定范围
-const removeRange1 = (targetIndex, conditionIndex, indicatorIndex, rangeIndex) => {
-  const targetType = formData.value.targetTypes[targetIndex];
+const removeRange1 = (index, conditionIndex, indicatorIndex, rangeIndex) => {
+  const targetType = formData.value.targetTypes[index];
   const condition = targetType.conditions[conditionIndex];
   const indicator = condition.indicators[indicatorIndex];
 
@@ -866,7 +845,11 @@ onMounted(() => {
   gap: 10px;
 }
 
-.add-button, .add-button2, .add-button3, .add-button4 {
+.add-damage-level-button,
+.add-indicator-button,
+.add-condition-button,
+.add-range-button,
+.add-target-type-button {
   width: 120px;
   height: 30px;
   flex-shrink: 0;
@@ -883,36 +866,16 @@ onMounted(() => {
   cursor: pointer;
 }
 
-.add-button1 {
-  width: 120px;
-  height: 30px;
-  margin-left: 20px;
-  margin-top: 20px;
-  border-radius: 4px;
-  border: 1px solid #00E0FF;
-  background-color: #062A51;
-  color: #BDEEFF;
-  text-align: center;
-  font-family: "Source Han Sans CN";
-  font-size: 16px;
-  font-weight: 400;
-  line-height: normal;
-  cursor: pointer;
-}
-
-.add-button2 {
+.add-indicator-button {
   position: absolute;
   left: 1190px;
   top: 14px;
 }
 
-.add-button3 {
+.add-condition-button {
   position: absolute;
   left: 300px;
   margin-top: 15px;
-  /*bottom: 20px;*/
-  /*top: calc(83% + 20px);*/
-  /*margin-top: 20px;*/
 }
 
 .target-type-definition {
@@ -1053,7 +1016,10 @@ onMounted(() => {
   background: rgba(31, 255, 215, 0.30);
 }
 
-.delete-button, .delete-button1, .delete-button2 {
+.remove-damage-level-button,
+.remove-condition-button,
+.remove-indicator-button,
+.remove-range-button {
   width: 121px;
   height: 32px;
   flex-shrink: 0;
@@ -1069,20 +1035,29 @@ onMounted(() => {
   position: absolute;
 }
 
-.delete-button {
+.remove-damage-level-button{
+  left: 500px;
+  top: 500px;
+}
+
+.remove-condition-button {
   right: 20px;
   top: 13px;
 }
 
-.delete-button1 {
-  left: 1055px;
-  top: 190px;
+.remove-indicator-button {
+  left: 800px;
+  top: 160px;
 }
 
-.delete-button2 {
-  left: 800px;
-  top: 80px;
+.remove-range-button {
+  left: 1200px;
+  top: 210px;
 }
+
+/*.remove-range-button {*/
+/*  left: 800px;*/
+/*}*/
 
 .dialog-footer {
   display: flex;

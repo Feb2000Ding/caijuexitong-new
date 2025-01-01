@@ -219,8 +219,8 @@
 import {defineProps, defineEmits, ref, onMounted, computed, toRaw, reactive} from 'vue';
 import  { ElTable, ElTableColumn, ElPagination, ElButton  } from 'element-plus';
 import axios from "axios";
-import { eventBus } from '../../utils/eventBus';
 import { useTaskStore } from '../../stores/counter.js';
+import { API_BASE_URL } from '../../apiConfig.js';
 
 // 配置环境变量
 // const apiUrl = process.env.VUE_APP_API_BASE_URL;
@@ -584,7 +584,7 @@ const fetchTableData = async (
     console.log("正在请求数据...");
 
     //请求体
-    const response = await axios.post(`http://192.168.1.200:3001/api/judgeTask/pageList`, {
+    const response = await axios.post(`/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,
@@ -780,7 +780,7 @@ const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
 // 获取裁决任务选项
 const fetchJudgementModels = async () => {
   try {
-    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: '',
@@ -816,7 +816,7 @@ const ruleRecords = ref([]);
 // 获取效果模型和裁决规则
 const fetchEffectModelsAndRules = async (modelName, index) => {
   try {
-    const response = await axios.get('http://192.168.1.200:3001/api/judgeModel/getInfo', {
+    const response = await axios.get('http://192.168.43.234:3001/api/judgeModel/getInfo', {
       params: {
         modelName: modelName
       }
@@ -878,7 +878,7 @@ const editTask = async (task) => {
   const taskId = task.id || task.taskId;
 
   try {
-    const response = await axios.get(`http://192.168.1.200:3001/api/judgeTask/view/${taskId}`);
+    const response = await axios.get(`http://192.168.43.234:3001/api/judgeTask/view/${taskId}`);
 
     if (response.data.code === 0) {
       const taskData = response.data.data.task;
@@ -1022,7 +1022,7 @@ const submitTask = async () => {
     }
 
     // 提交任务数据
-    const response = await fetch(`http://192.168.1.200:3001/api/judgeTask/${endpoint}`, {
+    const response = await fetch(`http://192.168.43.234:3001/api/judgeTask/${endpoint}`, {
       method: method,
       headers: {
         'Content-Type': 'application/json'
@@ -1153,7 +1153,7 @@ const executeTask = async (row) => {
 
   // 先请求任务列表
   try {
-    const response = await axios.post('http://192.168.1.200:3001/api/judgeTask/pageList', {
+    const response = await axios.post('http://192.168.43.234:3001/api/judgeTask/pageList', {
       current: 1,  // 这里的 current 和 pageSize 可以根据需要设置
       pageSize: 10,
       sortField: '',  // 可按需传入
@@ -1193,7 +1193,7 @@ const executeTask = async (row) => {
             };
 
             // 发送 POST 请求到后端
-            const executeResponse = await axios.post('http://192.168.1.200:3001/api/judgeTask/execute', requestData);
+            const executeResponse = await axios.post('http://192.168.43.234:3001/api/judgeTask/execute', requestData);
             if (executeResponse.status === 200) {
               console.log('请求成功', executeResponse.data);
               const responseData = executeResponse.data;
