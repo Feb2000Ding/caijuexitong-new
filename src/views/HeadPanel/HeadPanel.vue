@@ -6,15 +6,20 @@
       <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />
     </div>
 
-    <el-scrollbar class="headpanel-scrollbar" style="width: 450px; height: 50px;">
+    <!-- 根据 isContentVisible 控制滚动内容的显示 -->
+    <el-scrollbar  class="headpanel-scrollbar" style="width: 450px; height: 50px;">
       <div class="scrollbar-content">
-        <div class="scrolling-text" :style="{ animationPlayState: isPaused ? 'paused' : 'running' }" @animationiteration="onAnimationIteration">
-          <div v-for="(item, index) in items" :key="index" class="scroll-item" :class="{'flash': item.isNew}">
-            <img src="@/assets/images/u171.png" alt="图标" class="scroll-icon" />
-            {{ item.text }}
-          </div>
-          <!-- 复制一份消息内容，实现无缝滚动 -->
-          <div v-for="(item, index) in items" :key="'copy' + index" class="scroll-item" :class="{'flash': item.isNew}">
+        <div
+            class="scrolling-text"
+            :key="scrollKey"
+            :style="{ animationPlayState: isPaused || isCentering ? 'paused' : 'running' }"
+        >
+          <div
+              v-for="(item, index) in items"
+              :key="index"
+              class="scroll-item"
+              :class="{ flash: item.isNew }"
+          >
             <img src="@/assets/images/u171.png" alt="图标" class="scroll-icon" />
             {{ item.text }}
           </div>
@@ -33,9 +38,13 @@ export default {
   data() {
     return {
       staticItems: [
-        { text: "收到{from}裁决请求...", isNew: false },
+        { text: "[2025/1/2]收到{from}裁决请求...", isNew: false },
       ], // 初始化为空数组，动态添加消息，包含标记是否为新消息
       isPaused: false, // 控制动画暂停状态
+      animationKey: 0, // 用于重置动画
+      isCentering: false,
+      scrollKey: 0,
+      isContentVisible: false, // 控制滚动内容的显示
     };
   },
   computed: {
@@ -50,22 +59,47 @@ export default {
   },
   watch: {
     // 监听 Pinia store 中 from 的变化
-    "taskStore.from": function (newValue, oldValue) {
-      if (newValue !== oldValue) {
-        // 如果 from 的值发生变化，更新滚动消息
-        this.addNewMessage(newValue);
-      }
+    taskStore: {
+      handler(newValue, oldValue) {
+        console.log("11111111111111111111111")
+        const newFrom = newValue.from;
+        const oldFrom = oldValue.from;
+        if (newFrom !== oldFrom) {
+          console.log("newMessage", newFrom);
+          this.addNewMessage(newFrom);
+          this.isContentVisible = true; // 显示滚动内容
+          console.log(" this.isContentVisible", this.isContentVisible)
+        } else {
+          this.isContentVisible = false; // 隐藏滚动内容
+        }
+      },
+      deep: true // 确保监听整个 store 的变化
     }
   },
   methods: {
+    resetAnimation() {
+      this.animationKey++; // 增加 key 值以触发 DOM 重渲染
+    },
     addNewMessage(fromValue) {
-      // 动态添加一条消息，并标记为新消息
-      this.staticItems.push({ text: `收到${fromValue}裁决请求...`, isNew: true });
+      // 插入新消息到第一项
+      this.staticItems.unshift({ text: `收到${fromValue}裁决请求...`, isNew: true });
 
-      // 设置2秒后移除闪烁标记
+      // 设置居中显示
+      this.isCentering = true;
+
+      // 停止滚动动画
+      this.isPaused = true;
+
+      // 延迟几秒后恢复滚动
       setTimeout(() => {
-        this.staticItems[this.staticItems.length - 1].isNew = false;
-      }, 2000);
+        this.isCentering = false;
+        this.isPaused = false;
+
+        // 移除闪烁标记
+        this.staticItems[0].isNew = false;
+      }, 3000); // 停留 3 秒
+
+      this.scrollKey++;
     },
     onAnimationIteration() {
       // 每次动画完成时触发，暂停滚动2秒
@@ -94,7 +128,7 @@ export default {
   align-items: center;
   justify-content: center;
   margin-right: 5px;
-  position: relative; /* 确保子元素可以绝对定位 */
+  position: relative;
   width: 35px;
   height: 35px;
 }
@@ -107,11 +141,11 @@ export default {
 
 .image-168 {
   position: absolute;
-  width: 8px; /* 调整宽度以适应居中效果 */
-  height: 20px; /* 调整高度以适应居中效果 */
+  width: 8px;
+  height: 20px;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%); /* 居中对齐 */
+  transform: translate(-50%, -50%);
 }
 
 .headpanel-scrollbar {
@@ -121,12 +155,11 @@ export default {
   align-items: center;
   justify-content: center;
   border-radius: 2px;
-  position: relative;
 }
 
 .scrollbar-content {
   display: flex;
-  width: 450px;
+  width: 100px;
   height: 50px;
 }
 
@@ -134,9 +167,8 @@ export default {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  margin-left: 45px; /* 为滚动文本留出图片空间 */
-  animation: scroll 60s cubic-bezier(0.25, 0.8, 0.25, 1) infinite;
-  transition: animation-play-state 0.5s; /* 添加过渡效果 */
+  margin-left: 45px;
+  animation: scroll 20s cubic-bezier(0.25, 0.8, 0.25, 1) infinite; /* 调整了这里的时间 */
 }
 
 .scroll-item {
@@ -144,7 +176,7 @@ export default {
   color: #FFF;
   white-space: nowrap;
   margin-right: 30px;
-  width: 600px;
+  width: 100px;
   display: flex;
   align-items: center;
 }
@@ -155,7 +187,6 @@ export default {
   margin-right: 10px;
 }
 
-/* 添加闪烁效果 */
 .flash {
   color: orange;
   animation: flash 1s infinite;
@@ -175,10 +206,10 @@ export default {
 
 @keyframes scroll {
   0% {
-    transform: translateX(100%); /* 从右侧开始 */
+    transform: translateX(100%);
   }
   100% {
-    transform: translateX(-100%); /* 滚动至完全离开屏幕左侧 */
+    transform: translateX(-100%);
   }
 }
 </style>

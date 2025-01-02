@@ -584,7 +584,7 @@ const fetchTableData = async (
     console.log("正在请求数据...");
 
     //请求体
-    const response = await axios.post(`/api/judgeTask/pageList`, {
+    const response = await axios.post(`http://192.168.43.234:3001/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,

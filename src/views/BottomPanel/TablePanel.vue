@@ -94,11 +94,11 @@ watch(
         const newItem = {
           taskName: responseData.taskName || "未定义任务",  // 任务名称
           judgeType: responseData.judgeModelType || "未知类型",  // 裁决类型
-          requestTime: responseData.requestTime || "2021-12-15 16:20:30",  // 请求时间
+          requestTime: responseData.requestTime || "2024-12-31 16:20:30",  // 请求时间
           side: responseData.from || "红方",  // 申请方
           judgeMethod: judgeModeMapping[responseData.judgeMode] || judgeModeMapping.default,  // 裁决方式
           result: responseData.judgeResult ? responseData.judgeResult.targetResults[0] : 1,  // 裁决结果
-          judgeTime: responseData.judgeTime || "2021-12-15 16:22:30",  // 处理时间
+          judgeTime: responseData.judgeTime || "2024-12-31 16:22:30",  // 处理时间
         };
 
         // 将新的任务添加到 list 中

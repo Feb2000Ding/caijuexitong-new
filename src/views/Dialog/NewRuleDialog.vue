@@ -143,7 +143,7 @@
               <div class="input-container">
                 <input type="text" class="input-field" placeholder="指标名称" v-model="indexItem.name" />
                 <select class="select-box" v-model="indexItem.select">
-                  <option value="" disabled selected>数值范围</option>
+                  <option value="" selected>数值范围</option>
                   <option value="index2">概率模型</option>
                 </select>
               </div>
@@ -358,7 +358,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -662,7 +662,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.1.200:3001/api/calRule/add', payload);
+    const response = await axios.post('http://192.168.43.234:3001/api/calRule/add', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑

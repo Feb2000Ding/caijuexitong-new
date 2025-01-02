@@ -123,10 +123,9 @@
                   <option value="" disabled selected>数值范围</option>
                   <option value="index2">概率模型</option>
                 </select>
+                <button class="add-range-button1" @click="addRange(index, indexIndex)">添加范围</button>
+                <button class="remove-range-button1" @click="removeRange(index, indexIndex)">删除范围</button>
               </div>
-
-              <button class="add-range-button" @click="addRange(index, indexIndex)">添加范围</button>
-              <button class="remove-range-button" @click="removeRange(index, indexIndex)">删除范围</button>
 
               <div v-for="(range, rangeIndex) in index.ranges" :key="rangeIndex" class="form-row1">
                 <div class="form-column1">
@@ -149,7 +148,7 @@
             </div>
           </div>
 
-          <button class="add-target-type-button" @click="addTargetType" style="position: relative; left: 20px;">添加目标类型</button>
+          <button class="add-target-type-button" @click="addTargetType" style="position: relative; left: 30px; top:20px">添加目标类型</button>
         </div>
       </div>
 
@@ -244,7 +243,7 @@ watch(
 
       if (newVal) {
         try {
-          const response = await fetch(`http://192.168.1.200:3001/api/calRule/view/${newVal}`);
+          const response = await fetch(`http://192.168.43.234:3001/api/calRule/view/${newVal}`);
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -338,7 +337,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.1.200:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -363,11 +362,14 @@ const damageLevels = ref([
   { name: '' }
 ]);
 
+const buttonTop = ref(0);
+
 // 添加一个新的毁伤等级定义
 const addDamageLevel = () => {
   formData.value.damageLevels.push({
     name: ''
   });
+  buttonTop.value += 30;
 };
 
 // 删除指定的毁伤等级定义（从下方开始删除）
@@ -465,6 +467,8 @@ const ranges = ref([
 // 添加范围
 const addRange = (index, indexItemIndex) => {
   const targetType = formData.value.targetTypes[index];
+  console.log("formData.value.targetTypes[index]",formData.value.targetTypes[index])
+  console.log("targetType",targetType)
   const indexItem = targetType.indexes[indexItemIndex];
 
   // 确保每个 index 的 ranges 数组存在
@@ -503,8 +507,11 @@ const indicators = ref([]);
 // 添加一组数据
 const addRange1 = (index, conditionIndex, indicatorIndex) => {
   const targetType = formData.value.targetTypes[index];
+  console.log("targetType",targetType)
   const condition = targetType.conditions[conditionIndex];
+  console.log("condition", condition)
   const indicator = condition.indicators[indicatorIndex];
+  console.log("indicator", indicator)
 
   // 确保每个 indicator 的 ranges 数组存在
   if (!indicator.ranges) {
@@ -516,7 +523,8 @@ const addRange1 = (index, conditionIndex, indicatorIndex) => {
     minValue: '',         // 最小值
     maxValue: '',         // 最大值
     impactFactor: '',     // 影响系数
-    stop: false           // 是否终止
+    stop: false ,          // 是否终止
+    deleteButton: true
   });
 
   // 确保 Vue 的响应式更新
@@ -593,36 +601,37 @@ const removeTargetType = (index) => {
 const saveRuleData = async () => {
   const payload = {
     rule: {
-      ruleId: rule,
-      modelId: 1,  // 模型ID (你可以根据需要调整)
+      ruleId: ruleId.value,
+      ruleName: formData.value.ruleName,
+      modelId: 1,
       damageLevels: formData.value.damageLevels.map(level => ({
-        name: level.name  // 对应的毁伤等级
+        name: level.name
       })),
       targetTypes: formData.value.targetTypes.map(targetType => ({
-        targetType: targetType.targetType,  // 每个目标类型
+        targetType: targetType.targetType,
         groups: targetType.conditions.map(condition => ({
           groupName: condition.group,
           operator: condition.logic,
           indicators: condition.indicators.map(indicator => ({
-            indicatorName: indicator.minValue, // 假设这里 minValue 是指示器名称
-            dataType: indicator.maxValue,     // 假设这里 maxValue 是指示器的数据类型
+            indicatorName: indicator.minValue,
+            dataType: indicator.maxValue,
             ranges: indicator.ranges ? indicator.ranges.map(range => ({
-              minValue: range.minValue,        // 最小值
-              maxValue: range.maxValue,        // 最大值
-              weight: range.impactFactor,      // 影响系数
-              isTerminal: range.stop,          // 是否终止
-              damageLevel: formData.value.damageLevels.find(level => level.name === range.destroyLevel)?.name || '' // 使用用户选择的毁伤等级
-            })) : []  // 如果没有 ranges，默认传递一个空数组
+              minValue: range.minValue,
+              maxValue: range.maxValue,
+              weight: range.impactFactor,
+              isTerminal: range.stop,
+              damageLevel: range.impactFactor
+            })) : []
           }))
         })),
         finalIndicator: {
-          indicatorName: targetType.indexName,  // 指标名称
-          dataType: targetType.select,          // 数据类型
-          ranges: targetType.indexes.flatMap(index =>
-              index.ranges.map(range => ({
+          indicatorName: targetType.indexName,
+          dataType: targetType.select,
+          ranges: (targetType.indexes || []).flatMap(index =>
+              (index.ranges || []).map(range => ({
                 minValue: range.minValue,
                 maxValue: range.maxValue,
-                damageLevel: formData.value.damageLevels.find(level => level.name === range.destroyLevel)?.name || '' // 使用用户选择的毁伤等级
+                damageLevel: range.destroyLevel
               }))
           )
         }
@@ -632,7 +641,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.1.200:3001/api/calRule/update', payload);
+    const response = await axios.post('http://192.168.43.234:3001/api/calRule/update', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -653,7 +662,7 @@ const saveRuleData = async () => {
 const fetchRuleData = async (ruleId) => {
   try {
     console.log(111111111111111111)
-    const response = await fetch(`http://192.168.1.200:3001/api/calRule/view/${ruleId}`);
+    const response = await fetch(`http://192.168.43.234:3001/api/calRule/view/${ruleId}`);
     const data = await response.json();
     console.log("ruledata",data)
     if (data.code === 0) {
@@ -849,6 +858,7 @@ onMounted(() => {
 .add-indicator-button,
 .add-condition-button,
 .add-range-button,
+.add-range-button1,
 .add-target-type-button {
   width: 120px;
   height: 30px;
@@ -870,6 +880,11 @@ onMounted(() => {
   position: absolute;
   left: 1190px;
   top: 14px;
+}
+
+.add-range-button1 {
+  top: 15px;
+  left: 400px;
 }
 
 .add-condition-button {
@@ -1019,7 +1034,9 @@ onMounted(() => {
 .remove-damage-level-button,
 .remove-condition-button,
 .remove-indicator-button,
-.remove-range-button {
+.remove-range-button,
+.remove-range-button1
+{
   width: 121px;
   height: 32px;
   flex-shrink: 0;
@@ -1053,6 +1070,11 @@ onMounted(() => {
 .remove-range-button {
   left: 1200px;
   top: 210px;
+}
+
+.remove-range-button1 {
+  left: 1315px;
+  top: 15px;
 }
 
 /*.remove-range-button {*/

@@ -68,7 +68,7 @@
           <div v-for="(target, index) in responseData.data.judgeCalResult.targetResults" :key="index">
             <p><strong>目标类型:</strong> {{ target.targetType || '无' }}</p>
             <p><strong>损害等级:</strong> {{ target.damageLevel }}</p>
-            <p><strong>得分:</strong> {{ target.score }}</p>
+<!--            <p><strong>得分:</strong> {{ target.score }}</p>-->
             <div v-if="target.groupResults && target.groupResults.length">
               <h5>分组结果:</h5>
               <ul>

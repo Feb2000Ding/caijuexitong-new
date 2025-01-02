@@ -179,7 +179,7 @@ const formatParameters = (targetTypes: any[]) => {
 const fetchTableData = async () => {
   try {
     console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.1.200:3001/api/calRule/pageList", {
+    const response = await axios.post("http://192.168.43.234:3001/api/calRule/pageList", {
       current: 1,
       pageSize: 100,
     });
