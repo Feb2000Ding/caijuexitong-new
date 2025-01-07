@@ -58,7 +58,7 @@
                 </div>
               </template>
             </el-table-column>
-            <el-table-column prop="actions" label="操作" width="250">
+            <el-table-column prop="actions" label="操作">
               <template #default="scope">
                 <el-button class="custom-button" size="mini" @click="editTask(scope.row)">编辑</el-button>
                 <el-button class="custom-button" size="mini" @click="deleteTask(scope.row)">删除</el-button>
@@ -560,23 +560,27 @@ watch(() => props.isShow, (newVal) => {
 }
 
 .table-container::-webkit-scrollbar {
-  width: 0;  /* 隐藏垂直滚动条 */
-  height: 0; /* 隐藏水平滚动条 */
+  width: 0;
+  height: 0;
 }
 
 .custom-table {
-  width: 100%;
+  width: 100% !important;
+}
+
+::v-deep.el-table {
+  width: 100% !important;
 }
 
 .text-container {
-  transition: height 0.3s ease-in-out; /* 添加过渡效果 */
-  overflow: hidden; /* 隐藏超出部分 */
-  height: 40px; /* 默认收缩的高度，可以根据需要调整 */
+  transition: height 0.3s ease-in-out;
+  overflow: hidden;
+  height: 40px;
   display: block;
 }
 
 .text-container.expanded {
-  height: auto; /* 展开时高度自适应 */
+  height: auto;
 }
 
 .text-content {
@@ -588,9 +592,9 @@ watch(() => props.isShow, (newVal) => {
 }
 
 .text-content.expanded {
-  white-space: normal; /* 允许换行 */
-  word-wrap: break-word; /* 防止长单词不换行 */
-  max-width: 700px; /* 宽度扩展 */
+  white-space: normal;
+  word-wrap: break-word;
+  max-width: 700px;
   line-height: 20px;
 }
 

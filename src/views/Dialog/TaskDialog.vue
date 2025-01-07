@@ -159,7 +159,7 @@
                 </el-button>
               </template>
             </el-table-column>
-            <el-table-column prop="actions" label="操作" width="188">
+            <el-table-column prop="actions" label="操作" >
               <template #default="scope">
                 <el-button
                     class="custom-button"
@@ -1585,12 +1585,16 @@ onMounted(() => {
   width: calc(100% - 30px);
   max-width: calc(100% );
   margin: 15px 15px;
-  padding: 0;
+  padding: 0 20px;
   box-sizing: border-box;
 }
 
+::v-deep.el-table {
+  width: 100% !important;
+}
+
 .custom-table {
-  width: 100%;
+  width: 100% !important;
 }
 
 ::v-deep .el-table__header-wrapper {

@@ -828,6 +828,9 @@ onMounted(() => {
   font-family: "Alibaba PuHuiTi";
   font-weight: 400;
   margin-right: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .form-column input, .form-column1 input{
