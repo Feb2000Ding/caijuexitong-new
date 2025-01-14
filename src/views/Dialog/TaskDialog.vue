@@ -188,24 +188,35 @@
               :disabled="currentPage <= 1"
               @click="handlePageChange(currentPage - 1)"
               class="pagination-button"
+              @mouseover="hoverPage = 'prev'"
+              @mouseleave="hoverPage = null"
           >
             上一页
           </el-button>
+
           <el-button
               v-for="page in totalPages"
               :key="page"
               size="small"
-              :type="currentPage === page ? 'primary' : ''"
+              :class="[
+        currentPage === page ? 'active-page' : '',
+        hoverPage === page && currentPage !== page ? 'hover-page' : '',
+        'pagination-number-button'
+      ]"
               @click="handlePageChange(page)"
-              class="pagination-button pagination-number-button"
+              @mouseover="hoverPage = page"
+              @mouseleave="hoverPage = null"
           >
             {{ page }}
           </el-button>
+
           <el-button
               size="small"
               :disabled="currentPage >= totalPages"
               @click="handlePageChange(currentPage + 1)"
               class="pagination-button"
+              @mouseover="hoverPage = 'next'"
+              @mouseleave="hoverPage = null"
           >
             下一页
           </el-button>
@@ -723,6 +734,8 @@ const filteredData = computed(() => {
   return filtered;
 });
 
+const hoverPage = ref(null);
+
 // 处理分页变化
 const handlePageChange = (newPage) => {
   if (newPage < 1 || newPage > totalPages.value) return; // 防止越界
@@ -892,6 +905,7 @@ const editTask = async (task) => {
       taskForm.effectModels = taskRuleRelVOList.map(item => item.effectId);
       taskForm.judgementRules = taskRuleRelVOList.map(item => item.ruleId);
       taskForm.judgementMethods = taskRuleRelVOList.map(item => item.judgeMode);
+      taskForm.effectModels = taskRuleRelVOList.map(item => item.effectModels)
       console.log("taskForm", taskForm)
 
       count.value = taskForm.judgementModels.length;
@@ -1147,7 +1161,30 @@ const deleteTask = async (row: any) => {
   // }
 };
 
-// 执行按钮
+let ws;
+
+const createWebSocket = () => {
+  ws = new WebSocket('ws://192.168.43.234:3001/api/ws/judge');
+
+  ws.onopen = () => {
+    console.log('WebSocket 连接已建立');
+  };
+
+  ws.onerror = (error) => {
+    console.error('WebSocket 连接错误:', error);
+  };
+
+  ws.onclose = () => {
+    console.log('WebSocket 连接关闭');
+  };
+
+  // 监听接收到的消息
+  ws.onmessage = (event) => {
+    console.log('收到 WebSocket 消息:', event.data);
+  };
+};
+
+// 执行任务请求
 const executeTask = async (row) => {
   const taskName = row.taskName;  // 获取选中的任务名称
 
@@ -1174,8 +1211,8 @@ const executeTask = async (row) => {
         emit('taskCompleted', row);  // 发送任务完成事件
         emit('update:isShow', false);  // 关闭显示对话框
 
-        // 准备请求体并发送到后端
-        setTimeout(async () => {
+        // 准备请求体并通过 WebSocket 发送到后端
+        setTimeout(() => {
           try {
             const requestData = {
               task: {
@@ -1184,7 +1221,7 @@ const executeTask = async (row) => {
                 remark: task.task.remark || '',
                 traceTaskCode: task.task.traceTaskCode || '101',  // 默认值或从任务中提取
               },
-              taskRuleRelList: task.taskRuleRelVOList.map((model, index) => ({
+              taskRuleRelList: task.taskRuleRelVOList.map((model) => ({
                 modelId: model.modelId,  // 假设 taskRuleRelVOList 是任务中的数组
                 modelType: model.modelType || '',  // 如果有 modelType 字段
                 judgeMode: model.judgeMode || 'manual',  // 如果有 judgeMode 字段
@@ -1192,36 +1229,27 @@ const executeTask = async (row) => {
               })),
             };
 
-            // 发送 POST 请求到后端
-            const executeResponse = await axios.post('http://192.168.43.234:3001/api/judgeTask/execute', requestData);
-            if (executeResponse.status === 200) {
-              console.log('请求成功', executeResponse.data);
-              const responseData = executeResponse.data;
-              console.log("responseData", responseData)
-              const fromValue = executeResponse.data.data.from;
-              console.log("fromValue", fromValue)
-              const taskStore = useTaskStore();
-              taskStore.setFrom(fromValue);
-              taskStore.setResponseData(responseData);
-
-              // 显示自定义弹窗
-              taskDialogMessage.value = `任务执行成功! 返回数据: ${fromValue}`;
-              console.log("taskDialogMessage", taskDialogMessage.value)
-              isTaskDialogVisible.value = true;
-              console.log("isTaskDialogVisible.value", isTaskDialogVisible.value)
-              emit('taskExecuted', { fromValue, responseData });
-
-              // 延迟 2 秒后更新任务状态为已完成
-              setTimeout(() => {
-                const taskIndex = tableData.value.findIndex((task) => task.id === row.id);
-                if (taskIndex !== -1) {
-                  tableData.value[taskIndex].taskStatus = '已完成';
-                }
-              }, 2000); // 延迟2秒更新任务状态
-
+            // 确保 WebSocket 连接已打开
+            if (ws.readyState === WebSocket.OPEN) {
+              // 发送任务执行请求通过 WebSocket
+              ws.send(JSON.stringify({
+                type: 'executeTask',
+                data: requestData
+              }));
+              console.log('WebSocket发送任务执行请求:', requestData);
             } else {
-              console.error('请求失败', executeResponse.data);
+              console.error('WebSocket连接不可用');
+              createWebSocket();
+              ws.onopen = () => {
+                console.log('WebSocket重新连接');
+                // 重新发送任务执行请求
+                ws.send(JSON.stringify({
+                  type: 'executeTask',
+                  data: requestData
+                }));
+              };
             }
+
           } catch (error) {
             console.error('执行任务时发生错误', error);
           }
@@ -1237,6 +1265,9 @@ const executeTask = async (row) => {
     console.error('获取任务列表时发生错误', error);
   }
 };
+
+// 初始化 WebSocket 连接
+createWebSocket();
 
 // 动态设置宽度和高度
 const modalStyle = ref({});
@@ -1640,8 +1671,28 @@ onMounted(() => {
   border: 0.1px solid #2391FF;
 }
 
+.custom-pagination .el-button:hover {
+  background-color: #20598F !important;
+  color: white !important;
+  border-color: #2391FF !important;
+}
+
 .custom-pagination .pagination-number-button {
   width: 35px;
+}
+
+/* 已选中的页码样式 */
+.custom-pagination .active-page {
+  background-color: #2391FF !important;
+  color: white !important;
+  border-color: #2391FF !important;
+}
+
+/* 鼠标悬浮的页码样式 */
+.custom-pagination .hover-page {
+  background-color: #20598F !important;
+  color: white !important;
+  border-color: #2391FF !important;
 }
 
 ::v-deep .el-table .el-table__header th {

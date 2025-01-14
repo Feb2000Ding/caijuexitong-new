@@ -38,8 +38,8 @@ export default {
   data() {
     return {
       staticItems: [
-        { text: "[2025/1/2]收到{from}裁决请求...", isNew: false },
-      ], // 初始化为空数组，动态添加消息，包含标记是否为新消息
+        { text: this.getCurrentDate() + '收到{from}裁决请求...', isNew: false },
+      ], // 初始化消息，日期为当前日期，包含标记是否为新消息
       isPaused: false, // 控制动画暂停状态
       animationKey: 0, // 用于重置动画
       isCentering: false,
@@ -61,14 +61,11 @@ export default {
     // 监听 Pinia store 中 from 的变化
     taskStore: {
       handler(newValue, oldValue) {
-        console.log("11111111111111111111111")
         const newFrom = newValue.from;
         const oldFrom = oldValue.from;
         if (newFrom !== oldFrom) {
-          console.log("newMessage", newFrom);
           this.addNewMessage(newFrom);
           this.isContentVisible = true; // 显示滚动内容
-          console.log(" this.isContentVisible", this.isContentVisible)
         } else {
           this.isContentVisible = false; // 隐藏滚动内容
         }
@@ -80,9 +77,21 @@ export default {
     resetAnimation() {
       this.animationKey++; // 增加 key 值以触发 DOM 重渲染
     },
+    getCurrentDate() {
+      const date = new Date();
+      const year = date.getFullYear();
+      const month = (date.getMonth() + 1).toString().padStart(2, '0');
+      const day = date.getDate().toString().padStart(2, '0');
+      return `[${year}/${month}/${day}]`;
+    },
     addNewMessage(fromValue) {
+      const currentDate = this.getCurrentDate();
+
       // 插入新消息到第一项
-      this.staticItems.unshift({ text: `收到${fromValue}裁决请求...`, isNew: true });
+      this.staticItems.unshift({
+        text: `${currentDate}收到${fromValue}裁决请求...`,
+        isNew: true
+      });
 
       // 设置居中显示
       this.isCentering = true;

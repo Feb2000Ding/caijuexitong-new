@@ -18,18 +18,23 @@
           <div class="form-row">
             <div class="form-column">
               <label for="ruleName">规则名称</label>
-              <input type="text" id="ruleName" v-model="formData.ruleName" />
+              <input type="text" id="ruleName" v-model="formData.ruleName" style="height:32px; width: 237px"/>
+            </div>
+            <div class="icon-container">
+              <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="margin-left: 180px;"/>
+              <div class="tooltip">规则名不能重复</div>
+              <!--                <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />-->
             </div>
             <div class="form-column">
               <label for="model">裁决模型</label>
               <select id="model" class="select-box" v-model="formData.model" style="margin-left: -3px;">
-                <option value="" disabled selected>选择裁决模型</option>
+                <option value="" selected>选择裁决模型</option>
                 <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
               </select>
             </div>
             <div class="form-column">
               <label for="addTime">添加时间</label>
-              <input type="text" id="addTime" v-model="formData.addTime" />
+              <input type="text" id="addTime" v-model="formData.addTime" style="height:32px; width: 237px"/>
             </div>
           </div>
 
@@ -38,11 +43,36 @@
             <div class="form-column">
               <label :for="'damageLevelName' + index">毁伤等级定义</label>
               <div class="input-with-button">
-                <input
-                    :id="'damageLevelName' + index"
-                    type="text"
-                    v-model="damageLevel.name"
-                />
+<!--                <div class="dropdown-input" @click.outside="closeDropdown">-->
+<!--                  &lt;!&ndash; 输入框 &ndash;&gt;-->
+<!--                  <input-->
+<!--                      :id="'damageLevelName' + index"-->
+<!--                      v-model="inputValue"-->
+<!--                      class="input-field"-->
+<!--                      placeholder="请选择毁伤等级"-->
+<!--                      @focus="openDropdown"-->
+<!--                      @input="filterOptions"-->
+<!--                  />-->
+
+<!--                  &lt;!&ndash; 下拉框 &ndash;&gt;-->
+<!--                  <ul v-if="showDropdown" class="dropdown-menu">-->
+<!--                    <li-->
+<!--                        v-for="(option, i) in filteredOptions"-->
+<!--                        :key="i"-->
+<!--                        @click="selectOption(option)"-->
+<!--                    >-->
+<!--                      {{ option }}-->
+<!--                    </li>-->
+<!--                    <li v-if="filteredOptions.length === 0" class="no-option">无匹配项</li>-->
+<!--                  </ul>-->
+<!--                </div>-->
+                <select :id="'damageLevelName' + index" v-model="damageLevel.name" class="select-box">
+                  <option value="" disabled selected>请选择毁伤等级</option>
+                  <option value="轻微">轻微</option>
+                  <option value="损伤">损伤</option>
+                  <option value="损毁">损毁</option>
+                  <option value="摧毁">摧毁</option>
+                </select>
                 <!-- 添加毁伤等级按钮 -->
                 <button
                     v-if="index === damageLevels.length - 1"
@@ -65,117 +95,181 @@
           </div>
 
           <!-- 目标类型定义 -->
-          <div class="target-type-definition">目标类型定义</div>
+          <div class="target-type-definition">裁决目标类型定义</div>
 
           <!-- 目标类型容器 -->
           <div v-for="(targetType, index) in formData.targetTypes" :key="index" class="target-container">
+<!--            <div class="input-container">-->
+<!--&lt;!&ndash;              <label>目标类型</label>&ndash;&gt;-->
+<!--              <input type="text" class="input-field" placeholder="目标类型" v-model="targetType.type" />-->
+<!--            </div>-->
             <div class="input-container">
-              <input type="text" class="input-field" placeholder="默认目标类型" v-model="targetType.type" />
+              <select class="input-field" id="targetType" v-model="targetType.type">
+<!--                <option value="" disabled selected>请选择裁决目标类型</option>-->
+                <option value="主体结构" selected>主体结构</option>
+                <option value="太阳能板">太阳能板</option>
+              </select>
+              <div class="icon-container" style="position: relative;">
+                <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" />
+                <div class="tooltip">请选择目标类型</div>
+              </div>
             </div>
+
+            <div class="target-type-definition1">条件组定义</div>
 
             <!-- 条件组和指标 -->
             <div v-for="(condition, conditionIndex) in targetType.conditions" :key="conditionIndex" class="condition-container">
               <div class="input-container">
-                <input type="text" class="input-field" placeholder="条件组" v-model="condition.group" />
+<!--                <input type="text" class="input-field" placeholder="条件组" v-model="condition.group" />-->
+                <select class="input-field" v-model="condition.group">
+<!--                  <option value="请选择条件组" disabled selected>请选择条件组</option>-->
+                  <option value="条件组1" selected>主体结构指标组</option>
+                  <option value="条件组2">条件组2</option>
+                </select>
+
+                <!-- 图标组 -->
+                <div class="icon-container">
+                  <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" />
+                  <div class="tooltip">请选择条件组</div>
+                </div>
+
                 <select class="select-box" v-model="condition.logic">
-                  <option value="" disabled selected>AND</option>
+                  <option value="" selected>AND</option>
                   <option value="OR">OR</option>
                 </select>
                 <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
               </div>
-<!--              <div style="background-color: black;width:200px;height:200px;"></div>-->
+
+              <div class="target-type-definition1" style="margin-top:20px;">指标组定义</div>
               <div class="indicater-container" v-for="(indicator, indicatorIndex) in condition.indicators" :key="indicatorIndex">
                 <!-- 第一行：指标名称和最大值 -->
                 <div class="form-row1">
                   <div class="form-column1">
                     <label for="minValue1">指标名称</label>
-                    <input type="text" v-model="indicator.minValue" style="margin-left:-6px;" />
+                    <select v-model="indicator.minValue" @change="updateRange(indicatorIndex)" class="select-box" style="margin-left:-6px; width:237px; height:32px;">
+                      <option value="出光时长">出光时长</option>
+                      <option value="倒靶功率密度">倒靶功率密度</option>
+                    </select>
                   </div>
                   <div class="form-column1">
                     <label for="maxValue1"></label>
-                    <select v-model="indicator.maxValue" class="select-box" style="margin-left:-2px;">
+                    <select v-model="indicator.maxValue" class="select-box" style="margin-left:-52px;">
                       <option value="numeric" selected>数值型</option>
                       <option value="probability">概率型</option>
                     </select>
                   </div>
-                  <button class="add-button4" @click="addRange1(index, conditionIndex, indicatorIndex)">添加范围</button>
-                  <button class="delete-button2" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
                 </div>
 
+                <button class="delete-button2" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
+
                 <!-- 第二行：范围数据 -->
-                <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1">
+                <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1" >
                   <div class="form-column1">
                     <label for="minValue1">最小值</label>
-                    <input id="minValue1" type="text" v-model="range.minValue" />
+                    <input id="minValue1" type="text" v-model="range.minValue" @input="syncMinValueToIndexes" style="width:237px; height:32px;" />
                   </div>
                   <div class="form-column1">
                     <label for="maxValue1">最大值</label>
-                    <input id="maxValue1" type="text" v-model="range.maxValue" />
+                    <input id="maxValue1" type="text" v-model="range.maxValue" style="width:237px; height:32px;" />
                   </div>
                   <div class="form-column1">
                     <label for="impactFactor">影响系数</label>
-                    <input id="impactFactor" type="text" v-model="range.impactFactor" />
+                    <input id="impactFactor" type="text" v-model="range.impactFactor" style="width:237px; height:32px;" />
                   </div>
                   <div class="form-column1">
                     <label for="stop">终止判断</label>
-                    <input type="radio" id="stop" v-model="range.stop" :value="true" style="height:15px; width:15px;" />
+                    <input type="checkbox" id="stop" v-model="range.stop" :value="true" style="height:15px; width:15px;" />
+                  </div>
+
+                  <div class="form-row1">
+                    <button
+                        class="add-button4"
+                        @click="addRange1(index, conditionIndex, indicatorIndex)"
+                        :style="{ left: '20px', marginBottom: '10px', marginTop: buttonOffset + 'px' }"
+                    >
+                      添加范围
+                    </button>
                   </div>
 
                   <!-- 删除按钮逻辑 -->
-                  <button v-if="range.deleteButton" class="delete-button3" @click="removeRange1(index, conditionIndex, indicatorIndex, rangeIndex)">
+                  <button v-if="range.deleteButton"
+                          class="delete-button3"
+                          @click="removeRange1(index, conditionIndex, indicatorIndex, rangeIndex)"
+                          :style="{ marginTop: range.marginTop + 'px' }">
                     删除范围
                   </button>
                 </div>
 
-                <!-- 每个 indicater-container 里都应有添加范围和删除指标按钮 -->
-                <button class="add-button4" @click="addRange1(index, conditionIndex, indicatorIndex)">添加范围</button>
-                <button class="delete-button2" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
               </div>
 
-              <button class="add-button2" @click="addIndex(index, conditionIndex)">添加指标</button>
+              <!-- 每个 condition 组下的 "添加指标" 按钮 -->
+              <button class="add-button2" @click="addIndex(index, conditionIndex)">添加指标组</button>
             </div>
 
             <!-- 添加条件组按钮 -->
             <button class="add-button3" @click="addCondition(index)">添加条件组</button>
 
-            <!-- 指标 -->
+            <div class="target-type-definition1">最终指标定义</div>
+            <!-- 最终指标 -->
             <div v-for="(indexItem, indexItemIndex) in targetType.indexes" :key="indexItemIndex" class="index-container">
               <div class="input-container">
-                <input type="text" class="input-field" placeholder="指标名称" v-model="indexItem.name" />
-                <select class="select-box" v-model="indexItem.select">
+                <!-- 指标名称选择下拉框 -->
+                <select class="input-field" v-model="indexItem.indexName" style="height:32px; width:237px;">
+                  <option value="" disabled selected>请选择最终指标</option>
+                  <option value="出光时长">出光时长</option>
+                  <option value="倒靶功率密度">倒靶功率密度</option>
+                </select>
+
+                <!-- 数值范围选择下拉框 -->
+                <select class="select-box" v-model="indexItem.valueRange">
                   <option value="" selected>数值范围</option>
                   <option value="index2">概率模型</option>
                 </select>
               </div>
 
-              <!-- 添加和删除范围 -->
-              <button class="add-button2" @click="addRange(index, indexItemIndex)">添加范围</button>
-              <button class="delete-button" @click="removeRange(index, indexItemIndex)">删除范围</button>
+              <!-- 删除范围按钮 -->
+              <div v-for="(button, buttonIndex) in indexItem.deleteButtons" :key="buttonIndex">
+                <button
+                    class="delete-button4"
+                    @click="removeRange(index, indexItemIndex, buttonIndex)"
+                    :style="{ marginTop: button.marginTop + 'px' }">
+                  删除范围
+                </button>
+              </div>
 
               <!-- 范围容器 -->
-              <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1">
+              <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1" style="margin-top:20px;">
                 <div class="form-column1">
                   <label for="minValue">最小值</label>
-                  <input type="text" id="minValue" v-model="range.minValue" />
+                  <input type="text" id="minValue" v-model="range.minValue" style="height:32px; width:237px;"/>
                 </div>
-                <div class="form-column1">
+                <div class="form-column1" style="margin-left:-95px;">
                   <label for="maxValue">最大值</label>
-                  <input type="text" id="maxValue" v-model="range.maxValue" />
+                  <select id="maxValue" v-model="range.maxValue" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                    <option value="∞">∞</option>
+                  </select>
                 </div>
-                <div class="form-column1">
+                <div class="form-column1" style="margin-left:-115px;">
                   <label for="destroyLevel">毁伤等级</label>
-                  <select id="destroyLevel" v-model="range.destroyLevel" class="select-box">
+                  <select id="destroyLevel" v-model="range.destroyLevel" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
                     <option v-for="(damageLevel, index) in damageLevels" :key="index" :value="damageLevel.name">
                       {{ damageLevel.name }}
                     </option>
                   </select>
                 </div>
               </div>
+
+              <!-- 添加范围按钮 -->
+              <div class="form-row1">
+                <button class="add-button5" @click="addRange(index, indexItemIndex)" :style="{ marginTop: indexItem.addButton ? indexItem.addButton.marginTop + 'px' : '0px' }">
+                  添加范围
+                </button>
+              </div>
             </div>
           </div>
 
           <!-- 添加目标类型按钮 -->
-          <button class="add-button3" @click="addTargetType" style="position: relative; left: 20px;">添加目标类型</button>
+          <button class="add-button3" @click="addTargetType" style="position: relative; left: 20px; top: 0">添加目标类型</button>
         </div>
       </div>
 
@@ -189,6 +283,7 @@
 
 <script setup>
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue';
+import {ElSelect, ElOption } from 'element-plus';
 import axios from 'axios';
 import { useTaskStore } from '@/stores/counter.js';
 
@@ -196,22 +291,35 @@ import { useTaskStore } from '@/stores/counter.js';
 const taskStore = useTaskStore()
 const taskForm = taskStore.getTaskForm
 
+const options = ref(['选项1', '选项2', '选项3', '选项4']);
+
 const props = defineProps({
   isShow: Boolean,
   isEditMode: Boolean,
-  currentTaskData: Object
+  currentTaskData: Object,
+  // index: {
+  //   type: Number,
+  //   required: true,
+  // },
+  // damageLevel: {
+  //   type: Object,
+  //   required: true,
+  // },
+  // options: {
+  //   type: Array,
+  //   default: () => ["轻微", "中等", "严重"],
+  // },
 });
 console.log("isEditMode", props.isEditMode, props.currentTaskData);
 
 watch(() => props.isEditMode, (newVal) => {
-  console.log("是否编辑模式:", newVal);  // 打印是否是编辑模式
+  console.log("是否编辑模式:", newVal);
 });
 
 watch(() => props.currentTaskData, (newVal) => {
-  console.log("接收到的任务数据:", newVal);  // 打印接收到的任务数据
+  console.log("接收到的任务数据:", newVal);
 });
 
-// 每次打开这个组件时重置表单
 const defaultFormData = {
   ruleName: '',
   model: '',
@@ -244,13 +352,13 @@ const defaultFormData = {
       ],
       indexes: [
         {
-          indexName: '', // 指标名称
+          indexName: '',
           valueRange: '',
           ranges: [
             {
-              minValue: '', // 最小值
-              maxValue: '', // 最大值
-              destroyLevel: '', // 毁伤等级
+              minValue: '',
+              maxValue: '',
+              destroyLevel: '',
             },
           ],
         },
@@ -275,6 +383,49 @@ const resetFormData = () => {
   formData.value = JSON.parse(JSON.stringify(defaultFormData)); // 深拷贝默认值
   formData.value.addTime = getCurrentTime();
 };
+
+// 自定义的下拉框
+// 数据和状态
+// const inputValue = ref(""); // 输入框的值
+// const showDropdown = ref(false); // 是否显示下拉框
+// const filteredOptions = ref([]); // 筛选后的选项
+//
+// // 初始值设置
+// watch(
+//     () => damageLevel.name,
+//     (newValue) => {
+//       inputValue.value = newValue || "";
+//     },
+//     { immediate: true }
+// );
+//
+// // 方法
+// const openDropdown = () => {
+//   showDropdown.value = true;
+// };
+//
+// const closeDropdown = () => {
+//   showDropdown.value = false;
+// };
+//
+// const filterOptions = () => {
+//   const input = inputValue.value.toLowerCase();
+//   filteredOptions.value = options.filter((option) =>
+//       option.toLowerCase().includes(input)
+//   );
+// };
+//
+// const selectOption = (option) => {
+//   inputValue.value = option;
+//   damageLevel.name = option; // 更新绑定值
+//   closeDropdown();
+// };
+//
+// // 初始化筛选项
+// filteredOptions.value = [...options];
+
+// 点击外部关闭下拉框
+// useOutsideClick(document.querySelector(".dropdown-input"), closeDropdown);
 
 // 获取当前时间
 const getCurrentTime = () => {
@@ -314,7 +465,8 @@ const formData = ref({
                   maxValue: '',
                   impactFactor: '',
                   stop: false,
-                  deleteButton:''
+                  deleteButton:'',
+                  marginTop:''
                 }
               ]
             }
@@ -352,6 +504,134 @@ const formData = ref({
   ]
 });
 
+// 1. 从 localStorage 获取数据
+const loadFromLocalStorage = () => {
+  const savedData = localStorage.getItem('formData');
+  if (savedData) {
+    formData.value = JSON.parse(savedData);
+  }
+};
+
+// 2. 保存数据到 localStorage
+const saveToLocalStorage = () => {
+  localStorage.setItem('formData', JSON.stringify(formData.value));
+};
+
+// 3. 清空表单数据并清除 localStorage
+const clearFormData = () => {
+  formData.value = {
+    ruleName: '',
+    model: '',
+    addTime: '',
+    targetTypes: [
+      {
+        targetType: '',
+        indexName: '',
+        select: '',
+        conditions: [
+          {
+            group: '',
+            logic: '',
+            indicators: [
+              {
+                minValue: '',
+                maxValue: 'numeric',
+                ranges: [
+                  {
+                    minValue: '',
+                    maxValue: '',
+                    impactFactor: '',
+                    stop: false,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
+        indexes: [
+          {
+            indexName: '',
+            valueRange: '',
+            ranges: [
+              {
+                minValue: '',
+                maxValue: '',
+                destroyLevel: '',
+              },
+            ],
+          },
+        ],
+      },
+    ],
+    damageLevels: [
+      { name: '轻微' },
+      { name: '中等' },
+      { name: '严重' },
+    ],
+  };
+  localStorage.removeItem('formData');
+};
+
+// 4. 监听 formData 的变化，实时保存
+watch(formData, (newFormData) => {
+  localStorage.setItem('formData', JSON.stringify(newFormData));
+}, { deep: true });
+
+// 同步minValue
+const syncMinValueToIndexes = () => {
+  const formMinValue = formData.value.targetTypes[0].conditions[0].indicators[0].ranges[0].minValue;
+
+  // 遍历 formData.targetTypes[0].indexes[0].ranges，设置其 minValue
+  formData.value.targetTypes[0].indexes[0].ranges.forEach((range) => {
+    range.minValue = formMinValue;
+  });
+};
+
+// 监听条件组中的 minValue 变化并同步
+// watch(
+//     () => formData.value.targetTypes[0].conditions[0].indicators[0].ranges[0].minValue,
+//     (newValue) => {
+//       // 遍历 formData.targetTypes[0].indexes[0].ranges，设置其 minValue
+//       formData.value.targetTypes[0].indexes[0].ranges.forEach((range) => {
+//         range.minValue = newValue;
+//       });
+//     }
+// );
+
+watch(
+    () => formData.value.targetTypes[0].indexes[0].indexName, // 监听 indexName 变化
+    (newIndexName) => {
+      console.log("newIndexName", newIndexName)
+      // 找到对应的指标范围数据并更新 ranges
+      syncRanges(newIndexName);
+    }
+);
+
+// 方法：当 indicator 的值变化时，自动同步
+const syncRanges = (newIndexName) => {
+  // 1. 查找目标 index
+  const correspondingIndex = formData.value.targetTypes[0].indexes.find(index => index.indexName === newIndexName);
+  console.log("correspondingIndex", correspondingIndex);
+
+  if (correspondingIndex) {
+    // 2. 查找对应的 indicator
+    // 在这里假设 indicator 的 minValue 或 maxValue 的名称是和 indexName 对应的
+    const correspondingIndicator = formData.value.targetTypes[0].conditions[0].indicators.find(indicator => indicator.minValue === newIndexName);
+
+    console.log("correspondingIndicator", correspondingIndicator);
+
+    if (correspondingIndicator) {
+      // 3. 将 indicator 的 minValue 和 maxValue 同步到 index 的 ranges 中
+      console.log("correspondingIndex.ranges", correspondingIndex.ranges);
+      correspondingIndex.ranges = correspondingIndicator.ranges.map(range => ({
+        minValue: range.minValue,
+        maxValue: range.maxValue,
+      }));
+      console.log("updated correspondingIndex.ranges", correspondingIndex.ranges);
+    }
+  }
+};
+
 // 裁决模型的下拉框数据
 const modelOptions = ref([]);
 
@@ -388,14 +668,14 @@ const deleteButtonTop = ref(137);
 // 添加毁伤等级
 const addDamageLevel = () => {
   damageLevels.value.push({ name: '' });
-  deleteButtonTop.value += 50;
+  deleteButtonTop.value += 53;
 };
 
 // 删除毁伤等级
 const removeDamageLevel = () => {
   if (damageLevels.value.length > 1) {
     damageLevels.value.pop();
-    deleteButtonTop.value -= 50;
+    deleteButtonTop.value -= 53;
   }
 };
 
@@ -502,6 +782,17 @@ const addRange = (targetIndex, indexItemIndex) => {
     maxValue: '',        // 最大值
     destroyLevel: ''     // 毁伤等级
   });
+
+  // 动态添加对应的删除按钮
+  if (!indexItem.deleteButtons) {
+    indexItem.deleteButtons = [];
+  }
+  indexItem.deleteButtons.push({ marginTop: 53 * (indexItem.ranges.length - 1) });
+
+  if (!indexItem.addButton) {
+    indexItem.addButton = { marginTop: 0 }; // 初始化按钮的位置
+  }
+  indexItem.addButton.marginTop = 53 * (indexItem.ranges.length - 1);
 };
 
 // 删除最后一组范围
@@ -514,17 +805,32 @@ const removeRange = (targetIndex, indexItemIndex, rangeIndex = null) => {
     if (rangeIndex === null) {
       // 删除最后一个范围
       indexItem.ranges.pop();
+      indexItem.deleteButtons.pop();
     } else {
       // 删除指定索引的范围
       indexItem.ranges.splice(rangeIndex, 1);
+      indexItem.deleteButtons.splice(rangeIndex, 1);
+    }
+
+    // 更新删除范围之后的按钮位置，保持删除之前的按钮不变
+    for (let i = rangeIndex || 0; i < indexItem.deleteButtons.length; i++) {
+      indexItem.deleteButtons[i].marginTop = 53 * (i+1); // 重新计算marginTop
+    }
+
+    if (indexItem.addButton) {
+      indexItem.addButton.marginTop = 53 * (indexItem.ranges.length - 1); // 每次删除后，上移 53px
     }
   }
 };
 
+
 // 初始化一个数组来保存每组数据
 const indicators = ref([]);
 
-// 添加一组数据
+// 按钮位置的偏移量
+const buttonOffset = ref(52);
+
+// 添加范围组
 const addRange1 = (index, conditionIndex, indicatorIndex) => {
   console.log("formData.value",formData.value)
   console.log("targetIndex",index)
@@ -540,14 +846,26 @@ const addRange1 = (index, conditionIndex, indicatorIndex) => {
     indicator.ranges = [];
   }
 
+  const newRangeMarginTop = - 53 + indicator.ranges.length * 53;
+
   // 向指定 indicator 的 ranges 数组添加一个新的范围对象
   indicator.ranges.push({
     minValue: '',         // 最小值
     maxValue: '',         // 最大值
     impactFactor: '',     // 影响系数
     stop: false,           // 是否终止
-    deleteButton: true    // 标志是否显示删除按钮
+    deleteButton: true,   // 标志是否显示删除按钮
+    marginTop: newRangeMarginTop
   });
+
+  // // 获取按钮 DOM 元素
+  // const button = document.querySelector('.add-button4');
+  //
+  // // 获取当前的 margin-top 值并更新
+  // let currentTop = parseInt(window.getComputedStyle(button).marginTop) || 0;
+  // button.style.marginTop = (currentTop + 53) + 'px'; // 每次下移 20px
+
+  buttonOffset.value += 53;
 
   // 确保 Vue 的响应式更新
   // formData.value = { ...formData.value };
@@ -563,8 +881,17 @@ const removeRange1 = (index, conditionIndex, indicatorIndex, rangeIndex) => {
   if (indicator && Array.isArray(indicator.ranges)) {
     // 检查索引有效性
     if (rangeIndex >= 0 && rangeIndex < indicator.ranges.length) {
-      // 删除指定索引的范围，并前移后续元素
+      // 删除指定索引的范围
       indicator.ranges.splice(rangeIndex, 1);
+
+      // 更新所有后续范围的 marginTop
+      for (let i = rangeIndex; i < indicator.ranges.length; i++) {
+        // 更新后续元素的 marginTop，向上移动 53px
+        indicator.ranges[i].marginTop -= 53;
+      }
+
+      // 更新删除按钮的 marginTop
+      buttonOffset.value -= 53;
     }
   }
 };
@@ -623,13 +950,13 @@ const removeTargetType = (index) => {
 const saveRuleData = async () => {
   const payload = {
     rule: {
-      ruleName: formData.value.ruleName,  // 规则名称
-      modelId: 1,  // 模型ID (你可以根据需要调整)
+      ruleName: formData.value.ruleName,
+      modelId: 1,
       damageLevels: formData.value.damageLevels.map(level => ({
-        name: level.name  // 对应的毁伤等级
+        name: level.name
       })),
       targetTypes: formData.value.targetTypes.map(targetType => ({
-        targetType: targetType.targetType,  // 每个目标类型
+        targetType: targetType.targetType,
         groups: targetType.conditions.map(condition => ({
           groupName: condition.group,
           operator: condition.logic,
@@ -675,6 +1002,7 @@ const saveRuleData = async () => {
   } catch (error) {
     console.error('Error saving rule:', error);
   }
+  clearFormData();
 };
 
 // 关闭对话框
@@ -684,7 +1012,7 @@ const closeDialog = () => {
 
 onMounted(() => {
   getModels();
-
+  loadFromLocalStorage();
 });
 </script>
 
@@ -779,23 +1107,36 @@ onMounted(() => {
 
 .form-row {
   display: flex;
+  align-items: center;
   gap: 50px;
   margin-bottom: 20px;
 }
 
 .form-row1 {
   display: flex;
-  gap: 0;
+  /*flex-direction: column;*/
+  gap: 10px;
   margin-left: 23px;
+  /*margin-top: 10px;*/
+  margin-bottom: 10px;
 }
 
 .form-row1:first-child {
-  margin-top: 80px;
+  margin-top:20px;
 }
 
-.form-row1:not(:first-child) {
-  margin-top: 20px;
+.form-row1:last-child {
+  /*margin-top: 20px;*/
+  margin-bottom: 40px;
 }
+
+/*.form-row1:first-child {*/
+/*  margin-top: 80px;*/
+/*}*/
+
+/*.form-row1:not(:first-child) {*/
+/*  margin-top: 20px;*/
+/*}*/
 
 .form-column {
   width: 500px;
@@ -844,7 +1185,7 @@ onMounted(() => {
   gap: 10px;
 }
 
-.add-button, .add-button2, .add-button3, .add-button4 {
+.add-button, .add-button2, .add-button3, .add-button4, .add-button5 {
   width: 120px;
   height: 30px;
   flex-shrink: 0;
@@ -880,13 +1221,14 @@ onMounted(() => {
 
 .add-button2 {
   position: absolute;
-  left: 1190px;
-  top: 14px;
+  left: 180px;
+  top: 80px;
 }
 
 .add-button3 {
   position: absolute;
-  left: 300px;
+  left: 180px;
+  top: 60px;
   margin-top: 15px;
   /*bottom: 20px;*/
   /*top: calc(83% + 20px);*/
@@ -897,10 +1239,18 @@ onMounted(() => {
   position: absolute;
   left: 790px;
   top: 80px;
+  margin-top: 50px;
+  margin-bottom: 20px;
+}
+
+.add-button5 {
+  position: absolute;
+  left: 25px;
+  top: 130px;
 }
 
 .target-type-definition {
-  width: 138px;
+  width: 168px;
   height: 29px;
   margin-left: 45px;
   flex-shrink: 0;
@@ -912,6 +1262,20 @@ onMounted(() => {
   font-weight: 700;
   line-height: normal;
   margin-top: 20px;
+}
+
+.target-type-definition1 {
+  width: 128px;
+  height: 29px;
+  margin-left: 45px;
+  flex-shrink: 0;
+  color: #F6F9FE;
+  text-shadow: 0px 2px 8px rgba(5, 28, 55, 0.42), 0px 0px 7px rgba(75, 180, 229, 0.25);
+  font-family: "Alibaba PuHuiTi";
+  font-size: 20px;
+  font-style: normal;
+  font-weight: 700;
+  line-height: normal;
 }
 
 .target-container {
@@ -958,7 +1322,7 @@ onMounted(() => {
   padding-left: 10px;
   position: absolute;
   top: 13px;
-  left: 28px;
+  left: 32px;
 }
 
 .input-field::placeholder {
@@ -989,6 +1353,129 @@ onMounted(() => {
   margin: 0 auto;
 }
 
+/* 图标容器 */
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 26px;
+  height: 26px;
+  position: absolute;
+  /*bottom: 15px;*/
+  left: 273px;
+}
+
+/* 背景图 */
+.image-167 {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+}
+
+.tooltip {
+  position: absolute;
+  top: -40px; /* 调整 tooltip 距离图标的高度 */
+  left: 50%; /* tooltip 水平居中 */
+  transform: translateX(-50%);
+  background-color: white; /* 背景颜色为黑色，透明度 75% */
+  color: black; /* 字体颜色为白色 */
+  padding: 5px 10px; /* 内边距 */
+  border-radius: 4px; /* 圆角 */
+  font-size: 12px; /* 字体大小 */
+  white-space: nowrap; /* 防止内容换行 */
+  opacity: 0; /* 初始隐藏 */
+  visibility: hidden; /* 不可见状态 */
+  transition: opacity 0.2s ease-in-out; /* 添加淡入淡出动画 */
+}
+
+.icon-container:hover .tooltip {
+  opacity: 1; /* 鼠标悬浮时显示 tooltip */
+  visibility: visible; /* 鼠标悬浮时可见 */
+}
+
+/*自定义的输入框（下拉框）*/
+.dropdown-menu {
+  position: absolute;
+  top: 50px;
+  left: 28px;
+  width: 237px;
+  max-height: 200px;
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid #00E0FF;
+  background: #062A51;
+  color: #F6F9FE;
+  z-index: 1000;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.dropdown-menu li {
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: "Source Han Sans CN";
+  font-weight: 400;
+  line-height: normal;
+}
+
+.dropdown-menu li:hover {
+  background-color: rgba(0, 224, 255, 0.2);
+}
+
+.no-option {
+  padding: 8px 10px;
+  color: #f6f9fe;
+  font-size: 14px;
+  font-style: italic;
+  text-align: center;
+}
+
+::v-deep .el-select {
+  width: 237px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 4px;
+  border: 1px solid #00e0ff;
+  background: #062a51;
+  color: #f6f9fe;
+  padding: 0 10px;
+  font-size: 16px;
+  font-family: "Source Han Sans CN", sans-serif;
+  font-weight: 400;
+  line-height: normal;
+  box-sizing: border-box;
+  display: block;
+}
+
+::v-deep .el-select .el-input__inner {
+  height: 32px;
+  background: #062a51;
+  color: #f6f9fe;
+  padding: 0 10px;
+  font-size: 16px;
+  font-family: "Source Han Sans CN", sans-serif;
+  font-weight: 400;
+}
+
+::v-deep .el-select-dropdown {
+  background-color: #062a51;
+  border: 1px solid #00e0ff;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 16px;
+}
+
+::v-deep .el-select .el-option {
+  color: #f6f9fe;
+  background-color: #062a51;
+}
+
+::v-deep .el-select .el-option:hover {
+  background-color: #00e0ff;
+}
+
 .condition-container {
   width: calc(100% - 40px);
   /*height: 118px;*/
@@ -998,10 +1485,14 @@ onMounted(() => {
   background: rgba(6, 42, 81, 0.10);
   margin-left: 20px;
   margin-right: 20px;
-  margin-top: 20px;
+  /*margin-top: 20px;*/
   padding-bottom: 20px;
   position: relative;
   min-height: 120px;
+}
+
+.condition-container:last-child {
+  margin-bottom: 80px;
 }
 
 .condition-container .input-container {
@@ -1016,6 +1507,21 @@ onMounted(() => {
   margin: 20px;
   padding-bottom:20px;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+.indicator-container:last-child {
+  margin-bottom: 80px;
+}
+
+.range-button-container {
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .index-container {
@@ -1027,7 +1533,7 @@ onMounted(() => {
   background: rgba(6, 42, 81, 0.10);
   margin-left: 20px;
   margin-right: 20px;
-  margin-top: 20px;
+  /*margin-top: 20px;*/
   padding-bottom: 20px;
   position: relative;
 }
@@ -1038,40 +1544,55 @@ onMounted(() => {
   background: rgba(31, 255, 215, 0.30);
 }
 
-.delete-button, .delete-button1, .delete-button2, .delete-button3 {
-  width: 121px;
-  height: 32px;
+.delete-button, .delete-button1, .delete-button2, .delete-button3, .delete-button4 {
+  width: 120px;
+  height: 30px;
   flex-shrink: 0;
   background-color: rgba(255, 0, 0, 0.69);
   color: white;
   border: 1px solid #F56C6C;
   border-radius: 4px;
-  font-size: 14px;
+  font-family: "Source Han Sans CN";
+  font-size: 16px;
   font-weight: 400;
-  text-align: center;
+  font-style: normal;
+  line-height: normal;
   line-height: 32px;
   cursor: pointer;
   position: absolute;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .delete-button {
+  position: absolute;
   right: 20px;
   top: 13px;
 }
 
 .delete-button1 {
-  left: 530px;
+  position: absulute;
+  left: 505px;
   top: 187px;
 }
 
 .delete-button2 {
-  left: 930px;
-  top: 80px;
+  position: absulute;
+  left: 720px;
+  top: 20px;
 }
 
 .delete-button3 {
+  position: absulute;
   left: 1180px;
   top: 130px;
+}
+
+.delete-button4 {
+  position: absulute;
+  left: 1070px;
+  top: 77px;
 }
 
 .dialog-footer {

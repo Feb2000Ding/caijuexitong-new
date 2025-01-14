@@ -25,10 +25,15 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://192.168.43.234:3001',   // 后端服务器地址
-        changeOrigin: true,                 // 修改请求头中的 origin 字段
-        secure: false,                      // 如果是 https 服务器，可以设置为 true
-        rewrite: (path) => path.replace(/^\/api/, ''), // 可选：移除路径中的 `/api` 前缀
+        target: 'http://192.168.43.234:3001',
+        changeOrigin: true,
+        secure: false,
+        rewrite: (path) => path.replace(/^\/api/, ''),
+      },
+      '/ws/judge': {
+        target: 'ws://192.168.43.234:3001',
+        ws: true,
+        changeOrigin: true,
       },
     },
   },

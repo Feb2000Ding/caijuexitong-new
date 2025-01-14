@@ -94,7 +94,7 @@
                 <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1">
                   <div class="form-column1">
                     <label for="minValue1">最小值</label>
-                    <input id="minValue1" type="text" v-model="range.minValue" />
+                    <input id="minValue1" type="text" v-model="range.minValue" @input="syncMinValue(range.minValue)" />
                   </div>
                   <div class="form-column1">
                     <label for="maxValue1">最大值</label>
@@ -134,7 +134,9 @@
                 </div>
                 <div class="form-column1">
                   <label for="maxValue">最大值</label>
-                  <input type="text" id="maxValue" v-model="range.maxValue" />
+                  <select id="maxValue" v-model="range.maxValue" class="select-box">
+                    <option value="∞">∞</option>
+                  </select>
                 </div>
                 <div class="form-column1">
                   <label for="destroyLevel">毁伤等级</label>
@@ -243,7 +245,7 @@ watch(
 
       if (newVal) {
         try {
-          const response = await fetch(`http://192.168.43.234:3001/api/calRule/view/${newVal}`);
+          const response = await fetch(`http://localhost:3001/api/calRule/view/${newVal}`);
           if (!response.ok) {
             throw new Error(`HTTP error! Status: ${response.status}`);
           }
@@ -337,7 +339,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -641,7 +643,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.43.234:3001/api/calRule/update', payload);
+    const response = await axios.post('http://localhost:3001/api/calRule/update', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -960,7 +962,7 @@ onMounted(() => {
 
 .input-field::placeholder {
   color: #F6F9FE;
-  text-shadow: 0px 2px 8px rgba(5, 28, 55, 0.42), 0px 0px 7px rgba(75, 180, 229, 0.25);
+  text-shadow: 0 2px 8px rgba(5, 28, 55, 0.42), 0 0 7px rgba(75, 180, 229, 0.25);
   font-family: "Alibaba PuHuiTi", sans-serif;
   font-size: 16px;
   font-weight: 400;

@@ -101,8 +101,48 @@ const closeModal = () => {
   emit('update:isShow', false);
 };
 
-const exportRule = () => {
-  alert('导出成功！');
+const ruleIds = [35,36,37]; // 示例：需要传递的规则 ID 数组
+
+// 导出规则的方法
+const exportRule = async () => {
+  try {
+    // 定义请求 URL 和参数
+    const url = "http://192.168.43.234:3001/api/calRule/export";
+    const params = {
+      ruleIds: ruleIds.join(","), // 将数组转换为逗号分隔的字符串
+    };
+
+    // 发送 GET 请求
+    const response = await axios.get(url, { params, responseType: "blob" });
+
+    // 检查响应并处理结果
+    if (response.status === 200) {
+      const blob = new Blob([response.data], { type: "application/octet-stream" });
+      const downloadUrl = window.URL.createObjectURL(blob);
+
+      // 动态指定文件名
+      const defaultFilename = "规则导出文件.xlsx";
+      const filename = prompt("请输入保存的文件名：", defaultFilename);
+
+      if (filename) {
+        const link = document.createElement("a");
+        link.href = downloadUrl;
+        link.download = filename; // 使用用户输入的文件名
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } else {
+        console.log("用户取消了文件名输入");
+      }
+
+      // 释放 URL 对象
+      window.URL.revokeObjectURL(downloadUrl);
+    } else {
+      console.error("导出失败：", response);
+    }
+  } catch (error) {
+    console.error("请求出错：", error);
+  }
 };
 
 // const toggleExpand = (row) => {
