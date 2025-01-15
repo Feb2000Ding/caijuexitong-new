@@ -595,7 +595,7 @@ const fetchTableData = async (
     console.log("正在请求数据...");
 
     //请求体
-    const response = await axios.post(`http://192.168.43.234:3001/api/judgeTask/pageList`, {
+    const response = await axios.post(`http://192.168.8.184:3001/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,
@@ -793,7 +793,7 @@ const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
 // 获取裁决任务选项
 const fetchJudgementModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.8.184:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: '',
@@ -829,7 +829,7 @@ const ruleRecords = ref([]);
 // 获取效果模型和裁决规则
 const fetchEffectModelsAndRules = async (modelName, index) => {
   try {
-    const response = await axios.get('http://192.168.43.234:3001/api/judgeModel/getInfo', {
+    const response = await axios.get('http://192.168.8.184:3001/api/judgeModel/getInfo', {
       params: {
         modelName: modelName
       }
@@ -891,7 +891,7 @@ const editTask = async (task) => {
   const taskId = task.id || task.taskId;
 
   try {
-    const response = await axios.get(`http://192.168.43.234:3001/api/judgeTask/view/${taskId}`);
+    const response = await axios.get(`http://192.168.8.184:3001/api/judgeTask/view/${taskId}`);
 
     if (response.data.code === 0) {
       const taskData = response.data.data.task;
@@ -905,7 +905,6 @@ const editTask = async (task) => {
       taskForm.effectModels = taskRuleRelVOList.map(item => item.effectId);
       taskForm.judgementRules = taskRuleRelVOList.map(item => item.ruleId);
       taskForm.judgementMethods = taskRuleRelVOList.map(item => item.judgeMode);
-      taskForm.effectModels = taskRuleRelVOList.map(item => item.effectModels)
       console.log("taskForm", taskForm)
 
       count.value = taskForm.judgementModels.length;
@@ -1036,7 +1035,7 @@ const submitTask = async () => {
     }
 
     // 提交任务数据
-    const response = await fetch(`http://192.168.43.234:3001/api/judgeTask/${endpoint}`, {
+    const response = await fetch(`http://192.168.8.184:3001/api/judgeTask/${endpoint}`, {
       method: method,
       headers: {
         'Content-Type': 'application/json'
@@ -1164,7 +1163,7 @@ const deleteTask = async (row: any) => {
 let ws;
 
 const createWebSocket = () => {
-  ws = new WebSocket('ws://192.168.43.234:3001/api/ws/judge');
+  ws = new WebSocket('ws://192.168.8.184:3001/api/ws/judge');
 
   ws.onopen = () => {
     console.log('WebSocket 连接已建立');
@@ -1181,6 +1180,13 @@ const createWebSocket = () => {
   // 监听接收到的消息
   ws.onmessage = (event) => {
     console.log('收到 WebSocket 消息:', event.data);
+    try {
+      const data = JSON.parse(event.data);
+      console.log("data",data)
+      // this.handleMessage(data);
+    } catch (error) {
+      console.error('Error parsing message: ', error);
+    }
   };
 };
 
@@ -1190,7 +1196,7 @@ const executeTask = async (row) => {
 
   // 先请求任务列表
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeTask/pageList', {
+    const response = await axios.post('http://192.168.8.184:3001/api/judgeTask/pageList', {
       current: 1,  // 这里的 current 和 pageSize 可以根据需要设置
       pageSize: 10,
       sortField: '',  // 可按需传入
@@ -1240,14 +1246,14 @@ const executeTask = async (row) => {
             } else {
               console.error('WebSocket连接不可用');
               createWebSocket();
-              ws.onopen = () => {
-                console.log('WebSocket重新连接');
-                // 重新发送任务执行请求
-                ws.send(JSON.stringify({
-                  type: 'executeTask',
-                  data: requestData
-                }));
-              };
+              // ws.onopen = () => {
+              //   console.log('WebSocket重新连接');
+              //   // 重新发送任务执行请求
+              //   ws.send(JSON.stringify({
+              //     type: 'executeTask',
+              //     data: requestData
+              //   }));
+              // };
             }
 
           } catch (error) {

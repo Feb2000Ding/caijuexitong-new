@@ -107,7 +107,7 @@ const ruleIds = [35,36,37]; // 示例：需要传递的规则 ID 数组
 const exportRule = async () => {
   try {
     // 定义请求 URL 和参数
-    const url = "http://192.168.43.234:3001/api/calRule/export";
+    const url = "http://192.168.8.184:3001/api/calRule/export";
     const params = {
       ruleIds: ruleIds.join(","), // 将数组转换为逗号分隔的字符串
     };
@@ -166,7 +166,7 @@ function getShortenedText(text) {
 
 // 模拟表格数据
 let tableData = ref([
-  // { id: 1, ruleName: 'xxxxxx方案1', createTime: '24-05-01 10:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  { id: 1, ruleName: 'xxxxxx方案1', createTime: '24-05-01 10:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
   // { id: 2, ruleName: 'xxxxxx方案2', createTime: '24-05-02 11:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
   // { id: 3, ruleName: 'xxxxxx方案3', createTime: '24-05-03 12:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
   // { id: 4, ruleName: 'xxxxxx方案4', createTime: '24-05-04 13:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
@@ -219,7 +219,7 @@ const formatParameters = (targetTypes: any[]) => {
 const fetchTableData = async () => {
   try {
     console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.43.234:3001/api/calRule/pageList", {
+    const response = await axios.post("http://192.168.8.184:3001/api/calRule/pageList", {
       current: 1,
       pageSize: 100,
     });

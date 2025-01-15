@@ -40,11 +40,11 @@
                   </div>
                   <div class="form-row">
                     <label for="input1" class="input-label">*输入参数</label>
-                    <input v-model="modelForm.modelName" type="text" id="input1" class="input-field" placeholder="xxxx推演方案" />
+                    <input v-model="modelForm.inputParameter" type="text" id="input1" class="input-field" placeholder="参数xx" />
                   </div>
                   <div class="form-row">
                     <label for="input2" class="input-label">*已输入参数</label>
-                    <input v-model="modelForm.createTime" type="text" id="input2" class="input-field" placeholder="2024年xx月xx日" />
+                    <input v-model="modelForm.inputedParameter" type="text" id="input2" class="input-field" placeholder="参数xxx" />
                   </div>
                 </div>
               <div class="dialog-column">
@@ -55,10 +55,8 @@
                 <div class="form-row">
                   <label for="modelType" class="input-label">*模型类型</label>
                   <select v-model="modelForm.modelType" id="modelType" class="input-field">
-                    <option value="电子干扰">电子干扰</option>
-                    <option value="光学干扰">光学干扰</option>
-                    <option value="通信干扰">通信干扰</option>
-                    <option value="电子对抗">电子对抗</option>
+                    <option value="定向能模型" selected>定向能模型</option>
+                    <option value="动能模型">动能模型</option>
                   </select>
                 </div>
                 <div class="form-row">
@@ -151,6 +149,8 @@
               :disabled="currentPage <= 1"
               @click="handlePageChange(currentPage - 1)"
               class="pagination-button"
+              @mouseover="hoverPage = 'prev'"
+              @mouseleave="hoverPage = null"
           >
             上一页
           </el-button>
@@ -159,8 +159,14 @@
               :key="page"
               size="small"
               :type="currentPage === page ? 'primary' : ''"
+              :class="[
+        currentPage === page ? 'active-page' : '',
+        hoverPage === page && currentPage !== page ? 'hover-page' : '',
+        'pagination-number-button'
+      ]"
               @click="handlePageChange(page)"
-              class="pagination-button pagination-number-button"
+              @mouseover="hoverPage = page"
+              @mouseleave="hoverPage = null"
           >
             {{ page }}
           </el-button>
@@ -169,6 +175,8 @@
               :disabled="currentPage >= totalPages"
               @click="handlePageChange(currentPage + 1)"
               class="pagination-button"
+              @mouseover="hoverPage = 'next'"
+              @mouseleave="hoverPage = null"
           >
             下一页
           </el-button>
@@ -348,7 +356,7 @@ const fetchTableData = async (
 ) => {
   try {
     console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.1.200:3001/api/judgeTask/pageList", {
+    const response = await axios.post("http://192.168.8.184:3001/api/judgeTask/pageList", {
       current,
       pageSize,
       sortField,
@@ -408,6 +416,8 @@ const paginatedData = computed(() => {
 const totalItems = computed(() => tableData.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 
+const hoverPage = ref(null);
+
 // 处理分页变化
 const handlePageChange = (newPage) => {
   if (newPage < 1 || newPage > totalPages.value) return; // 防止越界
@@ -422,6 +432,8 @@ const modelForm = ref({
   modelName: '',
   modelType: '',
   createTime: '',
+  inputParameter: '',
+  inputedParameter: ''
 });
 
 // 处理文件上传
@@ -497,7 +509,7 @@ const deleteTask = async (row) => {
   try {
     // 发送请求删除数据
     const response = await axios.delete(
-        `http://192.168.1.200:3001/judgeTask/delete/${row.taskId}`
+        `http://192.168.8.184:3001/judgeTask/delete/${row.taskId}`
     );
     console.log("删除任务成功", response.data);
 
@@ -939,8 +951,28 @@ onMounted(() => {
   border: 0.1px solid #2391FF;
 }
 
+.custom-pagination .el-button:hover {
+  background-color: #20598F !important;
+  color: white !important;
+  border-color: #2391FF !important;
+}
+
 .custom-pagination .pagination-number-button {
   width: 35px;
+}
+
+/* 已选中的页码样式 */
+.custom-pagination .active-page {
+  background-color: #2391FF !important;
+  color: white !important;
+  border-color: #2391FF !important;
+}
+
+/* 鼠标悬浮的页码样式 */
+.custom-pagination .hover-page {
+  background-color: #20598F !important;
+  color: white !important;
+  border-color: #2391FF !important;
 }
 
 ::v-deep .el-table .el-table__header th {

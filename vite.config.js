@@ -25,13 +25,13 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://192.168.43.234:3001',
+        target: 'http://192.168.8.184:3001',
         changeOrigin: true,
         secure: false,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
       '/ws/judge': {
-        target: 'ws://192.168.43.234:3001',
+        target: 'ws://192.168.8.184:3001',
         ws: true,
         changeOrigin: true,
       },

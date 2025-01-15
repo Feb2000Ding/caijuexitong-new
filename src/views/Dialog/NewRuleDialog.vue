@@ -20,15 +20,15 @@
               <label for="ruleName">规则名称</label>
               <input type="text" id="ruleName" v-model="formData.ruleName" style="height:32px; width: 237px"/>
             </div>
-            <div class="icon-container">
-              <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="margin-left: 180px;"/>
-              <div class="tooltip">规则名不能重复</div>
-              <!--                <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />-->
-            </div>
+<!--            <div class="icon-container">-->
+<!--              <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="margin-left: 250px;"/>-->
+<!--              <div class="tooltip">规则名不能重复</div>-->
+<!--              &lt;!&ndash;                <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />&ndash;&gt;-->
+<!--            </div>-->
             <div class="form-column">
               <label for="model">裁决模型</label>
               <select id="model" class="select-box" v-model="formData.model" style="margin-left: -3px;">
-                <option value="" selected>选择裁决模型</option>
+                <option value="" selected disabled>请选择裁决模型</option>
                 <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
               </select>
             </div>
@@ -105,9 +105,11 @@
 <!--            </div>-->
             <div class="input-container">
               <select class="input-field" id="targetType" v-model="targetType.type">
-<!--                <option value="" disabled selected>请选择裁决目标类型</option>-->
-                <option value="主体结构" selected>主体结构</option>
+                <option value="" disabled selected>请选择裁决目标类型</option>
+                <option value="主体结构">主体结构</option>
                 <option value="太阳能板">太阳能板</option>
+                <option value="光学器件">光学器件</option>
+                <option value="表面涂层">表面涂层</option>
               </select>
               <div class="icon-container" style="position: relative;">
                 <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" />
@@ -122,7 +124,7 @@
               <div class="input-container">
 <!--                <input type="text" class="input-field" placeholder="条件组" v-model="condition.group" />-->
                 <select class="input-field" v-model="condition.group">
-<!--                  <option value="请选择条件组" disabled selected>请选择条件组</option>-->
+                  <option value="请选择条件组" disabled selected>请选择条件组</option>
                   <option value="条件组1" selected>主体结构指标组</option>
                   <option value="条件组2">条件组2</option>
                 </select>
@@ -164,20 +166,20 @@
 
                 <!-- 第二行：范围数据 -->
                 <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1" >
-                  <div class="form-column1">
-                    <label for="minValue1">最小值</label>
+                  <div class="form-column1" style="margin-left:9px;">
+                    <label for="minValue1" style="white-space: nowrap;">最小值</label>
                     <input id="minValue1" type="text" v-model="range.minValue" @input="syncMinValueToIndexes" style="width:237px; height:32px;" />
                   </div>
-                  <div class="form-column1">
-                    <label for="maxValue1">最大值</label>
+                  <div class="form-column1" style="margin-left:47px">
+                    <label for="maxValue1" style="white-space: nowrap; width:45px;">最大值</label>
                     <input id="maxValue1" type="text" v-model="range.maxValue" style="width:237px; height:32px;" />
                   </div>
-                  <div class="form-column1">
-                    <label for="impactFactor">影响系数</label>
+                  <div class="form-column1" style="margin-left: 32px">
+                    <label for="impactFactor" style="white-space: nowrap; width:65px;">影响系数</label>
                     <input id="impactFactor" type="text" v-model="range.impactFactor" style="width:237px; height:32px;" />
                   </div>
-                  <div class="form-column1">
-                    <label for="stop">终止判断</label>
+                  <div class="form-column1" style="margin-left:9px;">
+                    <label for="stop" style="white-space: nowrap;">终止判断</label>
                     <input type="checkbox" id="stop" v-model="range.stop" :value="true" style="height:15px; width:15px;" />
                   </div>
 
@@ -243,7 +245,7 @@
                   <label for="minValue">最小值</label>
                   <input type="text" id="minValue" v-model="range.minValue" style="height:32px; width:237px;"/>
                 </div>
-                <div class="form-column1" style="margin-left:-95px;">
+                <div class="form-column1" style="margin-left:-70px;">
                   <label for="maxValue">最大值</label>
                   <select id="maxValue" v-model="range.maxValue" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
                     <option value="∞">∞</option>
@@ -269,7 +271,7 @@
           </div>
 
           <!-- 添加目标类型按钮 -->
-          <button class="add-button3" @click="addTargetType" style="position: relative; left: 20px; top: 0">添加目标类型</button>
+          <button class="add-button3" @click="addTargetType" style="position: relative; left: 52px; top: 0">添加目标类型</button>
         </div>
       </div>
 
@@ -638,7 +640,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://192.168.8.184:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -961,25 +963,25 @@ const saveRuleData = async () => {
           groupName: condition.group,
           operator: condition.logic,
           indicators: condition.indicators.map(indicator => ({
-            indicatorName: indicator.minValue, // 假设这里 minValue 是指示器名称
-            dataType: indicator.maxValue,     // 假设这里 maxValue 是指示器的数据类型
+            indicatorName: indicator.minValue,
+            dataType: indicator.maxValue,
             ranges: indicator.ranges ? indicator.ranges.map(range => ({
-              minValue: range.minValue,        // 最小值
-              maxValue: range.maxValue,        // 最大值
-              weight: range.impactFactor,      // 影响系数
-              isTerminal: range.stop,          // 是否终止
-              damageLevel: formData.value.damageLevels.find(level => level.name === range.destroyLevel)?.name || '' // 使用用户选择的毁伤等级
-            })) : []  // 如果没有 ranges，默认传递一个空数组
+              minValue: range.minValue,
+              maxValue: range.maxValue,
+              weight: range.impactFactor,
+              isTerminal: range.stop,
+              damageLevel: formData.value.damageLevels.find(level => level.name === range.destroyLevel)?.name || ''
+            })) : []
           }))
         })),
         finalIndicator: {
-          indicatorName: targetType.indexName,  // 指标名称
-          dataType: targetType.select,          // 数据类型
+          indicatorName: targetType.indexName,
+          dataType: targetType.select,
           ranges: targetType.indexes.flatMap(index =>
               index.ranges.map(range => ({
                 minValue: range.minValue,
                 maxValue: range.maxValue,
-                damageLevel: formData.value.damageLevels.find(level => level.name === range.destroyLevel)?.name || '' // 使用用户选择的毁伤等级
+                damageLevel: formData.value.damageLevels.find(level => level.name === range.destroyLevel)?.name || ''
               }))
           )
         }
@@ -989,13 +991,13 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.43.234:3001/api/calRule/add', payload);
+    const response = await axios.post('http://192.168.8.184:3001/api/calRule/add', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
     if (response.data.code === 0) {
       emit('saveRuleData', response.data);
-      emit('update:isShow', false); // 关闭对话框
+      emit('update:isShow', false);
     } else {
       console.error('保存失败:', response.data.message);
     }
@@ -1267,7 +1269,7 @@ onMounted(() => {
 .target-type-definition1 {
   width: 128px;
   height: 29px;
-  margin-left: 45px;
+  margin-left: 32px;
   flex-shrink: 0;
   color: #F6F9FE;
   text-shadow: 0px 2px 8px rgba(5, 28, 55, 0.42), 0px 0px 7px rgba(75, 180, 229, 0.25);
@@ -1360,7 +1362,8 @@ onMounted(() => {
   align-items: center;
   width: 26px;
   height: 26px;
-  position: absolute;
+  /*position: absolute;*/
+  position:relative;
   /*bottom: 15px;*/
   left: 273px;
 }
@@ -1374,23 +1377,23 @@ onMounted(() => {
 
 .tooltip {
   position: absolute;
-  top: -40px; /* 调整 tooltip 距离图标的高度 */
-  left: 50%; /* tooltip 水平居中 */
+  top: -40px;
+  left: 50%;
   transform: translateX(-50%);
-  background-color: white; /* 背景颜色为黑色，透明度 75% */
-  color: black; /* 字体颜色为白色 */
-  padding: 5px 10px; /* 内边距 */
-  border-radius: 4px; /* 圆角 */
-  font-size: 12px; /* 字体大小 */
-  white-space: nowrap; /* 防止内容换行 */
-  opacity: 0; /* 初始隐藏 */
-  visibility: hidden; /* 不可见状态 */
-  transition: opacity 0.2s ease-in-out; /* 添加淡入淡出动画 */
+  background-color: white;
+  color: black;
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease-in-out;
 }
 
 .icon-container:hover .tooltip {
-  opacity: 1; /* 鼠标悬浮时显示 tooltip */
-  visibility: visible; /* 鼠标悬浮时可见 */
+  opacity: 1;
+  visibility: visible;
 }
 
 /*自定义的输入框（下拉框）*/
@@ -1477,14 +1480,15 @@ onMounted(() => {
 }
 
 .condition-container {
-  width: calc(100% - 40px);
+  width: calc(100% - 64px);
   /*height: 118px;*/
   flex-shrink: 0;
   border-radius: 4px;
   border: 1px solid #4CA8F7;
   background: rgba(6, 42, 81, 0.10);
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-top:0px;
+  margin-left: 32px;
+  margin-right: 32px;
   /*margin-top: 20px;*/
   padding-bottom: 20px;
   position: relative;
@@ -1505,6 +1509,8 @@ onMounted(() => {
   border: 1px solid #ccc;
   border-radius: 10px;
   margin: 20px;
+  margin-left: 32px;
+  margin-right: 32px;
   padding-bottom:20px;
   position: relative;
   display: flex;
@@ -1525,14 +1531,14 @@ onMounted(() => {
 }
 
 .index-container {
-  width: calc(100% - 40px);
+  width: calc(100% - 64px);
   /*height: 173px;*/
   flex-shrink: 0;
   border-radius: 4px;
   border: 1px solid #1FFFD7;
   background: rgba(6, 42, 81, 0.10);
-  margin-left: 20px;
-  margin-right: 20px;
+  margin-left: 32px;
+  margin-right: 32px;
   /*margin-top: 20px;*/
   padding-bottom: 20px;
   position: relative;
@@ -1591,7 +1597,7 @@ onMounted(() => {
 
 .delete-button4 {
   position: absulute;
-  left: 1070px;
+  left: 1110px;
   top: 77px;
 }
 
