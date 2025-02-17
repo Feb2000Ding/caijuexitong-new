@@ -45,8 +45,15 @@
                     <label for="taskName" class="input-label">*任务名称</label>
                     <input v-model="taskForm.taskName" type="text" id="taskName" class="input-field" placeholder="请输入任务名称" @input="checkTaskName" />
                     <span v-if="taskForm.taskNameError" class="error-message" style="color:white; font-size:16px; margin-left: 16px;">
-                    {{ taskForm.taskNameError }}
+                      {{ taskForm.taskNameError }}
                     </span>
+                  </div>
+                  <div class="icon-container">
+                    <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" />
+                    <div class="tooltip">
+                      任务名不要重复
+                      示例：test_1
+                    </div>
                   </div>
                   <!--                  <div class="form-column">-->
                   <!--                    <label for="taskNameXiangding" class="input-label">*想定任务名称</label>-->
@@ -64,6 +71,12 @@
                     <label for="createTime" class="input-label">*创建时间</label>
                     <input v-model="taskForm.createTime" type="text" id="createTime" class="input-field" placeholder="2024年xx月xx日" />
                   </div>
+                  <div class="icon-container">
+                    <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" />
+                    <div class="tooltip">
+                      格式：YYYY-MM-DD HH:MM:SS
+                    </div>
+                  </div>
                 </div>
 
                 <hr class="divider" />
@@ -73,7 +86,7 @@
                     <div class="form-column">
                       <label :for="'judgementModel' + idx" class="input-label">*裁决模型</label>
                       <select :id="'judgementModel' + idx" class="input-field" v-model="taskForm.judgementModels[idx]" @change="onJudgementModelChange(idx)">
-                        <option v-for="model in judgementModelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
+                        <option v-for="model in judgementModelOptions" :key="model.modelId" :value="model.modelName">{{ model.modelName }}</option>
                       </select>
                     </div>
                     <div class="form-column">
@@ -123,7 +136,6 @@
               :head-cell-style="{ height: '80px', lineHeight: '80px' }"
               :row-style="{ height: '55px' }"
               ref="multipleTableRef"
-              :default-sort="{ prop: 'createTime', order: 'descending' }"
               @selection-change="handleSelectionChange"
               @sort-change="handleSortChange"
               row-key="id"
@@ -132,26 +144,15 @@
           >
             <el-table-column type="selection" width="60" />
             <el-table-column prop="taskName" label="任务名称" width="200" />
-            <!--            <el-table-column prop="taskNameXiangding" label="想定任务名称" width="180" />-->
-            <el-table-column
-                prop="createTime"
-                label="创建时间"
-                width="180"
-                sortablef
-                :sort-method="sortCreateTime"
-                @sort-change="handleSortChange"
-            />
+            <el-table-column prop="createTime" label="创建时间" width="180" />
             <el-table-column prop="judgementModel" label="裁决模型" width="180" />
             <el-table-column prop="judgementRule" label="裁决规则" width="180" />
             <el-table-column prop="judgementMethod" label="裁决方式" width="180" />
-            <el-table-column prop="judgementEffect" label="裁决效果" width="160" />
+            <el-table-column prop="judgementEffect" label="裁决效果模型" width="160" />
             <el-table-column prop="taskStatus" label="任务状态" width="160">
               <template #default="scope">
                 <el-button
-                    :class="[
-                    'task-status-btn',
-                    scope.row.taskStatus === '已完成' ? 'completed' : 'incomplete'
-                ]"
+                    :class="[ 'task-status-btn', scope.row.taskStatus === '已完成' ? 'completed' : 'incomplete' ]"
                     size="mini"
                     disabled
                 >
@@ -159,7 +160,7 @@
                 </el-button>
               </template>
             </el-table-column>
-            <el-table-column prop="actions" label="操作" >
+            <el-table-column prop="actions" label="操作">
               <template #default="scope">
                 <el-button
                     class="custom-button"
@@ -227,98 +228,20 @@
 </template>
 
 <script setup lang="ts">
-import {defineProps, defineEmits, ref, onMounted, computed, toRaw, reactive} from 'vue';
-import  { ElTable, ElTableColumn, ElPagination, ElButton  } from 'element-plus';
+import {defineProps, defineEmits, ref, onMounted, computed, reactive, watch} from 'vue';
+import  { ElTable, ElTableColumn, ElButton  } from 'element-plus';
 import axios from "axios";
 import { useTaskStore } from '../../stores/counter.js';
 import { API_BASE_URL } from '../../apiConfig.js';
 
 // 配置环境变量
 // const apiUrl = process.env.VUE_APP_API_BASE_URL;
-
-const isTaskDialogVisible = ref(false);  // 控制任务执行弹窗显示
+const isTaskDialogVisible = ref(false);  // 控制弹窗隐藏和显示
 const taskDialogMessage = ref('');  // 弹窗内容
-
-// 关闭弹窗
-const closeTaskDialog = () => {
-  isTaskDialogVisible.value = false;  // 关闭弹窗
-};
-
-const props = defineProps({
-  isShow: Boolean
-});
-
-const emit = defineEmits(['update:isShow','openNewRuleDialog', 'taskCompleted']);
-
-const closeModal = () => {
-  emit('update:isShow', false);
-};
-
-// 弹窗位置
-const dialogStyle = ref({
-  left: '50%',
-  top: '50%',
-  transform: 'translate(-50%, -50%)',
-  position: 'absolute',
-});
-
-// 自定义拖拽指令
-const dragDirective = {
-  mounted(el: HTMLElement) {
-    let isDragging = false;
-    let offsetX = 0, offsetY = 0;
-    let intervalId: number | null = null; // 存储定时器的ID
-
-    // 鼠标按下时记录初始位置
-    el.addEventListener('mousedown', (e: MouseEvent) => {
-      e.preventDefault();
-      const rect = el.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
-      isDragging = true;
-
-      // 打印初始位置
-      console.log(`初始位置: left=${el.style.left}, top=${el.style.top}`);
-
-      // 启动定时器，0.5秒打印一次位置
-      intervalId = setInterval(() => {
-        if (isDragging) {
-          // 打印当前位置
-          console.log(`当前位置: left=${el.style.left}, top=${el.style.top}`);
-        }
-      }, 500); // 每500ms打印一次
-    });
-
-    // 鼠标移动时更新元素的位置
-    document.addEventListener('mousemove', (e: MouseEvent) => {
-      if (isDragging) {
-        const left = e.clientX - offsetX;
-        const top = e.clientY - offsetY;
-        el.style.left = `${left}px`;
-        el.style.top = `${top}px`;
-      }
-    });
-
-    // 鼠标释放时停止拖动
-    document.addEventListener('mouseup', () => {
-      isDragging = false;
-      if (intervalId !== null) {
-        // 停止定时器
-        clearInterval(intervalId);
-        intervalId = null;
-      }
-    });
-  },
-};
-
-// 注册指令
-defineExpose({
-  directives: {
-    drag: dragDirective
-  }
-});
-
-// 模拟表格数据
+const hoverPage = ref(null); // 鼠标悬浮位置所在的页
+const currentPage = ref(1); // 默认选中页
+const pageSize = ref(10); // 每页行数
+const searchKeyword = ref(''); // 搜索的关键字
 let tableData = ref([
   // {
   //   taskId: 1,
@@ -559,14 +482,114 @@ let tableData = ref([
   //   taskStatus: '进行中',
   //   actions: '编辑',
   // },
-]);
-
-const tableDataRecords = ref([]);
-
-// 下拉框选项
+]); // 静态表格数据
+const tableDataRecords = ref([]); // 记录从后端拿到的表格数据
 const judgementModels = ref([]);  // 裁决模型选项
 const effectModels = ref([]);     // 效果模型选项
 const judgementRules = ref([]);   // 裁决规则选项
+const selectedTask = ref(null); // 传递被选中要删除的任务行
+const dialogVisible = ref(false); // 控制配置界面的隐藏和显示
+// 初始化 countModel（裁决模型的数量）
+const countModel = ref(3);  // 假设 countModel 是 3，表示有 3 个裁决模型
+// 配置用的表单
+const taskForm = reactive({
+  taskName: '',
+  taskNameError: '',
+  createTime: '',
+  judgementModels: Array(countModel.value).fill(''),
+  effectModels: Array(countModel.value).fill(''),
+  calculationRules: Array(countModel.value).fill(''),
+  judgementMethods: Array(countModel.value).fill(''),
+  // judgementModels: [] as string[],
+  // effectModels: [] as string[][],
+  // judgementRules: [] as string[],
+  // judgementMethods: [] as string[],
+});
+// 初始化 effectModelOptions 和 calculationRuleOptions 数组，长度根据 countModel 动态调整
+const effectModelOptions = ref(Array(countModel.value).fill([])); // 每个数组项为空数组
+const calculationRuleOptions = ref(Array(countModel.value).fill([])); // 每个数组项为空数组
+// 模拟从后端获取裁决模型的下拉框选项
+const judgementModelOptions = ref<any[]>([]);
+// 映射关系：modelName -> modelId
+const modelNameToIdMap = ref<any>({});
+const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
+const ruleRecords = ref([]); // 记录从后端获取的裁决规则列表
+
+// 控制在父组件中的隐藏和显示
+const props = defineProps({
+  isShow: Boolean
+});
+
+const emit = defineEmits(['update:isShow','openNewRuleDialog', 'taskCompleted']);
+
+const closeModal = () => {
+  emit('update:isShow', false);
+  console.log("关闭任务组件")
+};
+
+// 弹窗位置
+const dialogStyle = ref({
+  left: '50%',
+  top: '50%',
+  transform: 'translate(-50%, -50%)',
+  position: 'absolute',
+});
+
+// 自定义拖拽指令
+const dragDirective = {
+  mounted(el: HTMLElement) {
+    let isDragging = false;
+    let offsetX = 0, offsetY = 0;
+    let intervalId: number | null = null; // 存储定时器的ID
+
+    // 鼠标按下时记录初始位置
+    el.addEventListener('mousedown', (e: MouseEvent) => {
+      e.preventDefault();
+      const rect = el.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      isDragging = true;
+
+      // 打印初始位置
+      console.log(`初始位置: left=${el.style.left}, top=${el.style.top}`);
+
+      // 启动定时器，0.5秒打印一次位置
+      intervalId = setInterval(() => {
+        if (isDragging) {
+          // 打印当前位置
+          console.log(`当前位置: left=${el.style.left}, top=${el.style.top}`);
+        }
+      }, 500); // 每500ms打印一次
+    });
+
+    // 鼠标移动时更新元素的位置
+    document.addEventListener('mousemove', (e: MouseEvent) => {
+      if (isDragging) {
+        const left = e.clientX - offsetX;
+        const top = e.clientY - offsetY;
+        el.style.left = `${left}px`;
+        el.style.top = `${top}px`;
+      }
+    });
+
+    // 鼠标释放时停止拖动
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      if (intervalId !== null) {
+        // 停止定时器
+        clearInterval(intervalId);
+        intervalId = null;
+      }
+    });
+  },
+};
+
+// 注册指令
+defineExpose({
+  directives: {
+    drag: dragDirective
+  }
+});
 
 // // 查询任务名是否重复
 // const checkTaskNameDuplicate = (existingTaskNames) => {
@@ -594,8 +617,8 @@ const fetchTableData = async (
   try {
     console.log("正在请求数据...");
 
-    //请求体
-    const response = await axios.post(`http://192.168.8.184:3001/api/judgeTask/pageList`, {
+    // 构建请求体
+    const response = await axios.post(`http://localhost:3001/api/judgeTask/pageList`, {
       current,
       pageSize,
       sortField,
@@ -605,138 +628,113 @@ const fetchTableData = async (
 
     console.log("response.data.data", response.data.data);
 
-    tableDataRecords.value = response.data.data.records;
-    console.log("tableDataRecords.value", tableDataRecords.value)
+    // 获取返回的数据
+    let newData = response.data.data.records;
 
-    const existingTaskNames = tableDataRecords.value.map(record => record.task.taskName.toLowerCase());
-    // checkTaskNameDuplicate(existingTaskNames);
-    console.log("existingTaskNames",existingTaskNames)
+    // 按 id 整体倒序排列
+    newData = newData.reverse();
+    console.log("倒序后的 newData", newData);
 
-    const newData = response.data.data.records;
-    console.log("response.data.data.records:", newData);
+    tableDataRecords.value = newData;
+    console.log("tableDataRecords.value", tableDataRecords.value);
 
-    // judgementModels.value = response.data.judgementModels || [];
-    // effectModels.value = response.data.effectModels || [];
-    // judgementRules.value = response.data.judgementRules || [];
-    //
-    // console.log("裁决模型选项：", judgementModels.value);
-    // console.log("效果模型选项：", effectModels.value);
-    // console.log("裁决规则选项：", judgementRules.value);
-
-    // 裁决方式的映射
+    // 裁决方式映射
     const judgeModeMap = {
       auto: '自动裁决',
       manual: '手动裁决',
     };
 
-    // 遍历返回的数据并更新 tableData
+    // 裁决模型映射
+    const modelMap = {
+      1: '定向能模型',
+      2: '动能模型'
+    };
+
+    // 把多个配置项用；分割
     newData.forEach((record, index) => {
       const judgementModel = (record.taskRuleRelVOList || [])
-          .map(rule => rule.modelName)
+          .map(rule => modelMap[rule.modelId])
           .filter(item => item)
           .join('; ') || '';
-
       const judgementRule = (record.taskRuleRelVOList || [])
           .map(rule => rule.ruleName)
           .filter(item => item)
           .join('; ') || '';
-
       const judgementMethod = (record.taskRuleRelVOList || [])
           .map(rule => judgeModeMap[rule.judgeMode])
           .filter(item => item)
           .join('; ') || '';
-
       const judgementEffect = (record.taskRuleRelVOList || [])
           .map(rule => rule.effectName)
           .filter(item => item)
           .join('; ') || '';
 
-
+      // 遍历返回的数据并更新表格内容
       if (tableData.value[index]) {
+        // 更新现有表格内容
         tableData.value[index].taskId = record.task.id || tableData.value[index].taskId;
-        tableData.value[index].taskName = record.task.taskName || tableData.value[index].taskName;
-        // tableData.value[index].taskNameXiangding = record.task.remark || tableData.value[index].taskNameXiangding;
-        tableData.value[index].createTime = record.task.createTime || tableData.value[index].createTime;
-        tableData.value[index].taskStatus = record.task.status || tableData.value[index].taskStatus;
-
-
-        tableData.value[index].judgementModel = judgementModel || tableData.value[index].judgementModel;
-        tableData.value[index].judgementRule = judgementRule || tableData.value[index].judgementRule;
-        tableData.value[index].judgementMethod = judgementMethod || tableData.value[index].judgementMethod;
-        tableData.value[index].judgementEffect = judgementEffect || tableData.value[index].judgementEffect;
+        tableData.value[index].taskName = record.task.taskName || tableData.value[index].taskName; //任务名称
+        tableData.value[index].createTime = record.task.createTime || tableData.value[index].createTime; // 创建时间
+        tableData.value[index].judgementModel = judgementModel || tableData.value[index].judgementModel; // 裁决模型
+        tableData.value[index].judgementRule = judgementRule || tableData.value[index].judgementRule; // 裁决规则
+        tableData.value[index].judgementMethod = judgementMethod || tableData.value[index].judgementMethod; // 裁决方式
+        tableData.value[index].judgementEffect = judgementEffect || tableData.value[index].judgementEffect; // 裁决效果
+        tableData.value[index].taskStatus = record.task.status || tableData.value[index].taskStatus; // 任务状态
       } else {
-
+        // 如果是新增的数据项，直接插入
         tableData.value.push({
-          id: record.task.taskId || '',
+          taskId: record.task.taskId || '',
           taskName: record.task.taskName || '',
-          taskNameXiangding: record.task.remark || '',
           createTime: record.task.createTime || '',
-          judgementModel: judgementModel || '光能模型',
+          judgementModel: judgementModel || '定向能模型',
           judgementRule: judgementRule || '',
           judgementMethod: judgementMethod || '',
-          judgementEffect: judgementEffect || '',
+          judgementEffect: judgementEffect || '光能效果模型',
           taskStatus: record.task.status || '',
-          actions: '编辑',
         });
       }
     });
-
-    // 如果返回数据少于本地默认数据长度，保留原有数据项，未更新的数据保持原样
-    if (newData.length < tableData.value.length) {
-      tableData.value.splice(newData.length);
-    }
 
     console.log("更新后的表格数据:", tableData.value);
   } catch (err) {
     console.error("请求数据失败:", err);
   }
-};
+}
 
 const checkTaskName = () => {
-  // 如果输入的任务名称与现有任务名称重复，设置错误信息
-  console.log(777777777777777777777777)
+  // 如果输入的任务名称与已任务名称重复，提示用户
   if (existingTaskNames.value.includes(taskForm.taskName)) {
-    console.log('存在')
     taskForm.taskNameError = '任务名称已存在';
   } else {
-    taskForm.taskNameError = ''; // 没有重复时清除错误信息
-    console.log("不存在")
+    taskForm.taskNameError = '';
   }
 };
 
-// 当前页数和每页显示的数据量
-const currentPage = ref(1);
-const pageSize = ref(10);
-
-// 搜索关键字
-const searchKeyword = ref('');
-
-// 计算分页数据
+// 列表分页
 const paginatedData = computed(() => {
   const start = (currentPage.value - 1) * pageSize.value;
   const end = start + pageSize.value;
-  return tableData.value.slice(start, end);
+  return filteredData.value.slice(start, end);
 });
 
 // 计算总条数
 const totalItems = computed(() => tableData.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 
-// 计算过滤后的数据
+// 根据taskName过滤后的数据
 const filteredData = computed(() => {
   console.log('Filtering data...');
   const filtered = tableData.value.filter(item => {
-    // 先确保 item.taskName 不是 undefined 或 null，并且是字符串
     return item.taskName && typeof item.taskName === 'string'
         ? item.taskName.toLowerCase().includes(searchKeyword.value.toLowerCase())
         : false; // 如果 taskName 不合法，则过滤掉该项
   });
+
   return filtered;
 });
+console.log("filteredData",filteredData)
 
-const hoverPage = ref(null);
-
-// 处理分页变化
+// 处理页数变化
 const handlePageChange = (newPage) => {
   if (newPage < 1 || newPage > totalPages.value) return; // 防止越界
   currentPage.value = newPage;
@@ -744,62 +742,71 @@ const handlePageChange = (newPage) => {
 
 // 渲染的表格数据
 const displayData = computed(() => {
-  return filteredData.value.slice((currentPage.value - 1) * pageSize.value, currentPage.value * pageSize.value);
+  return paginatedData.value;  // 直接使用分页后的数据
 });
+console.log("displayData", displayData)
 
-// 按日期排序
-const sortCreateTime = (a, b) => {
-  const dateA = new Date(a.createTime);
-  const dateB = new Date(b.createTime);
-  return dateA - dateB; // 升序排序
-};
+// // 按日期排序
+// const sortCreateTime = (a, b) => {
+//   const dateA = new Date(a.createTime);
+//   const dateB = new Date(b.createTime);
+//   return dateA - dateB; // 升序排序，返回负数表示 a < b
+// };
+//
+// // 监听排序事件
+// const handleSortChange = ({ column, prop, order }) => {
+//   if (order === 'ascending') {
+//     tableData.value = [...tableData.value].sort(sortCreateTime); // 对表格数据进行升序排序
+//   } else if (order === 'descending') {
+//     tableData.value = [...tableData.value].sort((a, b) => sortCreateTime(b, a)); // 降序排序
+//   }
+// };
 
-// 监听排序事件
-const handleSortChange = ({ column, prop, order }) => {
-  if (order === 'ascending') {
-    tableData.value = [...tableData.value].sort(sortCreateTime); // 对表格数据进行排序
-  } else if (order === 'descending') {
-    tableData.value = [...tableData.value].sort((a, b) => sortCreateTime(b, a)); // 降序排序
-  }
-};
-
-// 传递删除的任务行
-const selectedTask = ref(null);
-
+// 处理表格选中变化
 const handleSelectionChange = (selectedRows) => {
   // 保存选中的任务行
   selectedTask.value = selectedRows[0];  // 假设每次只选中一行任务
 };
 
-// 控制添加任务的对话框
-const dialogVisible = ref(false);
 
-const taskForm = reactive({
-  taskName: '',
-  taskNameError: '',
-  createTime: '',
-  judgementModels: [] as string[],
-  effectModels: [] as string[][],
-  judgementRules: [] as string[],
-  judgementMethods: [] as string[],
-});
 
-const judgementModelOptions = ref<string[]>([]); // 裁决模型的下拉选项
-const effectModelOptions = ref<any[][]>([]); // 每个裁决模型对应的效果模型选项
-const calculationRuleOptions = ref<any[][]>([]); // 每个裁决模型对应的裁决规则选项
-const modelNameToIdMap = ref({}); // 存储裁决模型名称到 modelId 的映射
-const ruleNameToIdMap = ref({}); // 存储规则名称到 ruleId 的映射
+// // 初始化 effectModelOptions 和 calculationRuleOptions 数组，长度根据 countModel 动态调整
+// const effectModelOptions = ref(Array(countModel.value).fill([])); // 每个数组项为空数组
+// const calculationRuleOptions = ref(Array(countModel.value).fill([])); // 每个数组项为空数组
+//
+// // 模拟从后端获取裁决模型的下拉框选项
+// const judgementModelOptions = ref<any[]>([]);
 
-// 获取裁决任务选项
+// // 映射关系：modelName -> modelId
+// const modelNameToIdMap = ref<any>({});
+//
+// // 初始化 taskForm 对象，保存用户选择的裁决模型等信息
+// const taskForm = reactive({
+//   judgementModels: Array(countModel.value).fill(''),
+//   effectModels: Array(countModel.value).fill(''),
+//   calculationRules: Array(countModel.value).fill(''),
+//   judgementMethods: Array(countModel.value).fill(''),
+// });
+
+// 更新 effectModelOptions 和 calculationRuleOptions 的长度
+const updateOptionsLength = () => {
+  effectModelOptions.value = Array(countModel.value).fill([]);
+  calculationRuleOptions.value = Array(countModel.value).fill([]);
+};
+
+// 监听 countModel 的变化
+watch(countModel, updateOptionsLength);
+
+// 从后端获取裁决模型的下拉框选项
 const fetchJudgementModels = async () => {
   try {
-    const response = await axios.post('http://192.168.8.184:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: '',
       sortOrder: '',
-      modelName: '', // 可以根据需要传入 modelName 来筛选
-      modelType: ''  // 可以根据需要传入 modelType 来筛选
+      modelName: '',
+      modelType: ''
     });
 
     if (response.data && response.data.data && Array.isArray(response.data.data.records)) {
@@ -808,13 +815,15 @@ const fetchJudgementModels = async () => {
         modelId: item.modelId,
         modelName: item.modelName
       }));
-      console.log("JudgementModels", response.data,  judgementModelOptions.value) ;
+
+      console.log("JudgementModels", response.data, judgementModelOptions.value);
 
       // 创建映射关系：modelName -> modelId
       modelNameToIdMap.value = response.data.data.records.reduce((map, item) => {
         map[item.modelName] = item.modelId;
         return map;
       }, {});
+
       console.log("modelNameToIdMap.value", modelNameToIdMap.value);
     }
   } catch (error) {
@@ -822,14 +831,10 @@ const fetchJudgementModels = async () => {
   }
 };
 
-const ruleRecords = ref([]);
-
-// const ruleNameToIdMap = ref({});
-
-// 获取效果模型和裁决规则
-const fetchEffectModelsAndRules = async (modelName, index) => {
+// 从后端获取选中的裁决模型对应的效果模型和裁决规则
+const fetchEffectModelsAndRules = async (modelName: string, index: number) => {
   try {
-    const response = await axios.get('http://192.168.8.184:3001/api/judgeModel/getInfo', {
+    const response = await axios.get('http://localhost:3001/api/judgeModel/getInfo', {
       params: {
         modelName: modelName
       }
@@ -839,22 +844,18 @@ const fetchEffectModelsAndRules = async (modelName, index) => {
       const { effectModels, calculationRules } = response.data.data;
 
       // 更新对应的效果模型和裁决规则
-      effectModelOptions.value[index] = effectModels.map((effect) => ({
+      effectModelOptions.value[index] = effectModels.map((effect: any) => ({
         effectId: effect.effectId,
         effectName: effect.effectName
       })) || [];
 
-      calculationRuleOptions.value[index] = calculationRules.map((rule) => ({
+      calculationRuleOptions.value[index] = calculationRules.map((rule: any) => ({
         ruleId: rule.ruleId,
         ruleName: rule.ruleName
       })) || [];
 
-      // 创建映射关系：ruleName -> ruleId
-      ruleNameToIdMap.value[modelName] = calculationRules.reduce((map, rule) => {
-        map[rule.ruleName] = rule.ruleId;
-        return map;
-      }, {});
-      console.log("ruleNameToIdMap.value", ruleNameToIdMap.value);
+      console.log(`Updated effect models for index ${index}:`, effectModelOptions.value[index]);
+      console.log(`Updated calculation rules for index ${index}:`, calculationRuleOptions.value[index]);
     }
   } catch (error) {
     console.error("获取效果模型和裁决规则失败:", error);
@@ -863,8 +864,13 @@ const fetchEffectModelsAndRules = async (modelName, index) => {
 
 // 当裁决模型切换时触发效果模型和裁决规则选项的更新
 const onJudgementModelChange = (index: number) => {
-  const modelName = judgementModelOptions.value.find(model => model.modelId === taskForm.judgementModels[index])?.modelName;
+  // 获取当前选中的裁决模型名称
+  const modelName = judgementModelOptions.value.find(
+      (model) => model.modelId === taskForm.judgementModels[index]
+  )?.modelName;
+
   if (modelName) {
+    // 发起请求，获取对应的效果模型和裁决规则
     fetchEffectModelsAndRules(modelName, index);
   }
 };
@@ -872,15 +878,16 @@ const onJudgementModelChange = (index: number) => {
 // 控制动态生成下拉框的数量
 const count = ref(1);
 
-// 增加动态生成的下拉框组数
+// 每次点击时，增加一组下拉框
 const increaseCount = () => {
   count.value++; // 增加组数
   taskForm.judgementModels.push('');  // 为每组裁决模型新增空项
-  taskForm.effectModels.push('');     // 为每组效果模型新增空数组
+  taskForm.effectModels.push('');     // 为每组效果模型新增空项
   taskForm.judgementRules.push('');   // 为每组裁决规则新增空项
   taskForm.judgementMethods.push(''); // 为每组裁决方式新增空项
 };
 
+// add/update
 let endPoint = ref('');
 
 // 编辑任务
@@ -891,21 +898,33 @@ const editTask = async (task) => {
   const taskId = task.id || task.taskId;
 
   try {
-    const response = await axios.get(`http://192.168.8.184:3001/api/judgeTask/view/${taskId}`);
+    const response = await axios.get(`http://localhost:3001/api/judgeTask/view/${taskId}`);
 
     if (response.data.code === 0) {
       const taskData = response.data.data.task;
       const taskRuleRelVOList = response.data.data.taskRuleRelVOList;
 
       // 将任务详情信息赋值到表单
+      console.log("taskData", taskData)
       Object.assign(taskForm, taskData);
+      console.log("taskForm", taskForm)
 
-      // 解析任务关联的裁决模型、效果模型和裁决规则
-      taskForm.judgementModels = taskRuleRelVOList.map(item => item.modelName); // 使用 modelName 而不是 modelId
+      // 定义裁决模型映射关系
+      const modelMap = {
+        1: '定向能模型',
+        2: '动能模型',
+      };
+
+      // 将 taskRuleRelVOList 的 modelId 映射为 modelName
+      taskForm.judgementModels = taskRuleRelVOList.map(item => modelMap[item.modelId] || '定向能模型');
       taskForm.effectModels = taskRuleRelVOList.map(item => item.effectId);
       taskForm.judgementRules = taskRuleRelVOList.map(item => item.ruleId);
-      taskForm.judgementMethods = taskRuleRelVOList.map(item => item.judgeMode);
-      console.log("taskForm", taskForm)
+
+      // 映射 judgeMode 为 "自动裁决" 或 "手动裁决"
+      taskForm.judgementMethods = taskRuleRelVOList.map(item =>
+          item.judgeMode === 'auto' ? '自动裁决' : '手动裁决'
+      );
+      console.log("taskForm.judgementMethods", taskForm.judgementMethods);
 
       count.value = taskForm.judgementModels.length;
 
@@ -925,8 +944,8 @@ const editTask = async (task) => {
   }
 };
 
-// 添加
-const editTask1 = (task) => {
+// 添加任务
+const editTask1 = async (task) => {
   endPoint.value = 'add';
 
   // 初始化 taskForm 数据
@@ -943,13 +962,14 @@ const editTask1 = (task) => {
       now.getMinutes().toString().padStart(2, '0') + ':' +
       now.getSeconds().toString().padStart(2, '0');
 
-  // 默认设置创建时间
+  // 默认设置创建时间为当前时间
   taskForm.createTime = formattedDate;
-
-  // 更新count，确保表单项数量与数据一致
   count.value = taskForm.judgementModels.length;
+  // 动态获取效果模型和裁决规则
+  for (let index = 0; index < taskForm.judgementModels.length; index++) {
+    onJudgementModelChange(index); // 触发动态获取数据
+  }
 
-  // 打开对话框
   dialogVisible.value = true;
 };
 
@@ -968,17 +988,23 @@ const submitTask = async () => {
         taskId: '',
         createTime: taskForm.createTime || new Date().toLocaleString(),
         taskName: taskForm.taskName,
-        remark: '默认',
+        remark: '',
         traceTaskCode: '101',
       },
       taskRuleRelList: []
     };
 
-    // 裁决方式映射
+    // 定义裁决方式映射
     const judgeMethodMapping = {
       "手动裁决": "manual",
       "自动裁决": "auto"
     };
+
+    // 映射关系：modelName -> modelId
+    const modelNameToIdMap = ref({
+      "定向能模型": 1,
+      "动能模型": 2,
+    });
 
     // 遍历 taskForm 中的裁决模型、裁决规则等，填充 taskRuleRelList
     for (let i = 0; i < taskForm.judgementModels.length; i++) {
@@ -986,13 +1012,21 @@ const submitTask = async () => {
       const ruleId = taskForm.judgementRules[i];
       const judgeMethod = taskForm.judgementMethods[i];
       const judgeEffect = taskForm.effectModels[i];
+      console.log("judgeEffect", judgeEffect);
 
-      // 获取裁决模式
-      const validJudgeMode = judgeMethodMapping[judgeMethod] || "manual";  // 选择裁决方式
+      // 获取 modelId
+      const modelId = modelNameToIdMap.value[modelName];  // 从映射关系中获取 modelId
+      if (!modelId) {
+        console.error(`未找到模型名称 ${modelName} 对应的 modelId`);
+        return;  // 如果没有找到对应的 modelId，终止提交
+      }
+
+      // 映射裁决方式
+      const validJudgeMode = judgeMethodMapping[judgeMethod] || "manual";
 
       // 将 ruleId 和 modelId 等数据推送到 taskRuleRelList
       newTaskData.taskRuleRelList.push({
-        modelId: modelName,  // 使用 modelName（裁决模型名称）直接传递
+        modelId: modelId,  // 使用映射后的 modelId
         modelType: judgeEffect,  // 裁决效果模型
         judgeMode: validJudgeMode,  // 裁决方式
         ruleId: ruleId  // 直接传递 ruleId
@@ -1004,13 +1038,9 @@ const submitTask = async () => {
 
     // 判断是新增任务还是编辑任务
     const endpoint = endPoint.value;
-    console.log("endPoint", endPoint);
-    console.log("typeof endPoint.value:", typeof endPoint.value);
     const method = taskForm.taskName ? 'POST' : 'POST';
-    console.log("tableDataRecords", tableDataRecords.value);
 
     if (endPoint.value === 'update') {
-      console.log(11111111111111111);
       // 将 tableDataRecords.value 转换为数组
       const records = Array.from(tableDataRecords.value);
       let foundTask = null;
@@ -1035,7 +1065,7 @@ const submitTask = async () => {
     }
 
     // 提交任务数据
-    const response = await fetch(`http://192.168.8.184:3001/api/judgeTask/${endpoint}`, {
+    const response = await fetch(`http://localhost:3001/api/judgeTask/${endpoint}`, {
       method: method,
       headers: {
         'Content-Type': 'application/json'
@@ -1059,52 +1089,11 @@ const submitTask = async () => {
   }
 };
 
-// const submitTask = async () => {
-//   try {
-//     console.log("原始数据:", toRaw(taskForm.value));
-//
-//     const taskData = {
-//       id: taskForm.value.id || Date.now(), // 如果没有 id，自动生成一个唯一 id
-//       taskName: taskForm.value.taskName || "taskName",
-//       taskNameXiangding: taskForm.value.taskNameXiangding || "电子干扰",
-//       createTime: taskForm.value.createTime || "2024年xx月xx日",
-//       judgementRule: taskForm.value.judgementRule || "电子干扰",
-//       judgementModel: taskForm.value.judgementModel || "电子干扰",
-//       judgementEffect: taskForm.value.effectModel || "电子干扰",
-//       judgementMethod: taskForm.value.judgementMethod || "电子干扰",
-//       taskStatus: taskForm.value.taskStatus || "未开始",
-//       actions: "编辑",
-//     };
-//
-//     const existingIndex = tableData.value.findIndex(
-//         (item) => item.id === taskForm.value.id
-//     );
-//
-//     if (existingIndex !== -1) {
-//       // 编辑任务：更新数据但保持位置不变
-//       tableData.value[existingIndex] = taskData;
-//     } else {
-//       // 添加任务：插入到第一个位置
-//       tableData.value.unshift(taskData);
-//     }
-//
-//     // 触发 Vue 的响应式更新
-//     tableData.value = [...tableData.value];
-//
-//     // 重置表单并关闭对话框
-//     dialogVisible.value = false;
-//     taskForm.value = {};
-//   } catch (err) {
-//     console.error("保存任务失败", err);
-//   }
-// };
-
-// 关闭添加任务的对话框
+// 关闭配置任务的对话框
 const handleDialogClose = () => {
   taskForm.value = {
     id: 0,
     taskName: "",
-    // taskNameXiangding: "",
     createTime: "",
     judgementRule: "",
     judgementModel: "",
@@ -1125,8 +1114,10 @@ const handleRowClick = (row: any) => {
 
 // 删除任务
 const deleteTask = async (row: any) => {
+  console.log(1111111111111111)
   if (row) {
     const index = tableData.value.findIndex(item => item.id === row.id);
+    console.log("index", index)
     if (index !== -1) {
       console.log("tableData",tableData)
       tableData.value.splice(index, 1);  // 从数据中删除该行
@@ -1160,123 +1151,95 @@ const deleteTask = async (row: any) => {
   // }
 };
 
-let ws;
+let pollingInterval = null; // 用于存储轮询的 intervalID
 
-const createWebSocket = () => {
-  ws = new WebSocket('ws://192.168.8.184:3001/api/ws/judge');
-
-  ws.onopen = () => {
-    console.log('WebSocket 连接已建立');
-  };
-
-  ws.onerror = (error) => {
-    console.error('WebSocket 连接错误:', error);
-  };
-
-  ws.onclose = () => {
-    console.log('WebSocket 连接关闭');
-  };
-
-  // 监听接收到的消息
-  ws.onmessage = (event) => {
-    console.log('收到 WebSocket 消息:', event.data);
-    try {
-      const data = JSON.parse(event.data);
-      console.log("data",data)
-      // this.handleMessage(data);
-    } catch (error) {
-      console.error('Error parsing message: ', error);
-    }
-  };
-};
-
-// 执行任务请求
 const executeTask = async (row) => {
   const taskName = row.taskName;  // 获取选中的任务名称
+  const createTime = row.createTime;
+  console.log("createTime", createTime);
+  const taskStore = useTaskStore();
+  closeModal();
 
-  // 先请求任务列表
+  taskStore.setTaskName(taskName);
+
   try {
-    const response = await axios.post('http://192.168.8.184:3001/api/judgeTask/pageList', {
-      current: 1,  // 这里的 current 和 pageSize 可以根据需要设置
-      pageSize: 10,
-      sortField: '',  // 可按需传入
-      sortOrder: '',  // 可按需传入
-      taskName: taskName,  // 用 taskName 进行筛选
+    // 执行裁决任务接口
+    const executeResponse = await axios.post('http://localhost:3001/api/judgeTask/execute', {
+      task: {
+        createTime: createTime,
+        taskName: taskName,
+        remark: '',
+        traceTaskCode: '', // 假设 traceTaskCode 从 row 获取
+      },
+      taskRuleRelList: [
+        {
+          modelId: 1,
+          modelType: '1',
+          judgeMode: 'auto',
+          ruleId: 43,
+        }
+      ]
     });
 
-    // 假设返回的数据结构是： response.data.data.records
-    const tasks = response.data.data.records;
-    console.log("tasks", tasks)
+    console.log('裁决任务执行结果:', executeResponse.data);
 
-    // 在任务列表中找到对应的任务
-    const task = tasks.find((item) => item.task.taskName === taskName);
+    if (executeResponse.data.code === 0) {
+      taskStore.incrementSuccess();
 
-    if (task) {
-      // 延迟 0.5 秒后发送事件
-      setTimeout(() => {
-        emit('taskCompleted', row);  // 发送任务完成事件
-        emit('update:isShow', false);  // 关闭显示对话框
+      // WebSocket 连接成功后，发送消息
+      const connectionStatus = ref(false);
+      const receivedMessage = ref('');
+      let socket = null;
 
-        // 准备请求体并通过 WebSocket 发送到后端
-        setTimeout(() => {
-          try {
-            const requestData = {
-              task: {
-                createTime: task.task.createTime,  // 从获取到的任务数据中填充
-                taskName: task.task.taskName,
-                remark: task.task.remark || '',
-                traceTaskCode: task.task.traceTaskCode || '101',  // 默认值或从任务中提取
-              },
-              taskRuleRelList: task.taskRuleRelVOList.map((model) => ({
-                modelId: model.modelId,  // 假设 taskRuleRelVOList 是任务中的数组
-                modelType: model.modelType || '',  // 如果有 modelType 字段
-                judgeMode: model.judgeMode || 'manual',  // 如果有 judgeMode 字段
-                ruleId: model.ruleId || 1,  // 默认 ruleId
-              })),
-            };
+      socket = new WebSocket('ws://localhost:3001/api/ws/judge/standard');
 
-            // 确保 WebSocket 连接已打开
-            if (ws.readyState === WebSocket.OPEN) {
-              // 发送任务执行请求通过 WebSocket
-              ws.send(JSON.stringify({
-                type: 'executeTask',
-                data: requestData
-              }));
-              console.log('WebSocket发送任务执行请求:', requestData);
-            } else {
-              console.error('WebSocket连接不可用');
-              createWebSocket();
-              // ws.onopen = () => {
-              //   console.log('WebSocket重新连接');
-              //   // 重新发送任务执行请求
-              //   ws.send(JSON.stringify({
-              //     type: 'executeTask',
-              //     data: requestData
-              //   }));
-              // };
-            }
+      // 监听连接成功事件
+      socket.onopen = () => {
+        console.log('WebSocket 连接已建立');
+        connectionStatus.value = true;
+        // 连接成功后发送打招呼的消息
+        // socket.send('Hello, server!');
+        console.log('已发送 Hello, server! 消息');
+      };
 
-          } catch (error) {
-            console.error('执行任务时发生错误', error);
-          }
-        }, 500);  // 延迟500ms发送请求
+      // 监听接收到的消息
+      socket.onmessage = (event) => {
+        console.log('接收到消息:', event.data);
+        receivedMessage.value = event.data;
 
-      }, 500);  // 延迟500ms后发送 emit 事件
+        // 将接收到的消息存入 store
+        taskStore.setJudgeResult(event.data);
+
+        // 在 store 中打印出来以进行调试
+        console.log("Store中的judgeResult:", taskStore.getJudgeResult);
+      };
+
+      // 监听连接关闭事件
+      socket.onclose = () => {
+        console.log('WebSocket 连接已关闭');
+        connectionStatus.value = false;
+      };
+
+      // 监听错误事件
+      socket.onerror = (error) => {
+        console.log('WebSocket 发生错误:', error);
+      };
 
     } else {
-      console.error('未找到对应的任务');
+      console.error('裁决任务执行失败:', executeResponse.data.message);
     }
-
   } catch (error) {
-    console.error('获取任务列表时发生错误', error);
+    console.error('执行裁决任务时发生错误:', error);
+    taskStore.incrementFailure();
   }
 };
 
-// 初始化 WebSocket 连接
-createWebSocket();
-
 // 动态设置宽度和高度
 const modalStyle = ref({});
+
+const connectionStatus = ref(false);
+const receivedMessage = ref('');
+let socket = null;
 
 onMounted(() => {
   const parentWidth = window.innerWidth;
@@ -1287,7 +1250,49 @@ onMounted(() => {
   };
   fetchTableData();
   fetchJudgementModels();
+  fetchJudgementModels();
+  updateOptionsLength();
+
+  // // 创建 WebSocket 连接
+  // socket = new WebSocket('ws://192.168.43.234:3001/api/ws/judge/standard');
+  //
+  // // 监听连接成功事件
+  // socket.onopen = () => {
+  //   console.log('WebSocket 连接已建立');
+  //   connectionStatus.value = true;
+  //   // 连接成功后发送打招呼的消息
+  //   socket.send('Hello, server!');
+  //   console.log('已发送 Hello, server! 消息');
+  // };
+  //
+  // // 监听接收到的消息
+  // socket.onmessage = (event) => {
+  //   console.log('接收到消息:', event.data);
+  //   receivedMessage.value = event.data;
+  //   // alert(`收到消息: ${event.data}`); // 弹窗提醒收到消息
+  // };
+  //
+  // // 监听连接关闭事件
+  // socket.onclose = () => {
+  //   console.log('WebSocket 连接已关闭');
+  //   connectionStatus.value = false;
+  // };
+  //
+  // // 监听错误事件
+  // socket.onerror = (error) => {
+  //   console.log('WebSocket 发生错误:', error);
+  // };
 });
+
+// // 发送消息的方法
+// const sendMessage = () => {
+//   if (socket && socket.readyState === WebSocket.OPEN) {
+//     socket.send('Hello, server!');
+//     console.log('手动发送 Hello, server! 消息');
+//   } else {
+//     console.log('WebSocket 连接未建立');
+//   }
+// };
 </script>
 
 <style scoped>
@@ -1465,6 +1470,7 @@ onMounted(() => {
   font-weight: 700;
   color: rgb(1,227,255);
   cursor: pointer;
+  padding: 10px;
 }
 
 .dialog-content {
@@ -1534,10 +1540,49 @@ onMounted(() => {
 .form-column {
   flex: 1;
   margin-right: 20px;
+  width: 500px;
 }
 
 .form-row.multi-input .form-column {
   flex-basis: 48%;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 26px;
+  height: 26px;
+  /*position: absolute;*/
+  position: relative;
+  /*bottom: 15px;*/
+  left: -225px;
+  top: 13px;
+}
+
+.image-167 {
+  width: 14px;
+  height: 14px;
+}
+
+.tooltip {
+  display: none;
+  position: absolute;
+  top: 100%;
+  left: 80%;
+  transform: translateX(-50%);
+  background-color: white;
+  color: black;
+  padding: 5px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  white-space: nowrap;
+  min-width: 50px;
+}
+
+.icon-container:hover .tooltip {
+  display: block;
 }
 
 .divider {
@@ -1687,14 +1732,12 @@ onMounted(() => {
   width: 35px;
 }
 
-/* 已选中的页码样式 */
 .custom-pagination .active-page {
   background-color: #2391FF !important;
   color: white !important;
   border-color: #2391FF !important;
 }
 
-/* 鼠标悬浮的页码样式 */
 .custom-pagination .hover-page {
   background-color: #20598F !important;
   color: white !important;
@@ -1709,7 +1752,6 @@ onMounted(() => {
   color: #FFFFFF;
 }
 
-/* 表格体的字体样式 */
 ::v-deep .el-table .el-table__body td {
   font-family: "微软雅黑", sans-serif;
   font-weight: 400;
@@ -1815,83 +1857,4 @@ onMounted(() => {
   justify-content: center;
   align-items: center;
 }
-
-/*!* 遮罩层样式 *!*/
-/*.overlay {*/
-/*  position: fixed;*/
-/*  height: 500px;*/
-/*  width: 500px;*/
-/*  top: 0;*/
-/*  left: 0;*/
-/*  right: 0;*/
-/*  bottom: 0;*/
-/*  background: white;*/
-/*  display: flex;*/
-/*  justify-content: center;*/
-/*  align-items: center;*/
-/*  z-index: 1000;  !* 保证弹窗在最前面 *!*/
-/*}*/
-
-/*!* 弹窗样式 *!*/
-/*.modal {*/
-/*  background-color: white;*/
-/*  padding: 20px;*/
-/*  border-radius: 8px;*/
-/*  width: 600px;*/
-/*  max-height: 80%;*/
-/*  overflow-y: auto;*/
-/*  text-align: left;*/
-/*  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);*/
-/*  z-index: 1001;*/
-/*}*/
-
-/*!* 弹窗标题样式 *!*/
-/*h3 {*/
-/*  margin-bottom: 20px;*/
-/*  font-size: 20px;*/
-/*  font-weight: bold;*/
-/*  color: #333;*/
-/*}*/
-
-/*!* 弹窗消息内容样式 *!*/
-/*p {*/
-/*  font-size: 16px;*/
-/*  color: #555;*/
-/*  margin-bottom: 20px;*/
-/*}*/
-
-/*!* 列表项样式 *!*/
-/*.json-data ul {*/
-/*  list-style-type: none;*/
-/*  padding: 0;*/
-/*}*/
-
-/*.json-data li {*/
-/*  margin-bottom: 10px;*/
-/*}*/
-
-/*.json-data li strong {*/
-/*  color: #333;*/
-/*  font-weight: 600;*/
-/*}*/
-
-/*!* 按钮样式 *!*/
-/*.buttons {*/
-/*  text-align: center;*/
-/*  margin-top: 20px;*/
-/*}*/
-
-/*.buttons button {*/
-/*  padding: 10px 20px;*/
-/*  border: none;*/
-/*  background-color: #007BFF;*/
-/*  color: white;*/
-/*  cursor: pointer;*/
-/*  border-radius: 5px;*/
-/*  font-size: 16px;*/
-/*}*/
-
-/*.buttons button:hover {*/
-/*  background-color: #0056b3;*/
-/*}*/
 </style>

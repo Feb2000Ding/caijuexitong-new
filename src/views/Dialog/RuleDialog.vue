@@ -54,7 +54,6 @@
               <template #default="scope">
                 <div class="expanded-content" @click="toggleExpand(scope.row)">
                   <p>{{ scope.row.parameters }}</p>
-                  <!-- 提示消息 -->
                 </div>
               </template>
             </el-table-column>
@@ -70,11 +69,42 @@
 
         <!-- 小型分页 -->
         <div class="custom-pagination">
-          <el-button size="small" :disabled="currentPage <= 1" @click="handlePageChange(currentPage - 1)" class="pagination-button">上一页</el-button>
-          <el-button v-for="page in totalPages" :key="page" size="small" :type="currentPage === page ? 'primary' : ''" @click="handlePageChange(page)" class="pagination-button pagination-number-button">
+          <el-button
+              size="small"
+              :disabled="currentPage <= 1"
+              @click="handlePageChange(currentPage - 1)"
+              class="pagination-button"
+              @mouseover="hoverPage = 'prev'"
+              @mouseleave="hoverPage = null"
+          >
+            上一页
+          </el-button>
+          <el-button
+              v-for="page in totalPages"
+              :key="page"
+              size="small"
+              :class="[
+        currentPage === page ? 'active-page' : '',
+        hoverPage === page && currentPage !== page ? 'hover-page' : '',
+        'pagination-number-button'
+      ]"
+              @click="handlePageChange(page)"
+              @mouseover="hoverPage = page"
+              @mouseleave="hoverPage = null"
+          >
             {{ page }}
           </el-button>
-          <el-button size="small" :disabled="currentPage >= totalPages" @click="handlePageChange(currentPage + 1)" class="pagination-button">下一页</el-button>
+
+          <el-button
+              size="small"
+              :disabled="currentPage >= totalPages"
+              @click="handlePageChange(currentPage + 1)"
+              class="pagination-button"
+              @mouseover="hoverPage = 'next'"
+              @mouseleave="hoverPage = null"
+          >
+            下一页
+          </el-button>
         </div>
       </div>
     </div>
@@ -83,16 +113,15 @@
 
 
 <script setup lang="ts">
-import {defineProps, defineEmits, ref, onMounted, computed, toRaw, watch} from 'vue';
-import  { ElTable, ElTableColumn, ElPagination, ElButton,  ElTooltip  } from 'element-plus';
+import {defineProps, defineEmits, ref, onMounted, computed, watch} from 'vue';
+import  { ElTable, ElTableColumn, ElButton} from 'element-plus';
 import axios from "axios";
 import { useTaskStore } from '../../stores/counter.js';
-// import {toRaw} from "vue/dist/vue";
 
 const props = defineProps({
-  isShow: Boolean,  // 控制弹窗显示与否
+  isShow: Boolean,  // 控制弹窗显示与隐藏
   ruleData: Object,  // 规则数据
-  editModeMessage: String,  // 编辑模式信息
+  editModeMessage: String,  // 编辑模式
 });
 
 const emit = defineEmits(['update:isShow', 'openNewRuleDialog']);
@@ -106,8 +135,7 @@ const ruleIds = [35,36,37]; // 示例：需要传递的规则 ID 数组
 // 导出规则的方法
 const exportRule = async () => {
   try {
-    // 定义请求 URL 和参数
-    const url = "http://192.168.8.184:3001/api/calRule/export";
+    const url = "http://localhost:3001/api/calRule/export";
     const params = {
       ruleIds: ruleIds.join(","), // 将数组转换为逗号分隔的字符串
     };
@@ -134,8 +162,6 @@ const exportRule = async () => {
       } else {
         console.log("用户取消了文件名输入");
       }
-
-      // 释放 URL 对象
       window.URL.revokeObjectURL(downloadUrl);
     } else {
       console.error("导出失败：", response);
@@ -166,7 +192,7 @@ function getShortenedText(text) {
 
 // 模拟表格数据
 let tableData = ref([
-  { id: 1, ruleName: 'xxxxxx方案1', createTime: '24-05-01 10:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
+  // { id: 1, ruleName: 'xxxxxx方案1', createTime: '24-05-01 10:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
   // { id: 2, ruleName: 'xxxxxx方案2', createTime: '24-05-02 11:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
   // { id: 3, ruleName: 'xxxxxx方案3', createTime: '24-05-03 12:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
   // { id: 4, ruleName: 'xxxxxx方案4', createTime: '24-05-04 13:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' },
@@ -188,7 +214,7 @@ let tableData = ref([
   // { id: 20, ruleName: 'xxxxxx方案20', createTime: '24-05-20 05:00', judgeModel: '电子干扰', parameters: '参数xx参数xxx参数xxxx', destroyLevel: '规则1', judgementMethod: '手动裁决', targetType: '效果模型1', finalLevel: '进行中', actions: '编辑' }
 ]);
 
-// 格式化 parameters 字段（你可以修改这个函数来适应需要的格式）
+// 格式化 parameters 字段
 const formatParameters = (targetTypes: any[]) => {
   let formattedParameters = "";
 
@@ -197,14 +223,22 @@ const formatParameters = (targetTypes: any[]) => {
       formattedParameters += "\n"; // 每个目标类型之间换行
     }
 
-    formattedParameters += `目标类型: ${target.targetType}\n`;
+    const targetType = target.targetType ?? "未知";
+    formattedParameters += `目标类型: ${targetType}\n`;
 
     target.groups.forEach((group: any) => {
-      formattedParameters += `  指标组: ${group.groupName}\n`;
+      const groupName = group.groupName ?? "未知";
+      formattedParameters += `  指标组: ${groupName}\n`;
 
       group.indicators.forEach((indicator: any) => {
+        const indicatorName = indicator.indicatorName ?? "未知";
+
         const indicatorRanges = indicator.ranges.map((range: any) => {
-          return `    ${indicator.indicatorName}: ${range.minValue} - ${range.maxValue} (权重: ${range.weight})`;
+          const minValue = range.minValue ?? "未知";
+          const maxValue = range.maxValue ?? "未知";
+          const weight = range.weight ?? "未知";
+
+          return `    ${indicatorName}: ${minValue} - ${maxValue} (权重: ${weight})`;
         }).join("\n");
 
         formattedParameters += indicatorRanges + "\n";
@@ -215,11 +249,11 @@ const formatParameters = (targetTypes: any[]) => {
   return formattedParameters;
 };
 
-// 请求表格数据的函数（如果需要从后端获取数据）
+// 从后端获取表格内容
 const fetchTableData = async () => {
   try {
     console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.8.184:3001/api/calRule/pageList", {
+    const response = await axios.post("http://192.168.43.234:3001/api/calRule/pageList", {
       current: 1,
       pageSize: 100,
     });
@@ -274,6 +308,8 @@ const paginatedData = computed(() => {
 const totalItems = computed(() => tableData.value.length);
 const totalPages = computed(() => Math.ceil(totalItems.value / pageSize.value));
 
+const hoverPage = ref(null);
+
 // 处理分页变化
 const handlePageChange = (newPage) => {
   if (newPage < 1 || newPage > totalPages.value) return; // 防止越界
@@ -298,6 +334,7 @@ const taskForm = ref({
 });
 
 const type = ref('');
+
 // 编辑任务
 const editTask = (task) => {
   const taskStore = useTaskStore();
@@ -696,8 +733,28 @@ watch(() => props.isShow, (newVal) => {
   border: 0.1px solid #2391FF;
 }
 
+.custom-pagination .el-button:hover {
+  background-color: #20598F !important;
+  color: white !important;
+  border-color: #2391FF !important;
+}
+
 .custom-pagination .pagination-number-button {
   width: 35px;
+}
+
+/* 已选中的页码样式 */
+.custom-pagination .active-page {
+  background-color: #2391FF !important;
+  color: white !important;
+  border-color: #2391FF !important;
+}
+
+/* 鼠标悬浮的页码样式 */
+.custom-pagination .hover-page {
+  background-color: #20598F !important;
+  color: white !important;
+  border-color: #2391FF !important;
 }
 
 ::v-deep .el-table .el-table__header th {

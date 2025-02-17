@@ -1,16 +1,16 @@
 <template>
   <div v-if="isShow" class="task-modal-overlay">
     <div class="task-modal">
-      <!-- Modal Header -->
+      <!-- 头部 -->
       <div class="task-modal-header">
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon" />
-          添加裁决规则
+          修改裁决规则
         </div>
         <button @click="closeDialog" class="close-button">X</button>
       </div>
 
-      <!-- Modal Body -->
+      <!-- 主体 -->
       <div class="task-modal-body">
         <div class="form-container">
 
@@ -95,7 +95,10 @@
           </div>
 
           <!-- 目标类型定义 -->
-          <div class="target-type-definition">裁决目标类型定义</div>
+          <div class="target-type-definition">
+            裁决目标类型定义
+            <button class="example-button" @click="openExamplePanel">查看示例方案</button>
+          </div>
 
           <!-- 目标类型容器 -->
           <div v-for="(targetType, index) in formData.targetTypes" :key="index" class="target-container">
@@ -126,7 +129,9 @@
                 <select class="input-field" v-model="condition.group">
                   <option value="请选择条件组" disabled selected>请选择条件组</option>
                   <option value="条件组1" selected>主体结构指标组</option>
-                  <option value="条件组2">条件组2</option>
+                  <option value="条件组2">太阳能板指标组</option>
+                  <option value="条件组3">光学器件指标组</option>
+                  <option value="条件组4">表面涂层指标组</option>
                 </select>
 
                 <!-- 图标组 -->
@@ -142,13 +147,21 @@
                 <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
               </div>
 
-              <div class="target-type-definition1" style="margin-top:20px;">指标组定义</div>
+              <div style="display: flex; align-items: center; margin-top: 20px;">
+                <div class="target-type-definition1" style="margin-right: 5px;">指标组定义</div>
+                <!--                <div class="icon-container" style=" width: 26px; height: 26px; cursor: pointer; margin-left: -135px;">-->
+                <!--                  <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="width: 10px; height: 10px;" />-->
+                <!--                  <div class="tooltip" style="position: absolute; top: -40px; left: 50%; transform: translateX(-50%); background-color: #062A51; color: #ffffff; padding: 5px 10px; font-size: 12px; border-radius: 4px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 10;">-->
+                <!--                    范围示例：100-1000-->
+                <!--                  </div>-->
+                <!--                </div>-->
+              </div>
               <div class="indicater-container" v-for="(indicator, indicatorIndex) in condition.indicators" :key="indicatorIndex">
                 <!-- 第一行：指标名称和最大值 -->
                 <div class="form-row1">
                   <div class="form-column1">
                     <label for="minValue1">指标名称</label>
-                    <select v-model="indicator.minValue" @change="updateRange(indicatorIndex)" class="select-box" style="margin-left:-6px; width:237px; height:32px;">
+                    <select v-model="indicator.minValue" @change="updateRange" class="select-box" style="margin-left:-6px; width:237px; height:32px;">
                       <option value="出光时长">出光时长</option>
                       <option value="倒靶功率密度">倒靶功率密度</option>
                     </select>
@@ -218,8 +231,7 @@
                 <!-- 指标名称选择下拉框 -->
                 <select class="input-field" v-model="indexItem.indexName" style="height:32px; width:237px;">
                   <option value="" disabled selected>请选择最终指标</option>
-                  <option value="出光时长">出光时长</option>
-                  <option value="倒靶功率密度">倒靶功率密度</option>
+                  <option v-for="item in selectedOptions" :key="item" :value="item">{{ item }}</option>
                 </select>
 
                 <!-- 数值范围选择下拉框 -->
@@ -230,7 +242,7 @@
               </div>
 
               <!-- 删除范围按钮 -->
-              <div v-for="(button, buttonIndex) in indexItem.deleteButtons" :key="buttonIndex">
+              <div v-for="(button, buttonIndex) in indexItem.deleteButtons" :key="buttonIndex" v-if="indexItem.valueRange !== 'index2'">
                 <button
                     class="delete-button4"
                     @click="removeRange(index, indexItemIndex, buttonIndex)"
@@ -240,29 +252,44 @@
               </div>
 
               <!-- 范围容器 -->
-              <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1" style="margin-top:20px;">
-                <div class="form-column1">
-                  <label for="minValue">最小值</label>
-                  <input type="text" id="minValue" v-model="range.minValue" style="height:32px; width:237px;"/>
+              <div v-if="indexItem.valueRange === ''">
+                <!-- 数值范围显示 -->
+                <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1" style="margin-top:20px;">
+                  <div class="form-column1">
+                    <label for="minValue">最小值</label>
+                    <input type="text" id="minValue" v-model="range.minValue" style="height:32px; width:237px;"/>
+                  </div>
+
+                  <div class="form-column1" style="margin-left:-70px;">
+                    <label for="maxValue">最大值</label>
+                    <select id="maxValue" v-model="range.maxValue" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                      <option value="10">10</option>
+                    </select>
+                  </div>
+
+                  <div class="form-column1" style="margin-left:-115px;">
+                    <label for="destroyLevel">毁伤等级</label>
+                    <select id="destroyLevel" v-model="range.destroyLevel" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                      <option v-for="(damageLevel, index) in damageLevels" :key="index" :value="damageLevel.name">
+                        {{ damageLevel.name }}
+                      </option>
+                    </select>
+                  </div>
                 </div>
-                <div class="form-column1" style="margin-left:-70px;">
-                  <label for="maxValue">最大值</label>
-                  <select id="maxValue" v-model="range.maxValue" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
-                    <option value="∞">∞</option>
-                  </select>
-                </div>
-                <div class="form-column1" style="margin-left:-115px;">
-                  <label for="destroyLevel">毁伤等级</label>
-                  <select id="destroyLevel" v-model="range.destroyLevel" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
-                    <option v-for="(damageLevel, index) in damageLevels" :key="index" :value="damageLevel.name">
-                      {{ damageLevel.name }}
-                    </option>
-                  </select>
+              </div>
+
+              <div v-if="indexItem.valueRange === 'index2'">
+                <!-- 概率模型显示 -->
+                <div class="form-row1" style="margin-top:20px;">
+                  <div class="form-column1">
+                    <label for="probabilityValue">轻微的概率阈值</label>
+                    <input type="text" id="probabilityValue" v-model="indexItem.probabilityValue" style="height:32px; width:237px;"/>
+                  </div>
                 </div>
               </div>
 
               <!-- 添加范围按钮 -->
-              <div class="form-row1">
+              <div class="form-row1" v-if="indexItem.valueRange !== 'index2'">
                 <button class="add-button5" @click="addRange(index, indexItemIndex)" :style="{ marginTop: indexItem.addButton ? indexItem.addButton.marginTop + 'px' : '0px' }">
                   添加范围
                 </button>
@@ -275,21 +302,33 @@
         </div>
       </div>
 
-      <!-- Dialog Footer -->
+      <!-- 底部 -->
       <div class="dialog-footer">
+<!--        <button class="button" @click="openExamplePanel">查看示例</button>-->
         <button class="button" @click="saveRuleData">保存规则</button>
       </div>
+      <RuleExamplePanel v-if="isShowRuleExamplePanel" @close="isShowRuleExamplePanel = false" />
     </div>
   </div>
 </template>
 
 <script setup>
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue';
-import {ElSelect, ElOption } from 'element-plus';
 import axios from 'axios';
 import { useTaskStore } from '@/stores/counter.js';
+import RuleExamplePanel from './RuleExamplePanel.vue';
 
-// 获取 store
+// 控制显示 RuleExamplePanel 的状态
+const isShowRuleExamplePanel = ref(false);
+
+// 点击 "查看示例" 按钮时，打开 RuleExamplePanel
+const openExamplePanel = () => {
+  console.log("11111111111111")
+  console.log("查看实例isShowRuleExamplePanel.value", isShowRuleExamplePanel.value)
+  isShowRuleExamplePanel.value = true;
+  console.log("查看实例isShowRuleExamplePanel.value", isShowRuleExamplePanel.value)
+};
+
 const taskStore = useTaskStore()
 const taskForm = taskStore.getTaskForm
 
@@ -299,18 +338,6 @@ const props = defineProps({
   isShow: Boolean,
   isEditMode: Boolean,
   currentTaskData: Object,
-  // index: {
-  //   type: Number,
-  //   required: true,
-  // },
-  // damageLevel: {
-  //   type: Object,
-  //   required: true,
-  // },
-  // options: {
-  //   type: Array,
-  //   default: () => ["轻微", "中等", "严重"],
-  // },
 });
 console.log("isEditMode", props.isEditMode, props.currentTaskData);
 
@@ -506,6 +533,27 @@ const formData = ref({
   ]
 });
 
+const selectedOptions = ref([]);
+
+// 更新 selectedOptions
+const updateRange = () => {
+  // 遍历所有 targetTypes，查找被选中的 minValue
+  const selectedMinValues = [];
+
+  formData.value.targetTypes.forEach(targetType => {
+    targetType.conditions.forEach(condition => {
+      condition.indicators.forEach(indicator => {
+        if (indicator.minValue) {
+          selectedMinValues.push(indicator.minValue);
+        }
+      });
+    });
+  });
+
+  // 去重并更新 selectedOptions
+  selectedOptions.value = [...new Set(selectedMinValues)];
+};
+
 // 1. 从 localStorage 获取数据
 const loadFromLocalStorage = () => {
   const savedData = localStorage.getItem('formData');
@@ -583,9 +631,11 @@ watch(formData, (newFormData) => {
 const syncMinValueToIndexes = () => {
   const formMinValue = formData.value.targetTypes[0].conditions[0].indicators[0].ranges[0].minValue;
 
-  // 遍历 formData.targetTypes[0].indexes[0].ranges，设置其 minValue
-  formData.value.targetTypes[0].indexes[0].ranges.forEach((range) => {
-    range.minValue = formMinValue;
+  // 使用 Vue.set 方法确保响应式更新
+  formData.value.targetTypes[0].indexes.forEach((index) => {
+    index.ranges.forEach((range) => {
+      range.minValue = formMinValue;
+    });
   });
 };
 
@@ -609,7 +659,7 @@ watch(
     }
 );
 
-// 方法：当 indicator 的值变化时，自动同步
+// 当 indicator 的值变化时，自动同步
 const syncRanges = (newIndexName) => {
   // 1. 查找目标 index
   const correspondingIndex = formData.value.targetTypes[0].indexes.find(index => index.indexName === newIndexName);
@@ -640,7 +690,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.8.184:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -948,6 +998,14 @@ const removeTargetType = (index) => {
   }
 };
 
+const ruleId = ref(taskStore.ruleId);
+
+// 监听 store 里的 ruleId 变化
+watch(() => taskStore.ruleId, (newRuleId) => {
+  ruleId.value = newRuleId; // 更新本地 ruleId
+  console.log("监听到 ruleId 变化:", newRuleId);
+});
+
 // 保存规则数据
 const saveRuleData = async () => {
   const payload = {
@@ -992,7 +1050,7 @@ const saveRuleData = async () => {
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.8.184:3001/api/calRule/update', payload);
+    const response = await axios.post('http://localhost:3001/api/calRule/update', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -1007,6 +1065,24 @@ const saveRuleData = async () => {
   }
 };
 
+// const ruleStore = useRuleStore();
+// console.log("ruleStore",ruleStore)
+
+const fetchRuleData = async (ruleId) => {
+  try {
+    console.log("fetchRuleData111111111111111111")
+    const response = await fetch(`http://localhost:3001/api/calRule/view/${ruleId}`);
+    const data = await response.json();
+    console.log("ruledata",data)
+    if (data.code === 0) {
+      taskForm.value = data.data;  // 更新 taskForm 数据
+      console.log("taskForm.value",taskForm.value)
+    }
+  } catch (error) {
+    console.error('Error fetching rule data:', error);
+  }
+};
+
 // 关闭对话框
 const closeDialog = () => {
   emit('update:isShow', false);
@@ -1014,7 +1090,21 @@ const closeDialog = () => {
 
 onMounted(() => {
   getModels();
-  loadFromLocalStorage();
+  // const ruleStore = useRuleStore()
+  // console.log("ruleStoreinnewDialog",ruleStore)
+  // const ruleId = ruleStore.ruleId;
+  // console.log("ruleId",ruleId)
+  const taskStore = useTaskStore()
+  const taskForm = taskStore.getTaskForm
+  console.log("taskForm", taskForm)
+
+// const ruleStore = useRuleStore()
+// console.log("ruleStoreinnewDialog",ruleStore)
+  ruleId.value = taskStore.ruleId;
+  console.log("mounted111111111111111111111111111111111111ruleId",ruleId.value)
+  if (ruleId) {
+    fetchRuleData(ruleId);
+  }
 });
 </script>
 
@@ -1077,6 +1167,7 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 900;
   color: #01E3FF;
+  padding: 10px;
 }
 
 .task-modal-body {
@@ -1187,7 +1278,7 @@ onMounted(() => {
   gap: 10px;
 }
 
-.add-button, .add-button2, .add-button3, .add-button4, .add-button5 {
+.add-button, .add-button2, .add-button3, .add-button4, .add-button5, .example-button {
   width: 120px;
   height: 30px;
   flex-shrink: 0;
@@ -1249,6 +1340,11 @@ onMounted(() => {
   position: absolute;
   left: 25px;
   top: 130px;
+}
+
+.example-button {
+  position: absolute;
+  margin-left: 20px;
 }
 
 .target-type-definition {
@@ -1624,6 +1720,10 @@ onMounted(() => {
   transition: background-color 0.3s;
   margin-right: 20px;
   margin-left: auto;
+}
+
+.dialog-footer .button:first-child {
+  margin-left: 1300px;
 }
 
 .button:hover {

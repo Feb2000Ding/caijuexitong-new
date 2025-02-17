@@ -20,7 +20,7 @@
         </div>
         <div class="scroll-content">
           <vue3-seamless-scroll class="scroll-list" :list="list" :hover="true" :step="0.4" :wheel="true"
-            :isWatch="true">
+                                :isWatch="true">
             <ul class="scroll-ul" v-for="(item, index) in list" :key="index">
               <li class="scroll-li">
                 <span class="number">{{ item.number }}</span>
@@ -38,9 +38,8 @@
 
 <script setup>
 import { Vue3SeamlessScroll } from "vue3-seamless-scroll"
-import { ref } from 'vue'
-
-import { defineEmits } from 'vue';
+import { ref, defineEmits, onMounted } from 'vue'
+import axios from 'axios'
 
 const emit = defineEmits(['showModal']);
 
@@ -48,62 +47,114 @@ const showModal = () => {
   emit('showModal');
 };
 
-const list = ref([
-  {
-    number: '01',
-    name: '电子干扰1',
-    model: '电子干扰xx',
-    data: 31
-  },
-  {
-    number: '02',
-    name: '电子干扰2',
-    model: '电子干扰xx',
-    data: 43
-  },
-  {
-    number: '03',
-    name: '电子干扰3',
-    model: '电子干扰xx',
-    data: 56
-  },
-  {
-    number: '04',
-    name: '光学干扰1',
-    model: '光学干扰xx',
-    data: 76
-  },
-  {
-    number: '05',
-    name: '光学干扰2',
-    model: '光学干扰xx',
-    data: 88
-  },
-  {
-    number: '06',
-    name: '光学干扰3',
-    model: '光学干扰xx',
-    data: 45
-  },
-  {
-    number: '07',
-    name: '电子干扰5',
-    model: '电子干扰xx',
-    data: 10
-  },
-  {
-    number: '08',
-    name: '电子干扰4',
-    model: '电子干扰xx',
-    data: 36
-  },
-  {
-    number: '09',
-    name: '电子干扰6',
-    model: '电子干扰xx',
-    data: 21
-  },
-]);
+// const list = ref([
+//   {
+//     number: '01',
+//     name: '电子干扰1',
+//     model: '电子干扰xx',
+//     data: 31
+//   },
+//   {
+//     number: '02',
+//     name: '电子干扰2',
+//     model: '电子干扰xx',
+//     data: 43
+//   },
+//   {
+//     number: '03',
+//     name: '电子干扰3',
+//     model: '电子干扰xx',
+//     data: 56
+//   },
+//   {
+//     number: '04',
+//     name: '光学干扰1',
+//     model: '光学干扰xx',
+//     data: 76
+//   },
+//   {
+//     number: '05',
+//     name: '光学干扰2',
+//     model: '光学干扰xx',
+//     data: 88
+//   },
+//   {
+//     number: '06',
+//     name: '光学干扰3',
+//     model: '光学干扰xx',
+//     data: 45
+//   },
+//   {
+//     number: '07',
+//     name: '电子干扰5',
+//     model: '电子干扰xx',
+//     data: 10
+//   },
+//   {
+//     number: '08',
+//     name: '电子干扰4',
+//     model: '电子干扰xx',
+//     data: 36
+//   },
+//   {
+//     number: '09',
+//     name: '电子干扰6',
+//     model: '电子干扰xx',
+//     data: 21
+//   },
+// ]);
+
+const list = ref([])
+
+const fetchListData = async () => {
+  try {
+    // 使用 modelId=1 获取数据
+    const response1 = await axios.post('http://192.168.43.234:3001/api/calRule/pageList', {
+      current: 0,
+      pageSize: 101,
+      sortField: "",
+      sortOrder: "",
+      ruleName: "",
+      modelId: 1
+    });
+
+    // 使用 modelId=2 获取数据
+    const response2 = await axios.post('http://192.168.43.234:3001/api/calRule/pageList', {
+      current: 0,
+      pageSize: 101,
+      sortField: "",
+      sortOrder: "",
+      ruleName: "",
+      modelId: 2
+    });
+
+    // 处理接口返回的数据
+    if (response1.data.code === 0 && response1.data.data.records &&
+        response2.data.code === 0 && response2.data.data.records) {
+      const fetchedData1 = response1.data.data.records;
+      const fetchedData2 = response2.data.data.records;
+
+      // 合并两个数据数组
+      const combinedData = [...fetchedData1, ...fetchedData2];
+
+      // 将合并后的数据转化为符合需求的格式
+      list.value = combinedData.map((item, index) => ({
+        number: String(index + 1).padStart(2, '0'),  // 序号，补充零
+        name: item.ruleName,  // 规则名称
+        model: '光能模型',  // 要求不显示真实的模型名称
+        data: Math.floor(Math.random() * 100) + 1  // 随机生成数据
+      }));
+    } else {
+      console.error("接口返回的数据格式不正确");
+    }
+  } catch (error) {
+    console.error("获取数据失败", error);
+  }
+};
+
+onMounted(() => {
+  fetchListData();
+});
 </script>
 
 <style lang="scss" scoped>

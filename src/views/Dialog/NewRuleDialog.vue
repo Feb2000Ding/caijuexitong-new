@@ -1,7 +1,7 @@
 <template>
-  <div v-if="isShow" class="task-modal-overlay">
+  <div v-if="isShow" class="task-modal-overlay" :class="{'blurred': isShowRuleExamplePanel}">
     <div class="task-modal">
-      <!-- Modal Header -->
+      <!-- 头部 -->
       <div class="task-modal-header">
         <div class="task-modal-title">
           <img src="@/assets/images/icon-title.png" alt="Icon" class="task-modal-icon" />
@@ -10,7 +10,7 @@
         <button @click="closeDialog" class="close-button">X</button>
       </div>
 
-      <!-- Modal Body -->
+      <!-- 主体 -->
       <div class="task-modal-body">
         <div class="form-container">
 
@@ -20,11 +20,11 @@
               <label for="ruleName">规则名称</label>
               <input type="text" id="ruleName" v-model="formData.ruleName" style="height:32px; width: 237px"/>
             </div>
-<!--            <div class="icon-container">-->
-<!--              <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="margin-left: 250px;"/>-->
-<!--              <div class="tooltip">规则名不能重复</div>-->
-<!--              &lt;!&ndash;                <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />&ndash;&gt;-->
-<!--            </div>-->
+            <!--            <div class="icon-container">-->
+            <!--              <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="margin-left: 250px;"/>-->
+            <!--              <div class="tooltip">规则名不能重复</div>-->
+            <!--              &lt;!&ndash;                <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />&ndash;&gt;-->
+            <!--            </div>-->
             <div class="form-column">
               <label for="model">裁决模型</label>
               <select id="model" class="select-box" v-model="formData.model" style="margin-left: -3px;">
@@ -43,29 +43,29 @@
             <div class="form-column">
               <label :for="'damageLevelName' + index">毁伤等级定义</label>
               <div class="input-with-button">
-<!--                <div class="dropdown-input" @click.outside="closeDropdown">-->
-<!--                  &lt;!&ndash; 输入框 &ndash;&gt;-->
-<!--                  <input-->
-<!--                      :id="'damageLevelName' + index"-->
-<!--                      v-model="inputValue"-->
-<!--                      class="input-field"-->
-<!--                      placeholder="请选择毁伤等级"-->
-<!--                      @focus="openDropdown"-->
-<!--                      @input="filterOptions"-->
-<!--                  />-->
+                <!--                <div class="dropdown-input" @click.outside="closeDropdown">-->
+                <!--                  &lt;!&ndash; 输入框 &ndash;&gt;-->
+                <!--                  <input-->
+                <!--                      :id="'damageLevelName' + index"-->
+                <!--                      v-model="inputValue"-->
+                <!--                      class="input-field"-->
+                <!--                      placeholder="请选择毁伤等级"-->
+                <!--                      @focus="openDropdown"-->
+                <!--                      @input="filterOptions"-->
+                <!--                  />-->
 
-<!--                  &lt;!&ndash; 下拉框 &ndash;&gt;-->
-<!--                  <ul v-if="showDropdown" class="dropdown-menu">-->
-<!--                    <li-->
-<!--                        v-for="(option, i) in filteredOptions"-->
-<!--                        :key="i"-->
-<!--                        @click="selectOption(option)"-->
-<!--                    >-->
-<!--                      {{ option }}-->
-<!--                    </li>-->
-<!--                    <li v-if="filteredOptions.length === 0" class="no-option">无匹配项</li>-->
-<!--                  </ul>-->
-<!--                </div>-->
+                <!--                  &lt;!&ndash; 下拉框 &ndash;&gt;-->
+                <!--                  <ul v-if="showDropdown" class="dropdown-menu">-->
+                <!--                    <li-->
+                <!--                        v-for="(option, i) in filteredOptions"-->
+                <!--                        :key="i"-->
+                <!--                        @click="selectOption(option)"-->
+                <!--                    >-->
+                <!--                      {{ option }}-->
+                <!--                    </li>-->
+                <!--                    <li v-if="filteredOptions.length === 0" class="no-option">无匹配项</li>-->
+                <!--                  </ul>-->
+                <!--                </div>-->
                 <select :id="'damageLevelName' + index" v-model="damageLevel.name" class="select-box">
                   <option value="" disabled selected>请选择毁伤等级</option>
                   <option value="轻微">轻微</option>
@@ -95,14 +95,17 @@
           </div>
 
           <!-- 目标类型定义 -->
-          <div class="target-type-definition">裁决目标类型定义</div>
+          <div class="target-type-definition">
+            裁决目标类型定义
+            <button class="example-button" @click="openExamplePanel">查看示例方案</button>
+          </div>
 
           <!-- 目标类型容器 -->
           <div v-for="(targetType, index) in formData.targetTypes" :key="index" class="target-container">
-<!--            <div class="input-container">-->
-<!--&lt;!&ndash;              <label>目标类型</label>&ndash;&gt;-->
-<!--              <input type="text" class="input-field" placeholder="目标类型" v-model="targetType.type" />-->
-<!--            </div>-->
+            <!--            <div class="input-container">-->
+            <!--&lt;!&ndash;              <label>目标类型</label>&ndash;&gt;-->
+            <!--              <input type="text" class="input-field" placeholder="目标类型" v-model="targetType.type" />-->
+            <!--            </div>-->
             <div class="input-container">
               <select class="input-field" id="targetType" v-model="targetType.type">
                 <option value="" disabled selected>请选择裁决目标类型</option>
@@ -122,11 +125,13 @@
             <!-- 条件组和指标 -->
             <div v-for="(condition, conditionIndex) in targetType.conditions" :key="conditionIndex" class="condition-container">
               <div class="input-container">
-<!--                <input type="text" class="input-field" placeholder="条件组" v-model="condition.group" />-->
+                <!--                <input type="text" class="input-field" placeholder="条件组" v-model="condition.group" />-->
                 <select class="input-field" v-model="condition.group">
                   <option value="请选择条件组" disabled selected>请选择条件组</option>
                   <option value="条件组1" selected>主体结构指标组</option>
-                  <option value="条件组2">条件组2</option>
+                  <option value="条件组2">太阳能板指标组</option>
+                  <option value="条件组3">光学器件指标组</option>
+                  <option value="条件组4">表面涂层指标组</option>
                 </select>
 
                 <!-- 图标组 -->
@@ -142,20 +147,28 @@
                 <button class="delete-button" @click="removeCondition(index, conditionIndex)">删除条件组</button>
               </div>
 
-              <div class="target-type-definition1" style="margin-top:20px;">指标组定义</div>
+              <div style="display: flex; align-items: center; margin-top: 20px;">
+                <div class="target-type-definition1" style="margin-right: 5px;">指标组定义</div>
+                <!--                <div class="icon-container" style=" width: 26px; height: 26px; cursor: pointer; margin-left: -135px;">-->
+                <!--                  <img src="@/assets/images/tip1.svg" alt="背景图" class="image-167" style="width: 10px; height: 10px;" />-->
+                <!--                  <div class="tooltip" style="position: absolute; top: -40px; left: 50%; transform: translateX(-50%); background-color: #062A51; color: #ffffff; padding: 5px 10px; font-size: 12px; border-radius: 4px; white-space: nowrap; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0.3s ease; z-index: 10;">-->
+                <!--                    范围示例：100-1000-->
+                <!--                  </div>-->
+                <!--                </div>-->
+              </div>
               <div class="indicater-container" v-for="(indicator, indicatorIndex) in condition.indicators" :key="indicatorIndex">
                 <!-- 第一行：指标名称和最大值 -->
                 <div class="form-row1">
                   <div class="form-column1">
                     <label for="minValue1">指标名称</label>
-                    <select v-model="indicator.minValue" @change="updateRange(indicatorIndex)" class="select-box" style="margin-left:-6px; width:237px; height:32px;">
+                    <select v-model="indicator.minValue" @change="updateRange" class="select-box" style="margin-left:-6px; width:237px; height:32px;">
                       <option value="出光时长">出光时长</option>
                       <option value="倒靶功率密度">倒靶功率密度</option>
                     </select>
                   </div>
                   <div class="form-column1">
                     <label for="maxValue1"></label>
-                    <select v-model="indicator.maxValue" class="select-box" style="margin-left:-52px;">
+                    <select v-model="indicator.maxValue" @change="updateRange(indicatorIndex)" class="select-box" style="margin-left:-52px;">
                       <option value="numeric" selected>数值型</option>
                       <option value="probability">概率型</option>
                     </select>
@@ -165,22 +178,36 @@
                 <button class="delete-button2" @click="removeIndicator(index, conditionIndex, indicatorIndex)">删除指标</button>
 
                 <!-- 第二行：范围数据 -->
-                <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1" >
-                  <div class="form-column1" style="margin-left:9px;">
+                <div v-for="(range, rangeIndex) in indicator.ranges || []" :key="rangeIndex" class="form-row1">
+
+                  <!-- 最小值 -->
+                  <div v-if="indicator.maxValue === 'numeric'" class="form-column1" style="margin-left:9px;">
                     <label for="minValue1" style="white-space: nowrap;">最小值</label>
                     <input id="minValue1" type="text" v-model="range.minValue" @input="syncMinValueToIndexes" style="width:237px; height:32px;" />
                   </div>
-                  <div class="form-column1" style="margin-left:47px">
+
+                  <!-- 最大值 -->
+                  <div v-if="indicator.maxValue === 'numeric'" class="form-column1" style="margin-left:47px">
                     <label for="maxValue1" style="white-space: nowrap; width:45px;">最大值</label>
                     <input id="maxValue1" type="text" v-model="range.maxValue" style="width:237px; height:32px;" />
                   </div>
-                  <div class="form-column1" style="margin-left: 32px">
+
+                  <!-- 影响系数 -->
+                  <div v-if="indicator.maxValue === 'numeric'" class="form-column1" style="margin-left:32px">
                     <label for="impactFactor" style="white-space: nowrap; width:65px;">影响系数</label>
                     <input id="impactFactor" type="text" v-model="range.impactFactor" style="width:237px; height:32px;" />
                   </div>
-                  <div class="form-column1" style="margin-left:9px;">
+
+                  <!-- 终止判断 -->
+                  <div v-if="indicator.maxValue === 'numeric'" class="form-column1" style="margin-left:9px;">
                     <label for="stop" style="white-space: nowrap;">终止判断</label>
                     <input type="checkbox" id="stop" v-model="range.stop" :value="true" style="height:15px; width:15px;" />
+                  </div>
+
+                  <!-- 当选择为概率型时显示概率阈值 -->
+                  <div v-if="indicator.maxValue === 'probability'" class="form-column1" style="margin-left:-5px;">
+                    <label for="probabilityThreshold" style="white-space: nowrap;">概率阈值</label>
+                    <input id="probabilityThreshold" type="text" v-model="range.probabilityThreshold" style="width:237px; height:32px;" />
                   </div>
 
                   <div class="form-row1">
@@ -201,7 +228,6 @@
                     删除范围
                   </button>
                 </div>
-
               </div>
 
               <!-- 每个 condition 组下的 "添加指标" 按钮 -->
@@ -218,8 +244,7 @@
                 <!-- 指标名称选择下拉框 -->
                 <select class="input-field" v-model="indexItem.indexName" style="height:32px; width:237px;">
                   <option value="" disabled selected>请选择最终指标</option>
-                  <option value="出光时长">出光时长</option>
-                  <option value="倒靶功率密度">倒靶功率密度</option>
+                  <option v-for="item in selectedOptions" :key="item" :value="item">{{ item }}</option>
                 </select>
 
                 <!-- 数值范围选择下拉框 -->
@@ -230,7 +255,7 @@
               </div>
 
               <!-- 删除范围按钮 -->
-              <div v-for="(button, buttonIndex) in indexItem.deleteButtons" :key="buttonIndex">
+              <div v-for="(button, buttonIndex) in indexItem.deleteButtons" :key="buttonIndex" v-if="indexItem.valueRange !== 'index2'">
                 <button
                     class="delete-button4"
                     @click="removeRange(index, indexItemIndex, buttonIndex)"
@@ -240,29 +265,44 @@
               </div>
 
               <!-- 范围容器 -->
-              <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1" style="margin-top:20px;">
-                <div class="form-column1">
-                  <label for="minValue">最小值</label>
-                  <input type="text" id="minValue" v-model="range.minValue" style="height:32px; width:237px;"/>
+              <div v-if="indexItem.valueRange === ''">
+                <!-- 数值范围显示 -->
+                <div v-for="(range, rangeIndex) in indexItem.ranges" :key="rangeIndex" class="form-row1" style="margin-top:20px;">
+                  <div class="form-column1">
+                    <label for="minValue">最小值</label>
+                    <input type="text" id="minValue" v-model="range.minValue" style="height:32px; width:237px;"/>
+                  </div>
+
+                  <div class="form-column1" style="margin-left:-70px;">
+                    <label for="maxValue">最大值</label>
+                    <select id="maxValue" v-model="range.maxValue" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                      <option value="10">10</option>
+                    </select>
+                  </div>
+
+                  <div class="form-column1" style="margin-left:-115px;">
+                    <label for="destroyLevel">毁伤等级</label>
+                    <select id="destroyLevel" v-model="range.destroyLevel" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                      <option v-for="(damageLevel, index) in damageLevels" :key="index" :value="damageLevel.name">
+                        {{ damageLevel.name }}
+                      </option>
+                    </select>
+                  </div>
                 </div>
-                <div class="form-column1" style="margin-left:-70px;">
-                  <label for="maxValue">最大值</label>
-                  <select id="maxValue" v-model="range.maxValue" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
-                    <option value="∞">∞</option>
-                  </select>
-                </div>
-                <div class="form-column1" style="margin-left:-115px;">
-                  <label for="destroyLevel">毁伤等级</label>
-                  <select id="destroyLevel" v-model="range.destroyLevel" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
-                    <option v-for="(damageLevel, index) in damageLevels" :key="index" :value="damageLevel.name">
-                      {{ damageLevel.name }}
-                    </option>
-                  </select>
+              </div>
+
+              <div v-if="indexItem.valueRange === 'index2'">
+                <!-- 概率模型显示 -->
+                <div class="form-row1" style="margin-top:20px;">
+                  <div class="form-column1">
+                    <label for="probabilityValue">轻微的概率阈值</label>
+                    <input type="text" id="probabilityValue" v-model="indexItem.probabilityValue" style="height:32px; width:237px;"/>
+                  </div>
                 </div>
               </div>
 
               <!-- 添加范围按钮 -->
-              <div class="form-row1">
+              <div class="form-row1" v-if="indexItem.valueRange !== 'index2'">
                 <button class="add-button5" @click="addRange(index, indexItemIndex)" :style="{ marginTop: indexItem.addButton ? indexItem.addButton.marginTop + 'px' : '0px' }">
                   添加范围
                 </button>
@@ -275,44 +315,41 @@
         </div>
       </div>
 
-      <!-- Dialog Footer -->
+      <!-- 底部 -->
       <div class="dialog-footer">
+<!--        <button class="button" @click="openExamplePanel">查看示例</button>-->
         <button class="button" @click="saveRuleData">保存规则</button>
       </div>
+      <RuleExamplePanel v-if="isShowRuleExamplePanel" @close="isShowRuleExamplePanel = false" />
     </div>
   </div>
 </template>
 
 <script setup>
 import {ref, defineProps, defineEmits, onMounted, watch} from 'vue';
-import {ElSelect, ElOption } from 'element-plus';
 import axios from 'axios';
 import { useTaskStore } from '@/stores/counter.js';
+import RuleExamplePanel from './RuleExamplePanel.vue';
 
-// 获取 store
+// 控制显示 RuleExamplePanel 的状态
+const isShowRuleExamplePanel = ref(false);
+
+// 点击 "查看示例" 按钮时，打开 RuleExamplePanel
+const openExamplePanel = () => {
+  console.log("11111111111111")
+  console.log("查看实例isShowRuleExamplePanel.value", isShowRuleExamplePanel.value)
+  isShowRuleExamplePanel.value = true;
+  console.log("查看实例isShowRuleExamplePanel.value", isShowRuleExamplePanel.value)
+};
+
 const taskStore = useTaskStore()
 const taskForm = taskStore.getTaskForm
 
-const options = ref(['选项1', '选项2', '选项3', '选项4']);
-
 const props = defineProps({
   isShow: Boolean,
-  isEditMode: Boolean,
+  isEditMode: Boolean, // 判断是编辑还是添加
   currentTaskData: Object,
-  // index: {
-  //   type: Number,
-  //   required: true,
-  // },
-  // damageLevel: {
-  //   type: Object,
-  //   required: true,
-  // },
-  // options: {
-  //   type: Array,
-  //   default: () => ["轻微", "中等", "严重"],
-  // },
 });
-console.log("isEditMode", props.isEditMode, props.currentTaskData);
 
 watch(() => props.isEditMode, (newVal) => {
   console.log("是否编辑模式:", newVal);
@@ -506,6 +543,43 @@ const formData = ref({
   ]
 });
 
+const selectedOptions = ref([]);
+
+// 更新 selectedOptions
+const updateRange = () => {
+  // 遍历所有 targetTypes，查找被选中的 minValue
+  const selectedMinValues = [];
+
+  formData.value.targetTypes.forEach(targetType => {
+    targetType.conditions.forEach(condition => {
+      condition.indicators.forEach(indicator => {
+        if (indicator.minValue) {
+          selectedMinValues.push(indicator.minValue);
+        }
+      });
+    });
+  });
+
+  // 去重并更新 selectedOptions
+  selectedOptions.value = [...new Set(selectedMinValues)];
+};
+
+// // 获取当前下拉框可选的 indexName
+// const availableOptions = (indexItemIndex) => {
+//   const allOptions = formData.value.targetTypes[0].indexes.map(item => item.indexName);
+//
+//   // 获取当前下拉框已经选中的值
+//   const selectedIndexName = formData.value.targetTypes[0].indexes[indexItemIndex].indexName;
+//
+//   // 过滤掉已选中的项
+//   return allOptions.filter(indexName => indexName !== selectedIndexName);
+// };
+//
+// // 更新范围函数
+// const updateRange = (indexItemIndex) => {
+//   console.log("更新范围:", formData.value.targetTypes[0].indexes[indexItemIndex].indexName);
+// };
+
 // 1. 从 localStorage 获取数据
 const loadFromLocalStorage = () => {
   const savedData = localStorage.getItem('formData');
@@ -609,7 +683,7 @@ watch(
     }
 );
 
-// 方法：当 indicator 的值变化时，自动同步
+// 当 indicator 的值变化时，自动同步
 const syncRanges = (newIndexName) => {
   // 1. 查找目标 index
   const correspondingIndex = formData.value.targetTypes[0].indexes.find(index => index.indexName === newIndexName);
@@ -640,7 +714,7 @@ const modelOptions = ref([]);
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.8.184:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -659,7 +733,6 @@ const getModels = async () => {
     console.error('获取裁决模型请求失败:', error);
   }
 };
-
 
 const damageLevels = ref([
   { name: '' }
@@ -690,22 +763,22 @@ const conditions = ref([
   }
 ]);
 
-// 添加一个新的条件组
+// 添加条件组
 const addCondition = (targetTypeIndex) => {
   // 向指定目标类型的 conditions 数组添加新的条件组
   formData.value.targetTypes[targetTypeIndex].conditions.push({
-    group: '',            // 条件组的名称
-    logic: '',            // 逻辑操作符
-    indicators: [         // 初始情况下，指示器数组为空
+    group: '',
+    logic: '',
+    indicators: [
       {
-        minValue: '',      // 指标名称（可以是数值或其他标识）
-        maxValue: 'numeric', // 默认值为数值型
-        ranges: [           // 每个指示器下的范围数据
+        minValue: '',
+        maxValue: 'numeric',
+        ranges: [
           {
-            minValue: '',   // 范围的最小值
-            maxValue: '',   // 范围的最大值
-            impactFactor: '', // 影响系数
-            stop: false      // 是否终止判断，默认为 false
+            minValue: '',
+            maxValue: '',
+            impactFactor: '',
+            stop: false
           }
         ]
       }
@@ -824,7 +897,6 @@ const removeRange = (targetIndex, indexItemIndex, rangeIndex = null) => {
     }
   }
 };
-
 
 // 初始化一个数组来保存每组数据
 const indicators = ref([]);
@@ -950,6 +1022,7 @@ const removeTargetType = (index) => {
 
 // 保存规则数据
 const saveRuleData = async () => {
+ console.log("formData",formData.value)
   const payload = {
     rule: {
       ruleName: formData.value.ruleName,
@@ -961,10 +1034,10 @@ const saveRuleData = async () => {
         targetType: targetType.targetType,
         groups: targetType.conditions.map(condition => ({
           groupName: condition.group,
-          operator: condition.logic,
+          operator: condition.logic || 'AND', // 设置默认值 "AND"
           indicators: condition.indicators.map(indicator => ({
-            indicatorName: indicator.minValue,
-            dataType: indicator.maxValue,
+            indicatorName: indicator.minValue || '出光时长', // 设置默认值 "出光时长"
+            dataType: indicator.maxValue || '数值范围', // 设置默认值 "数值范围"
             ranges: indicator.ranges ? indicator.ranges.map(range => ({
               minValue: range.minValue,
               maxValue: range.maxValue,
@@ -975,8 +1048,8 @@ const saveRuleData = async () => {
           }))
         })),
         finalIndicator: {
-          indicatorName: targetType.indexName,
-          dataType: targetType.select,
+          indicatorName: targetType.indexName || '出光时长', // 设置默认值 "出光时长"
+          dataType: targetType.select || '数值范围', // 设置默认值 "数值范围"
           ranges: targetType.indexes.flatMap(index =>
               index.ranges.map(range => ({
                 minValue: range.minValue,
@@ -988,10 +1061,11 @@ const saveRuleData = async () => {
       }))
     }
   };
+  console.log("payload", payload)
 
   try {
     // 调用保存接口
-    const response = await axios.post('http://192.168.8.184:3001/api/calRule/add', payload);
+    const response = await axios.post('http://localhost:3001/api/calRule/add', payload);
     console.log('Response:', response.data);
 
     // 根据后端返回的数据处理逻辑
@@ -1013,6 +1087,7 @@ const closeDialog = () => {
 };
 
 onMounted(() => {
+  selectedOptions.value = [];
   getModels();
   loadFromLocalStorage();
 });
@@ -1029,6 +1104,27 @@ onMounted(() => {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.blurred {
+  backdrop-filter: blur(10px);  /* 高斯模糊效果 */
+}
+
+.task-modal-overlay::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(10px);
+  z-index: -1;
+}
+
+.task-modal-overlay > .rule-example-panel {
+  position: relative;
+  z-index: 1;
 }
 
 .task-modal {
@@ -1077,6 +1173,7 @@ onMounted(() => {
   font-size: 18px;
   font-weight: 900;
   color: #01E3FF;
+  padding: 10px;
 }
 
 .task-modal-body {
@@ -1092,15 +1189,15 @@ onMounted(() => {
 }
 
 .task-modal-body::-webkit-scrollbar {
-  width: 0px;  /* 隐藏滚动条 */
+  width: 0px;
 }
 
 .task-modal-body::-webkit-scrollbar-thumb {
-  background: transparent; /* 隐藏滑块 */
+  background: transparent;
 }
 
 .task-modal-body::-webkit-scrollbar-track {
-  background: transparent; /* 隐藏轨道 */
+  background: transparent;
 }
 
 .form-container {
@@ -1187,7 +1284,7 @@ onMounted(() => {
   gap: 10px;
 }
 
-.add-button, .add-button2, .add-button3, .add-button4, .add-button5 {
+.add-button, .add-button2, .add-button3, .add-button4, .add-button5, .example-button {
   width: 120px;
   height: 30px;
   flex-shrink: 0;
@@ -1249,6 +1346,11 @@ onMounted(() => {
   position: absolute;
   left: 25px;
   top: 130px;
+}
+
+.example-button {
+  position: absolute;
+  margin-left: 20px;
 }
 
 .target-type-definition {
@@ -1355,7 +1457,6 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-/* 图标容器 */
 .icon-container {
   display: flex;
   justify-content: center;
@@ -1368,7 +1469,6 @@ onMounted(() => {
   left: 273px;
 }
 
-/* 背景图 */
 .image-167 {
   position: absolute;
   width: 10px;
@@ -1396,7 +1496,6 @@ onMounted(() => {
   visibility: visible;
 }
 
-/*自定义的输入框（下拉框）*/
 .dropdown-menu {
   position: absolute;
   top: 50px;
@@ -1624,6 +1723,10 @@ onMounted(() => {
   transition: background-color 0.3s;
   margin-right: 20px;
   margin-left: auto;
+}
+
+.dialog-footer .button:first-child {
+ margin-left: 1300px;
 }
 
 .button:hover {

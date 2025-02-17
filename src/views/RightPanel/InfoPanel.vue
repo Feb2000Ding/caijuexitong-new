@@ -17,9 +17,9 @@
                 <div class="time">{{ item.time }}</div>
                 <div class="name">
                   <span class="text">{{ item.name }}</span>
-                  <span class="label red" v-if="item.status == 1">未执行</span>
-                  <span class="label yellow" v-else-if="item.status == 2">裁决中</span>
-                  <span class="label green" v-else-if="item.status == 3">已完成</span>
+<!--                  <span class="label red" v-if="item.status == 1">未执行</span>-->
+                  <span class="label yellow" v-if="item.status == 0">裁决中</span>
+                  <span class="label green" v-else="item.status == 1">已完成</span>
                 </div>
                 <div class="content">{{ item.content }}</div>
               </li>
@@ -33,7 +33,35 @@
 
 <script setup>
 import { Vue3SeamlessScroll } from "vue3-seamless-scroll"
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
+import { useTaskStore } from '@/stores/counter.js';
+
+// 假设这是从外部获取到的裁决数据格式
+const newJudgeResult = {
+  "requestTime": "2025-02-11 05:14:57",
+  "messageWrapper": {
+    "messageType": 1,
+    "requestId": "sjdnafjlsdkgj",
+    "modelType": 1,
+    "effectModelType": null,
+    "side": "红方",
+    "targetType": "主体结构",
+    "indicators": {
+      "出光时长": 30,
+      "倒靶功率密度": 80
+    },
+    "weaponId": null,
+    "rules": null,
+    "inputData": null,
+    "outputData": null,
+    "damageLevel": "层裂",
+    "success": null,
+    "message": null,
+    "TargetId": null,
+    "Bias": 58.0
+  },
+  "type": 1
+};
 
 const list = ref([
   {
@@ -42,55 +70,110 @@ const list = ref([
     status: 1,
     content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
   },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 2,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 3,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 1,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 2,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 3,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 1,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 2,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
-  {
-    time: '2023-10-19 17:10:23',
-    name: 'xxx任务裁决结果',
-    status: 3,
-    content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
-  },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 1,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
+  // {
+  //   time: '2023-10-19 17:10:23',
+  //   name: 'xxx任务裁决结果',
+  //   status: 0,
+  //   content: '红方*装备对蓝方*目标发起jg打击，到靶功率密度数据为1瓦每平方厘米,结果判定为实现饱和干扰。'
+  // },
 ]);
+
+const taskStore = useTaskStore();
+
+// 监听 store 中的 judgeResult
+watch(
+    () => taskStore.judgeResult,  // 监听 taskStore 中的 judgeResult
+    (newResult) => {
+      if (newResult ) {
+        console.log("newResult", newResult);
+        console.log("newResult.messageWrapper", newResult.messageWrapper);
+
+        const message = newResult;
+
+        // 格式化新的数据项
+        const formattedItem = {
+          time: message.requestTime, // 请求时间
+          name: `test_1`, // 假设的任务名称
+          status: message.messageType, // 对应的 status 值
+          content: generateContent(message) // 生成 content
+        };
+
+        // 将新项插入到 list 的最前面
+        list.value.unshift(formattedItem);
+
+        // 打印 formattedItem 调试
+        console.log("formattedItem", formattedItem);
+      } else {
+        console.log("newResult is undefined");
+      }
+
+      // 打印更新后的 list
+      console.log("list.value", list.value);
+    },
+    { immediate: true } // 确保组件加载时也会立即执行一次
+);
+
+// 格式化 content 的函数
+function generateContent(message) {
+  let content = `${message.messageWrapper.side}*装备对${message.messageWrapper.targetType}*目标发起jg打击，`;
+
+  // 遍历 indicators，根据每一项生成相应的内容
+  for (const key in message.messageWrapper.indicators) {
+    if (message.messageWrapper.indicators[key] !== undefined) {
+      content += `到靶功率密度数据为${message.messageWrapper.indicators[key]}瓦每平方厘米,`;
+    }
+  }
+
+  // 添加结果判定
+  if (message.messageWrapper.damageLevel) {
+    content += `结果判定为实现${message.messageWrapper.damageLevel}。`;
+  }
+  console.log("content", content)
+
+  return content;
+}
 </script>
 
 <style lang="scss" scoped>

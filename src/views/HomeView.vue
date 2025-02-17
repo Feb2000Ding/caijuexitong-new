@@ -1,13 +1,18 @@
 <template>
   <div class="home-page">
-    <div class="pg-header">裁决及效果模拟软件</div>
+    <div class="pg-header">
+      裁决及效果模拟软件
+      <div class="time-display">
+        {{ formattedTime }}
+      </div>
+    </div>
     <div class="pg-content">
       <HeadPanel />
       <MiddlePanel
           :isShow="isShowMiddlePanel"
           :responseData="taskResponseData"
           @close="handleCloseMiddlePanel"
-      />
+      />     
       <div class="left-border"></div>
       <div class="right-border"></div>
       <div class="bottom-border"></div>
@@ -17,7 +22,10 @@
         <RulePanel @showModal="showRuleDialog"/>
       </div>
       <div class="right-panel">
-        <TaskPanel @showModal="showTaskDialog"/>
+        <TaskPanel
+            @showModal="showTaskDialog"
+            @showTaskDialog="showTaskDialog"
+        />
         <ProgressPanel />
         <InfoPanel />
       </div>
@@ -56,7 +64,7 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 
 import ModelPanel from './LeftPanel/ModelPanel.vue'
 import EffectModelPanel from './LeftPanel/EffectModelPanel.vue'
@@ -122,7 +130,7 @@ const handleCloseMiddlePanel = () => {
 
 // 子组件发送事件给父组件时，父组件会调用 handleTaskExecuted
 const handleTaskExecution = async () => {
-  // 进行任务执行，获取 responseData（假设从 API 获取）
+  // 进行任务执行，获取 responseData
   const responseData = await executeTask();
 
   // 触发事件，将 responseData 传递给父组件
@@ -176,10 +184,37 @@ const saveRuleData1 = (newData) => {
   isShowRuleDialog.value = true;  // 打开 RuleDialog
 };
 
-
 const handleTaskCompleted = () => {
   isShowRuleDialog.value = false;
 };
+
+// 保存当前时间
+const currentTime = ref(new Date());  // 初始化为当前时间
+
+// 格式化时间函数
+const formatTime = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+};
+
+// 计算属性，自动格式化当前时间
+const formattedTime = computed(() => {
+  // console.log("formattedTime is being recalculated"); // 调试计算属性
+  return formatTime(currentTime.value);
+});
+
+// 定时更新当前时间
+onMounted(() => {
+  setInterval(() => {
+    currentTime.value = new Date();  // 每秒更新 currentTime
+    // console.log("currentTime updated:", currentTime.value); // 调试定时器是否工作
+  }, 1000);  // 每秒更新一次
+});
 </script>
 
 <style lang="scss" scoped>
@@ -188,8 +223,20 @@ const handleTaskCompleted = () => {
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: url('@/assets/images/bg-home.gif') no-repeat center center;
-  background-size: 100% 100%;
+  background-color: rgba(0, 16, 32, 1);
+  background: url('@/assets/images/bg-home-new.gif') no-repeat center center;
+  background-size: 60% 60%;
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 16, 32, 1);
+    z-index: -1;
+  }
 
   .pg-header {
     height: 129px;
@@ -200,6 +247,16 @@ const handleTaskCompleted = () => {
     color: #F2F3FA;
     text-align: center;
     line-height: 100px;
+    z-index: 1;
+
+    .time-display {
+      position: absolute;
+      left: 80px;
+      top: 10px;
+      color: white;
+      font-size: 18px;
+      font-weight: 400;
+    }
   }
 
   .pg-content {

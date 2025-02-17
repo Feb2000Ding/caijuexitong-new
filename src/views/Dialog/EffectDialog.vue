@@ -1,6 +1,7 @@
 <template>
   <!-- 裁决任务管理弹窗-->
   <div v-if="isShow" class="task-modal-overlay">
+    <effectExamplePanel v-if="exampleDialogVisible" @close="closeExamplePanel" />
     <div class="task-modal">
       <!--头部-->
       <div class="task-modal-header">
@@ -17,7 +18,8 @@
           <button class="button" style="margin-left: 10px;" @click="editTask">添加模型</button>
           <!--          <input class="input-search" placeholder="Try typing new..." />-->
           <!--          <button class="button" style="margin-right:20px">搜索</button>-->
-          <button class="button" style="margin-right: 20px; background-color: #C33333">删除</button>
+<!--          <button class="button" style="margin-right: 20px; background-color: #C33333" @click="deleteTask(selectedRow)">删除</button>-->
+          <button class="button" style="margin-right: 20px; background-color: #C33333" @click="deleteTask">删除</button>
         </div>
         <!--添加任务的弹窗-->
         <div v-if="dialogVisible" class="custom-dialog-overlay">
@@ -28,20 +30,30 @@
             </div>
             <div class="dialog-content">
               <div class="dialog-column">
-                <div class="form-row">
-                  <label for="fileUpload" class="input-label">上传文件</label>
-                  <input type="file" id="fileUpload" class="input-field" @change="handleFileUpload" />
+                <button class="add-file-btn" @click="triggerFileInput">添加文件</button>
+                <div class="upload-panel">
+                  <div class="icon-container">
+                    <el-icon class="upload-icon">
+                      <i class="el-icon-cloudy"></i>
+                    </el-icon>
+                  </div>
+                  <p class="upload-text">将文件拖到此处，或 <span class="upload-link" @click="triggerFileInput">点击上传</span></p>
+                  <input type="file" id="fileUpload" class="file-input" @change="handleFileUpload" />
                 </div>
+<!--                <div class="form-row">-->
+<!--                  <label for="fileUpload" class="input-label">上传文件</label>-->
+<!--                  <input type="file" id="fileUpload" class="input-field" @change="handleFileUpload" />-->
+<!--                </div>-->
                 <div class="form-row">
                   <label for="input1" class="input-label">*输入参数</label>
-                  <input v-model="modelForm.modelName" type="text" id="input1" class="input-field" placeholder="效果模型1xxx" />
+                  <input v-model="modelForm.modelName" type="text" id="input1" class="input-field" placeholder="参数xx" />
                 </div>
                 <div class="form-row">
-                  <label for="input2" class="input-label">*输入参数</label>
-                  <input v-model="modelForm.createTime" type="text" id="input2" class="input-field" placeholder="效果模型2xxx" />
+                  <label for="input2" class="input-label">*已输入参数</label>
+                  <input v-model="modelForm.createTime" type="text" id="input2" class="input-field" placeholder="参数xxx" />
                 </div>
               </div>
-              <div class="dialog-column">
+              <div class="dialog-column" style="margin-top: 40px;">
                 <div class="form-row">
                   <label for="modelName" class="input-label">*模型名称</label>
                   <input v-model="modelForm.modelName" type="text" id="modelName" class="input-field" placeholder="xxxxx" />
@@ -115,7 +127,8 @@
               <!--              </div>-->
             </div>
             <div class="dialog-footer">
-              <button class="button"@click="dialogVisible = false">取消</button>
+<!--              <button class="button"@click="dialogVisible = false">取消</button>-->
+              <button class="button" @click="openExamplePanel">查看示例</button>
               <button class="button" @click="submitTask">确认</button>
             </div>
           </div>
@@ -131,10 +144,10 @@
               @selection-change="handleSelectionChange"
           >
             <el-table-column type="selection" width="80" />
-            <el-table-column prop="modelName" label="效果模型名称" width="240" />
-            <el-table-column prop="modelType" label="模型类型" width="240" />
+            <el-table-column prop="effectName" label="效果模型名称" width="240" />
+            <el-table-column prop="effectName" label="模型类型" width="240" />
             <el-table-column prop="createTime" label="创建时间" width="300" />
-            <el-table-column prop="parameter" label="关联裁决模型" width="648" />
+            <el-table-column prop="modelName" label="关联裁决模型" width="648" />
           </el-table>
         </div>
 
@@ -186,6 +199,16 @@
 import {defineProps, defineEmits, ref, onMounted, computed} from 'vue';
 import  { ElTable, ElTableColumn, ElPagination, ElButton  } from 'element-plus';
 import axios from "axios";
+import EffectExamplePanel from './EffectExamplePanel.vue';
+
+const exampleDialogVisible = ref(false); // 控制是否显示弹窗
+const openExamplePanel = () => {
+  exampleDialogVisible.value = true;
+};
+
+const closeExamplePanel = () => {
+  exampleDialogVisible.value = false;
+};
 
 const props = defineProps({
   isShow: Boolean
@@ -201,7 +224,7 @@ const closeModal = () => {
 let tableData = ref([
   {
     id: 1,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案1',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
@@ -215,126 +238,126 @@ let tableData = ref([
   },
   {
     id: 3,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案3',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 4,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案4',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 5,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案5',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 6,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案6',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 7,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案7',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 8,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案8',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 9,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案9',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 10,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案10',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 11,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案11',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 12,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案12',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 13,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案13',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 14,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案14',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 15,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案15',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 16,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案16',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 17,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案17',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 18,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案18',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
   },
   {
     id: 19,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案19',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
-    parameter: '规则2',
+   parameter: '规则2',
   },
   {
     id: 20,
-    modelName: 'xxxxxx方案2',
+    modelName: 'xxxxxx方案20',
     createTime: '24-05-02 11:00',
     modelType: '雷达反制',
     parameter: '规则2',
@@ -343,46 +366,67 @@ let tableData = ref([
 
 // 分页查询方法
 const fetchTableData = async (
-    taskName = "",
+    effectName = "",
+    modelId = 0,
     current = 0,
-    pageSize = 10,
+    pageSize = 100,
     sortField = "",
     sortOrder = ""
 ) => {
   try {
     console.log("正在请求数据...");
-    const response = await axios.post("http://192.168.8.184:3001/api/judgeTask/pageList", {
-      current,
-      pageSize,
-      sortField,
-      sortOrder,
-      taskName,
-    });
+
+    // 请求接口
+    const response = await axios.post(
+        "http://localhost:3001/api/judgeEffect/pageList",
+        {
+          current,
+          pageSize,
+          sortField,
+          sortOrder,
+          effectName,
+          modelId,
+        },
+        {
+          headers: {
+            // 可以在这里加上 token 如果需要
+            "token": "your_token_here",
+          },
+        }
+    );
     console.log("response.data.data", response.data.data);
 
     const newData = response.data.data.records;
     console.log("请求到的新数据:", newData);
 
-    // 遍历返回的数据并更新 tableData
-    newData.forEach((record, index) => {
-      // 如果对应索引已有数据，更新指定字段；否则添加新数据
-      if (tableData.value[index]) {
-        tableData.value[index].taskName = record.task.taskName;  // 替换任务名称
-        tableData.value[index].createTime = record.task.createTime; // 替换创建时间
-      } else {
-        // 添加新数据，保留默认值
-        tableData.value.push({
-          id: record.task.taskId || '',
-          taskName: record.task.taskName,
-          createTime: record.task.createTime,
-          judgementModel: '',
-          judgementRule: '',
-          judgementMethod: '',
-          judgementEffect: '',
-          taskStatus: '',
-          actions: '编辑',
-        });
-      }
+    // 插入假数据
+    const fakeData = {
+      taskId: 'fake_task_id',
+      effectName: '光能效果模型',
+      modelId: 123,
+      modelName: '光能模型',
+      createTime: '2024-12-20 17:08:34',
+      parameter: '参数xx',
+      actions: '编辑',
+    };
+
+    // 将假数据插入到 newData 中
+    newData.push(fakeData);
+
+    // 清空原有数据
+    tableData.value = [];
+
+    // 更新表格数据
+    newData.forEach((record) => {
+      tableData.value.push({
+        id: record.taskId || '',
+        effectName: record.effectName,
+        modelId: record.modelId,
+        modelName: record.modelName,
+        createTime: record.createTime,
+        parameter: record.parameter || '',
+        actions: record.actions || '编辑',
+      });
     });
 
     // 如果返回的数据少于现有数据，截断多余数据
@@ -393,9 +437,21 @@ const fetchTableData = async (
     console.log("更新后的表格数据:", tableData.value);
   } catch (err) {
     console.error("请求数据失败:", err);
+
+    // 请求失败时插入假数据
+    tableData.value = [
+      {
+        taskId: 'fake_task_id',
+        effectName: '光能效果模型',
+        modelId: 123,
+        modelName: '光能模型',
+        createTime: '2024-12-20 17:08:34',
+        parameter: '参数xx',
+        actions: '编辑',
+      },
+    ];
   }
 };
-
 
 // 当前页数和每页显示的数据量
 const currentPage = ref(1);
@@ -427,15 +483,19 @@ const modelForm = ref({
   createTime: '',
 });
 
-// 文件上传方法
+// 处理文件上传
 const handleFileUpload = (event: Event) => {
-  const target = event.target as HTMLInputElement;
-  const file = target.files?.[0];
-
+  const input = event.target as HTMLInputElement;
+  const file = input?.files?.[0];
   if (file) {
-    console.log("文件已上传：", file.name);
-
+    console.log("上传的文件:", file);
   }
+};
+
+// 触发文件选择框
+const triggerFileInput = () => {
+  const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
+  fileInput?.click();
 };
 
 // 编辑任务
@@ -491,28 +551,32 @@ const handleDialogClose = () => {
   };
 };
 
-// 删除任务
-const deleteTask = async (row) => {
-  try {
-    // 发送请求删除数据
-    const response = await axios.delete(
-        `http://192.168.8.184:3001/judgeTask/delete/${row.taskId}`
-    );
-    console.log("删除任务成功", response.data);
+// 存储选中的行
+const selectedRows = ref<any[]>([]);
 
-    console.log("tableData.value", tableData.value);
+// 处理选中行变化
+const handleSelectionChange = (rows: any[]) => {
+  selectedRows.value = rows; // 存储选中的行
+};
 
-    // 删除本地的数据
-    const index = tableData.value.findIndex((item) => item.id === row.taskId);
-    if (index !== -1) {
-      // 使用 splice 删除该项，并将后面的项依次前移
-      tableData.value.splice(index, 1);
-      console.log("tableData.value", tableData.value);
-
-    }
-  } catch (err) {
-    console.error("删除任务失败", err);
+// 删除选中的任务
+const deleteTask = () => {
+  if (selectedRows.value.length === 0) {
+    // 如果没有选中项，直接返回
+    console.log("没有选中项，无法删除");
+    return;
   }
+
+  // 删除选中的任务
+  selectedRows.value.forEach((row) => {
+    const index = tableData.value.findIndex(item => item.id === row.id);
+    if (index !== -1) {
+      tableData.value.splice(index, 1); // 从 tableData 中删除
+    }
+  });
+
+  // 清空选中项
+  selectedRows.value = [];
 };
 
 // 动态设置宽度和高度
@@ -650,10 +714,6 @@ onMounted(() => {
   padding: 8px;
 }
 
-.input-field::placeholder {
-  color: #ccc;
-}
-
 .custom-dialog-overlay {
   position: fixed;
   top: 0;
@@ -671,7 +731,7 @@ onMounted(() => {
 .custom-dialog {
   background: white;
   width: 70%;
-  height: 50%;
+  min-height: 25%;
   border-radius: 8px;
   display: flex;
   flex-direction: column;
@@ -706,6 +766,7 @@ onMounted(() => {
   font-weight: 700;
   color: rgb(1,227,255);
   cursor: pointer;
+  padding: 10px;
 }
 
 /* 对话框内容 */
@@ -749,6 +810,81 @@ onMounted(() => {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 4px;
+  width: 100px;
+}
+
+.input-field::placeholder {
+  color: #ccc;
+}
+
+.add-file-btn {
+  width: 90px;
+  height: 36px;
+  background: inherit;
+  background-color: rgba(64, 158, 255, 1);
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  color: #FFFFFF;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: center;
+  line-height: 36px;
+  margin-bottom: 5px;
+}
+
+.add-file-btn:hover {
+  background-color: rgba(50, 130, 230, 1);
+}
+
+.upload-panel {
+  background-color: white;
+  border: 2px solid #ccc;
+  padding: 20px;
+  text-align: center;
+  border-radius: 4px;
+  width: 360px;
+  height: 200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100px;
+  margin-botton: 5px;
+}
+
+.icon-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 5px;
+  z-index: 10000;
+}
+
+.upload-text {
+  font-family: "Arial Normal", "Arial", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 13px;
+  letter-spacing: normal;
+  color: #333333;
+  vertical-align: middle;
+  text-align: center;
+  line-height: normal;
+  text-transform: none;
+}
+
+.upload-link {
+  color: #40A9FF;
+  cursor: pointer;
+}
+
+.upload-link:hover {
+  text-decoration: underline;
+}
+
+.file-input {
+  display: none;
 }
 
 .form-column {
@@ -770,16 +906,16 @@ onMounted(() => {
   white-space: nowrap;
 }
 
-.input-field {
-  background-color: #000;
-  color: #fff;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  flex-grow: 1;
-  min-width: 100px;
-  width: 70%;
-}
+/*.input-field {*/
+/*  background-color: #000;*/
+/*  color: #fff;*/
+/*  padding: 8px;*/
+/*  border: 1px solid #ccc;*/
+/*  border-radius: 4px;*/
+/*  flex-grow: 1;*/
+/*  min-width: 100px;*/
+/*  width: 70%;*/
+/*}*/
 
 .radio-group {
   display: flex;

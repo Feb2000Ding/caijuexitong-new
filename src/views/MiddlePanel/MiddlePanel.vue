@@ -1,79 +1,32 @@
-
-
-<!--<template>-->
-<!--  <div class="middle-panel">-->
-<!--    <div class="popup-container">-->
-<!--      <div class="popup-content">-->
-<!--        &lt;!&ndash; 在这里放置弹窗内容 &ndash;&gt;-->
-<!--        <p>这是弹窗内容</p>-->
-<!--      </div>-->
-<!--    </div>-->
-<!--  </div>-->
-<!--</template>-->
-
-<!--<script>-->
-<!--export default {-->
-<!--  name: "MiddlePanel",-->
-<!--};-->
-<!--</script>-->
-
-<!--<style scoped lang="scss">-->
-<!--.middle-panel {-->
-<!--  position: relative;-->
-<!--  display: flex;-->
-<!--  justify-content: center;-->
-<!--  align-items: center;-->
-<!--  width: 100%;-->
-<!--  height: 100%;-->
-<!--}-->
-
-<!--.popup-container {-->
-<!--  width: 300px;-->
-<!--  height: 350px;-->
-<!--  background-color: rgba(28,117,186,0.9);-->
-<!--  border: 3px solid rgba(28, 117, 186, 1);-->
-<!--  //border-radius: 10px;-->
-<!--  display: flex;-->
-<!--  justify-content: center;-->
-<!--  align-items: center;-->
-<!--  //box-shadow: 0 4px 10px rgba(28, 117, 186, 0.2);-->
-<!--}-->
-
-<!--.popup-content {-->
-<!--  color: #fff;-->
-<!--  font-size: 16px;-->
-<!--  text-align: center;-->
-<!--  line-height: 1.5;-->
-<!--}-->
-<!--</style>-->
-
 <template>
+<!--  裁决结果弹窗-->
   <div class="modal-overlay" v-if="isShow">
+
     <div class="modal-content">
       <h3 class="modal-title">裁决成功！</h3>
 
       <div class="modal-message">
-        <!-- 显示主要字段 -->
-        <div v-if="responseData.data">
-          <p><strong>裁决类型:</strong> {{ responseData.data.judgeModelType }}</p>
-          <p><strong>裁决任务:</strong> {{ responseData.data.taskName }}</p>
-          <p><strong>裁决模式:</strong> {{ responseData.data.judgeMode }}</p>
-          <p><strong>裁决时间:</strong> {{ responseData.data.judgeTime }}</p>
-          <p><strong>申请方:</strong> {{ responseData.data.from }}</p>
-        </div>
-
-        <!-- 如果有 judgeCalResult，逐层显示 -->
-        <div v-if="responseData.data.judgeCalResult && responseData.data.judgeCalResult.targetResults.length">
-          <h4>裁决结果详情:</h4>
-          <div v-for="(target, index) in responseData.data.judgeCalResult.targetResults" :key="index">
-            <p><strong>目标类型:</strong> {{ target.targetType || '无' }}</p>
-            <p><strong>损害等级:</strong> {{ target.damageLevel }}</p>
-<!--            <p><strong>得分:</strong> {{ target.score }}</p>-->
-            <div v-if="target.groupResults && target.groupResults.length">
-              <h5>分组结果:</h5>
-              <ul>
-                <li v-for="(group, idx) in target.groupResults" :key="idx">{{ group }}</li>
-              </ul>
+        <!-- Show scrolling text -->
+        <div class="headpanel-scrollbar">
+          <div class="scrollbar-content">
+            <div
+                class="scrolling-text"
+                :style="{
+                animationPlayState: isPaused || isCentering ? 'paused' : 'running'
+              }"
+            >
+              <div
+                  v-for="(item, index) in messages"
+                  :key="index"
+                  class="scroll-item"
+                  :style="{
+                  animationDelay: item.delay + 's',
+                  animationDuration: item.duration + 's'
+                }"
+              >
+                <img src="@/assets/images/u171.png" alt="Icon" class="scroll-icon" />
+                {{ item.text }}
+              </div>
             </div>
           </div>
         </div>
@@ -87,24 +40,105 @@
 <script>
 export default {
   props: {
-    isShow: {  // 父组件控制弹窗显示的状态
+    isShow: {
       type: Boolean,
       required: true,
     },
-    responseData: {  // 父组件传递的裁决结果
+    responseData: {
       type: Object,
       required: true,
     }
   },
+  data() {
+    return {
+      messages: [],
+    };
+  },
   methods: {
     closeModal() {
-      this.$emit('close');  // 向父组件发送关闭事件
+      this.$emit('close');
     },
+    generateRandomMessages() {
+      const randomTexts = [
+        '任务执行完成！',
+        '裁决任务成功！',
+        '请确认您的操作。',
+        '系统已更新，请重试。',
+        '处理完成，检查结果。',
+        '正在进行任务...',
+        '请等待片刻...',
+        '即将开始裁决...',
+        '处理时间：2025年...',
+        '任务状态更新！'
+      ];
+
+      this.messages = randomTexts.map(text => ({
+        text,
+        delay: Math.random() * 5,
+        duration: Math.random() * 15 + 10,
+      }));
+    }
+  },
+  mounted() {
+    this.generateRandomMessages();
   },
 };
 </script>
 
 <style scoped>
+.headpanel-scrollbar {
+  background-color: rgba(57, 125, 202, 0.75);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2px;
+  width: 100%;
+  position: relative;
+}
+
+.scrollbar-content {
+  display: flex;
+  flex-direction: column;
+  height: 50px;
+}
+
+.scrolling-text {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  position: absolute;
+  width: 100%;
+  white-space: nowrap;
+}
+
+.scroll-item {
+  font-size: 20px;
+  color: #FFF;
+  margin-right: 30px;
+  display: flex;
+  align-items: center;
+  opacity: 1;
+  animation: scroll 15s linear infinite;
+}
+
+.scroll-icon {
+  width: 18px;
+  height: 18px;
+  margin-right: 10px;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 1;
+  }
+}
+
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -117,9 +151,9 @@ export default {
 }
 
 .modal-content {
-  background: rgba(6,42,81,0.75); /* Dark background for modal */
+  background: rgba(6, 42, 81, 0.75);
   color: white;
-  border: 2px solid #00bfff; /* Light blue border */
+  border: 2px solid #00bfff;
   border-radius: 8px;
   padding: 20px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
@@ -138,7 +172,7 @@ export default {
 }
 
 .modal-close {
-  background-color: #00bfff; /* Light blue button */
+  background-color: #00bfff;
   color: white;
   border: none;
   padding: 10px 15px;
@@ -146,7 +180,6 @@ export default {
   cursor: pointer;
 }
 .modal-close:hover {
-  background-color: #007acc; /* Darker blue on hover */
+  background-color: #007acc;
 }
 </style>
-

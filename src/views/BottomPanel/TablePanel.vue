@@ -50,14 +50,14 @@
 
 <script setup>
 import { Vue3SeamlessScroll } from "vue3-seamless-scroll";
-import {ref, onMounted, watch} from "vue";
+import {ref, watch} from "vue";
 import { useTaskStore } from "@/stores/counter.js";
 
-// 引入 Pinia store
+// 引入pinia中存储的裁决结果（来自taskDialog）
 const taskStore = useTaskStore();
 console.log(taskStore.responseData)
 
-// 定义 list 变量，用于存储裁决结果列表
+// 裁决结果列表
 const list = ref([
   {
     taskName: "任务1",
@@ -70,15 +70,14 @@ const list = ref([
   }
 ]);
 
-// 裁决方式映射
+// 定义裁决方式映射
 const judgeModeMapping = {
   manual: "手动裁决",
   Aotu: "自动裁决",
-  // 你可以根据需要增加其他类型的映射
-  default: "未知裁决方式"
+  default: "自动裁决"
 };
 
-// 监听 taskStore.responseData 变化
+// 监听新收到的裁决结果
 watch(
     () => taskStore.responseData,
 
@@ -92,13 +91,13 @@ watch(
 
         // 根据裁决方式映射
         const newItem = {
-          taskName: responseData.taskName || "未定义任务",  // 任务名称
-          judgeType: responseData.judgeModelType || "未知类型",  // 裁决类型
-          requestTime: responseData.requestTime || "2024-12-31 16:20:30",  // 请求时间
-          side: responseData.from || "红方",  // 申请方
-          judgeMethod: judgeModeMapping[responseData.judgeMode] || judgeModeMapping.default,  // 裁决方式
-          result: responseData.judgeResult ? responseData.judgeResult.targetResults[0] : 1,  // 裁决结果
-          judgeTime: responseData.judgeTime || "2024-12-31 16:22:30",  // 处理时间
+          taskName: responseData.taskName || "未定义任务",
+          judgeType: responseData.judgeModelType || "未知类型",
+          requestTime: responseData.requestTime || "2024-12-31 16:20:30",
+          side: responseData.from || "红方",
+          judgeMethod: judgeModeMapping[responseData.judgeMode] || judgeModeMapping.default,
+          result: responseData.judgeResult ? responseData.judgeResult.targetResults[0] : 1,
+          judgeTime: responseData.judgeTime || "2024-12-31 16:22:30",
         };
 
         // 将新的任务添加到 list 中
@@ -130,7 +129,6 @@ watch(
 </script>
 
 <style lang="scss" scoped>
-/* 样式保持不变 */
 .table-panel {
   height: 100%;
   overflow: hidden;

@@ -5,125 +5,141 @@
       <img src="@/assets/images/u167.svg" alt="背景图" class="image-167" />
       <img src="@/assets/images/u168.svg" alt="前景图" class="image-168" />
     </div>
-
     <!-- 根据 isContentVisible 控制滚动内容的显示 -->
-    <el-scrollbar  class="headpanel-scrollbar" style="width: 450px; height: 50px;">
+    <el-scrollbar class="headpanel-scrollbar" style="width: 450px; height: 50px;">
       <div class="scrollbar-content">
         <div
             class="scrolling-text"
             :key="scrollKey"
             :style="{ animationPlayState: isPaused || isCentering ? 'paused' : 'running' }"
+            @mouseenter="pauseScroll"
+            @mouseleave="resumeScroll"
         >
-          <div
-              v-for="(item, index) in items"
-              :key="index"
-              class="scroll-item"
-              :class="{ flash: item.isNew }"
-          >
-            <img src="@/assets/images/u171.png" alt="图标" class="scroll-icon" />
-            {{ item.text }}
-          </div>
+        <div
+            v-for="(item, index) in items"
+            :key="index"
+            class="scroll-item"
+        >
+          <img src="@/assets/images/u171.png" alt="图标" class="scroll-icon" />
+          {{ item.text }}
         </div>
       </div>
-    </el-scrollbar>
+  </div>
+  </el-scrollbar>
   </div>
 </template>
 
-<script>
-import { ref, watch } from 'vue';
-import { useTaskStore } from '@/stores/counter.js'; // 导入 Pinia store
+<script setup>
+import { ref, computed, watch } from 'vue';
+import { useTaskStore } from '@/stores/counter.js';
 
-export default {
-  name: "HeadPanel",
-  data() {
-    return {
-      staticItems: [
-        { text: this.getCurrentDate() + '收到{from}裁决请求...', isNew: false },
-      ], // 初始化消息，日期为当前日期，包含标记是否为新消息
-      isPaused: false, // 控制动画暂停状态
-      animationKey: 0, // 用于重置动画
-      isCentering: false,
-      scrollKey: 0,
-      isContentVisible: false, // 控制滚动内容的显示
-    };
-  },
-  computed: {
-    // 使用 Pinia store 中的 from 来动态替换
-    items() {
-      const taskStore = useTaskStore();
-      return this.staticItems.map(item => ({
-        ...item,
-        text: item.text.replace(/{from}/g, taskStore.from) // 动态替换
-      }));
-    }
-  },
-  watch: {
-    // 监听 Pinia store 中 from 的变化
-    taskStore: {
-      handler(newValue, oldValue) {
-        const newFrom = newValue.from;
-        const oldFrom = oldValue.from;
-        if (newFrom !== oldFrom) {
-          this.addNewMessage(newFrom);
-          this.isContentVisible = true; // 显示滚动内容
+const taskStore = useTaskStore();
+
+const staticItems = ref([ { text: getCurrentMessage() + '收到请求...', isNew: false } ]);
+const isPaused = ref(false);
+const isCentering = ref(false);
+const scrollKey = ref(0);
+const isContentVisible = ref(false);
+const isScrolling = ref(false);
+
+const items = computed(() => {
+  return staticItems.value.map(item => ({
+    ...item,
+    text: item.text.replace(/{from}/g, taskStore.from)
+  }));
+});
+
+// 监听 taskStore 中的 from
+watch(
+    () => taskStore.from,
+    (newFrom, oldFrom) => {
+      if (newFrom !== oldFrom) {
+        console.log("newFrom", newFrom);
+
+        // 如果 newFrom 是一个数组，则依次添加每条消息
+        if (Array.isArray(newFrom)) {
+          newFrom.forEach(fromItem => {
+            getCurrentMessage(fromItem);
+            console.log("getCurrentMessage(fromItem)", getCurrentMessage(fromItem));
+            console.log("fromItem", fromItem);
+            addNewMessage(fromItem);  // 为每一项生成并添加新消息
+          });
         } else {
-          this.isContentVisible = false; // 隐藏滚动内容
+          getCurrentMessage(newFrom);
+          console.log("getCurrentMessage(newFrom)", getCurrentMessage(newFrom));
+          console.log("newFrom", newFrom);
+          addNewMessage(newFrom);  // 如果 newFrom 不是数组，按常规方式处理
         }
-      },
-      deep: true // 确保监听整个 store 的变化
+
+        isContentVisible.value = true; // 显示滚动内容
+      } else {
+        isContentVisible.value = false; // 隐藏滚动内容
+      }
     }
-  },
-  methods: {
-    resetAnimation() {
-      this.animationKey++; // 增加 key 值以触发 DOM 重渲染
-    },
-    getCurrentDate() {
-      const date = new Date();
-      const year = date.getFullYear();
-      const month = (date.getMonth() + 1).toString().padStart(2, '0');
-      const day = date.getDate().toString().padStart(2, '0');
-      return `[${year}/${month}/${day}]`;
-    },
-    addNewMessage(fromValue) {
-      const currentDate = this.getCurrentDate();
+);
 
-      // 插入新消息到第一项
-      this.staticItems.unshift({
-        text: `${currentDate}收到${fromValue}裁决请求...`,
-        isNew: true
-      });
 
-      // 设置居中显示
-      this.isCentering = true;
+// 获取当前时间
+function getCurrentTime() {
+  const date = new Date();
+  const hours = date.getHours().toString().padStart(2, '0');
+  const minutes = date.getMinutes().toString().padStart(2, '0');
+  const seconds = date.getSeconds().toString().padStart(2, '0');
+  return `${hours}:${minutes}:${seconds}`;
+}
 
-      // 停止滚动动画
-      this.isPaused = true;
+// 生成当前消息
+function getCurrentMessage(from = '') {
+  console.log("任务期间消息提示：{from}申请裁决 ${getCurrentTime()}")
+  return `任务期间消息提示：${from}申请裁决 ${getCurrentTime()}`;
+}
 
-      // 延迟几秒后恢复滚动
-      setTimeout(() => {
-        this.isCentering = false;
-        this.isPaused = false;
+// 添加新消息
+function addNewMessage(fromValue) {
+  const currentMessage = getCurrentMessage(fromValue);  // 使用传入的 from 生成消息
 
-        // 移除闪烁标记
-        this.staticItems[0].isNew = false;
-      }, 3000); // 停留 3 秒
+  // 插入新消息到最后一项
+  staticItems.value.push({
+    text: currentMessage,
+    isNew: true
+  });
+  console.log("staticItems", staticItems.value);
 
-      this.scrollKey++;
-    },
-    onAnimationIteration() {
-      // 每次动画完成时触发，暂停滚动2秒
-      this.isPaused = true;
-      setTimeout(() => {
-        // 2秒后恢复滚动
-        this.isPaused = false;
-      }, 2000);
-    }
-  },
-  created() {
-    // 获取 Pinia store
-    this.taskStore = useTaskStore();
+  // 等待上一条消息滚动完毕
+  if (isScrolling.value) {
+    return;
   }
-};
+
+  isScrolling.value = true; // 开始滚动新消息
+
+  // 延迟几秒后开始滚动
+  setTimeout(() => {
+    // 设置滚动条居中
+    isCentering.value = true;
+
+    // 延迟5秒后恢复动画并移除居中效果
+    setTimeout(() => {
+      isCentering.value = false;
+      isPaused.value = false; // 恢复动画
+      staticItems.value[staticItems.value.length - 1].isNew = false; // 移除新消息标记
+      isScrolling.value = false; // 允许下一条消息滚动
+    }, 500); // 确保居中效果完成
+
+  }, 500); // 暂停一会儿，确保上一条消息滚动完
+
+  // 更新 scrollKey 以触发重新渲染
+  scrollKey.value++;
+}
+
+// 暂停滚动
+function pauseScroll() {
+  isPaused.value = true;
+}
+
+// 恢复滚动
+function resumeScroll() {
+  isPaused.value = false;
+}
 </script>
 
 <style scoped>
@@ -168,16 +184,14 @@ export default {
 
 .scrollbar-content {
   display: flex;
-  width: 100px;
+  width: 100%;
   height: 50px;
 }
 
 .scrolling-text {
   display: flex;
   flex-wrap: nowrap;
-  align-items: center;
-  margin-left: 45px;
-  animation: scroll 20s cubic-bezier(0.25, 0.8, 0.25, 1) infinite; /* 调整了这里的时间 */
+  animation: scroll 5s linear infinite;
 }
 
 .scroll-item {
@@ -185,7 +199,7 @@ export default {
   color: #FFF;
   white-space: nowrap;
   margin-right: 30px;
-  width: 100px;
+  width: auto;
   display: flex;
   align-items: center;
 }
@@ -194,23 +208,6 @@ export default {
   width: 18px;
   height: 18px;
   margin-right: 10px;
-}
-
-.flash {
-  color: orange;
-  animation: flash 1s infinite;
-}
-
-@keyframes flash {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
 }
 
 @keyframes scroll {

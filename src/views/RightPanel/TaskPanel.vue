@@ -7,9 +7,13 @@
       <div class="clear"></div>
     </div>
     <div class="panel-content">
-      <div class="btn-new-task" >新建裁决任务</div>
+      <div class="btn-new-task" @click="createNewTask">新建裁决任务</div>
       <div class="chart-container">
-        <TaskPieChart></TaskPieChart>
+        <TaskPieChart
+            class="task-pie-chart"
+            :taskData="taskData"
+        ></TaskPieChart>
+        <img src="@/assets/images/new-task-icon.svg" alt="New Task Icon" class="chart-icon" />
       </div>
     </div>
   </div>
@@ -17,13 +21,27 @@
 
 <script setup>
 import TaskPieChart from '@/components/charts/TaskPieChart.vue'
-import { defineEmits } from 'vue';
+import { defineEmits, computed } from 'vue';
+import { useTaskStore } from '@/stores/counter.js';
 
 const emit = defineEmits(['showModal']);
 
 const showModal = () => {
   emit('showModal');
 };
+
+// 触发新建裁决任务
+const createNewTask = () => {
+  emit('showTaskDialog');
+};
+
+const taskStore = useTaskStore();
+
+// 动态获取成功/失败的裁决任务数
+const taskData = computed(() => ({
+  success: taskStore.successCount,
+  failure: taskStore.failureCount
+}));
 </script>
 
 <style lang="scss" scoped>
@@ -57,6 +75,22 @@ const showModal = () => {
 
   .chart-container {
     flex: 1;
+    position: relative;
+
+    .task-pie-chart {
+      width: 100%;
+      height: 100%;
+    }
+
+    .chart-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-280%, -40%);
+      width: 50px;
+      height: 50px;
+      pointer-events: none;
+    }
   }
 }
 </style>
