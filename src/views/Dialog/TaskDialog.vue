@@ -1169,7 +1169,7 @@ const executeTask = async (row) => {
         createTime: createTime,
         taskName: taskName,
         remark: '',
-        traceTaskCode: '', // 假设 traceTaskCode 从 row 获取
+        traceTaskCode: '',
       },
       taskRuleRelList: [
         {

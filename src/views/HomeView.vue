@@ -36,7 +36,16 @@
           :isShow="isShowTaskDialog"
           @update:isShow="isShowTaskDialog = $event"
           @taskExecuted="handleTaskExecuted"/>
-      <ModelDialog :isShow="isShowModelDialog" @update:isShow="isShowModelDialog = $event"/>
+      <ModelDialog
+          :isShow="isShowModelDialog"
+          @update:isShow="isShowModelDialog = $event"
+          @showNewModelDialog="showNewModelDialog"
+          :modelForm="modelForm"
+      />
+      <NewModelDialog :isShow="isShowNewModelDialog"
+                      @update:isShow="isShowNewModelDialog = $event"
+                      @showModelDialog="showModelDialog"
+                      :modelForm="modelForm" />
       <RuleDialog
           :isShow="isShowRuleDialog"
           @update:isShow="isShowRuleDialog = $event"
@@ -76,6 +85,7 @@ import TablePanel from './BottomPanel/TablePanel.vue'
 import TaskDialog from './Dialog/TaskDialog.vue'
 import RuleDialog from "./Dialog/RuleDialog.vue"
 import ModelDialog from "./Dialog/ModelDialog.vue"
+import NewModelDialog from './Dialog/NewModelDialog.vue';
 import EffectDialog from "./Dialog/EffectDialog.vue"
 import NewRuleDialog from "./Dialog/NewRuleDialog.vue"
 import NewRuleDialog1 from "./Dialog/NewRuleDialog1.vue"
@@ -85,6 +95,7 @@ import MiddlePanel from './MiddlePanel/MiddlePanel.vue';
 // 弹窗控制
 const isShowTaskDialog = ref(false);
 const isShowModelDialog = ref(false);
+const isShowNewModelDialog = ref(false);
 const isShowRuleDialog = ref(false);
 const isShowEffectDialog = ref(false);
 const isShowNewRuleDialog = ref(false);
@@ -101,6 +112,11 @@ const showTaskDialog = () => {
 };
 const showModelDialog = () => {
   isShowModelDialog.value = true;
+  isShowNewModelDialog.value = false;
+};
+const showNewModelDialog = () => {
+  isShowModelDialog.value = false;
+  isShowNewModelDialog.value = true;
 };
 const showRuleDialog = () => {
   isShowRuleDialog.value = true;

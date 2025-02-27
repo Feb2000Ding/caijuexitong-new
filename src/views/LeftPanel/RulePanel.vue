@@ -109,7 +109,7 @@ const list = ref([])
 const fetchListData = async () => {
   try {
     // 使用 modelId=1 获取数据
-    const response1 = await axios.post('http://192.168.43.234:3001/api/calRule/pageList', {
+    const response1 = await axios.post('http://localhost:3001/api/calRule/pageList', {
       current: 0,
       pageSize: 101,
       sortField: "",
@@ -119,7 +119,7 @@ const fetchListData = async () => {
     });
 
     // 使用 modelId=2 获取数据
-    const response2 = await axios.post('http://192.168.43.234:3001/api/calRule/pageList', {
+    const response2 = await axios.post('http://localhost:3001/api/calRule/pageList', {
       current: 0,
       pageSize: 101,
       sortField: "",

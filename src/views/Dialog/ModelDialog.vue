@@ -15,10 +15,10 @@
       <div class="task-modal-body">
         <!--按钮组-->
         <div class="button-group">
-          <button class="button" style="margin-left: 10px;" @click="editTask">添加模型</button>
+          <button class="button" style="margin-left: 10px;" @click="addModel">添加模型</button>
           <!--          <input class="input-search" placeholder="Try typing new..." />-->
           <!--          <button class="button" style="margin-right:20px">搜索</button>-->
-          <button class="button" style="margin-right: 20px; background-color: #C33333" @click="deleteTask">删除</button>
+          <button class="button" style="margin-right: 20px; background-color: #C33333" @click="deleteModel">删除</button>
         </div>
         <!--添加任务的弹窗-->
         <div v-if="dialogVisible" class="custom-dialog-overlay">
@@ -29,23 +29,80 @@
             </div>
             <div class="dialog-content">
               <div class="dialog-column">
-                <button class="add-file-btn" @click="triggerFileInput">添加文件</button>
-                <div class="upload-panel">
-                  <div class="icon-container">
-                    <el-icon class="upload-icon">
-                      <i class="el-icon-cloudy"></i>
-                    </el-icon>
-                  </div>
-                  <p class="upload-text">
-                    将文件拖到此处，或 <span class="upload-link" @click="triggerFileInput">点击上传</span>
-                  </p>
-                  <!-- 上传的文件名 -->
-                  <p v-if="uploadedFileName" class="uploaded-file-name">{{ uploadedFileName }}</p>
-                  <input type="file" id="fileUpload" class="file-input" @change="handleFileUpload" />
+                <div class="form-row">
+                  <label for="targetType" class="input-label">*目标类型</label>
+                  <input
+                      type="text"
+                      id="targetType"
+                      class="input-field"
+                      placeholder="请输入目标类型"
+                      v-model="modelForm.targetType"
+                  />
                 </div>
+
+                <div class="form-row">
+                  <label for="indicator" class="input-label">*指标组</label>
+                  <input
+                      type="text"
+                      id="indicator"
+                      class="input-field"
+                      placeholder="请输入指标组"
+                      v-model="modelForm.indicator"
+                  />
+                </div>
+
+                <div class="form-row">
+                  <label for="conditionGroup" class="input-label">*条件组</label>
+                  <input
+                      type="text"
+                      id="conditionGroup"
+                      class="input-field"
+                      placeholder="请输入条件组"
+                      v-model="modelForm.conditionGroup"
+                  />
+                </div>
+
+                <div class="form-row">
+                  <label for="side" class="input-label">*裁决方</label>
+                  <input
+                      type="text"
+                      id="side"
+                      class="input-field"
+                      placeholder="请输入裁决方"
+                      v-model="modelForm.side"
+                  />
+                </div>
+                <button class="download-file-btn" @click="uploadParameters">上传参数</button>
+
+              </div>
+              <div class="dialog-column">
+                <button class="download-file-btn" @click="downloadFile">下载文件</button>
+                <button class="add-file-btn" @click="triggerFileInput">上传文件</button>
+                <input type="file" id="fileUpload" class="file-input" @change="handleFileUpload" style="display: none" />
+
+                <!--                <div class="upload-panel">-->
+                <!--                  <div class="icon-container">-->
+                <!--                    <el-icon class="upload-icon">-->
+                <!--                      <i class="el-icon-cloudy"></i>-->
+                <!--                    </el-icon>-->
+                <!--                  </div>-->
+                <!--                  <p class="upload-text">-->
+                <!--                    将文件拖到此处，或 <span class="upload-link" @click="triggerFileInput">点击添加</span>-->
+                <!--                  </p>-->
+                <!--                  &lt;!&ndash; 上传的文件名 &ndash;&gt;-->
+                <!--                  <p v-if="uploadedFileName" class="uploaded-file-name">{{ uploadedFileName }}</p>-->
+                <!--                  <input type="file" id="fileUpload" class="file-input" @change="handleFileUpload" />-->
+                <!--                </div>-->
                 <div class="form-row">
                   <label for="modelName" class="input-label">*模型名称</label>
-                  <input v-model="modelForm.modelName" type="text" id="modelName" class="input-field" placeholder="xxxx模型" />
+                  <input type="text" id="modelName" class="input-field" v-model="modelForm.modelName" placeholder="请输入模型名称" />
+<!--                  <select v-model="modelForm.modelName" id="modelName" class="input-field">-->
+<!--                    <option value="" disabled selected>请选择一个模型</option>-->
+<!--                    <option v-for="model in models" :key="model.id" :value="model.modelName">-->
+<!--                      {{ model.modelName }}-->
+<!--                    </option>-->
+<!--                  </select>-->
+                  <!--                  <input v-model="modelForm.modelName" type="text" id="modelName" class="input-field" placeholder="xxxx模型" />-->
                 </div>
                 <div class="form-row">
                   <label for="modelType" class="input-label">*模型类型</label>
@@ -55,21 +112,21 @@
                   </select>
                 </div>
                 <!-- 创建时间（只读且默认显示当前时间）-->
+                <!--                <div class="form-row">-->
+                <!--                  <label for="createTime" class="input-label">*创建时间</label>-->
+                <!--                  <input v-model="modelForm.createTime" type="text" id="createTime" class="input-field" :placeholder="currentDate" readonly />-->
+                <!--                </div>-->
+              </div>
+<!--              <div class="dialog-column">-->
 <!--                <div class="form-row">-->
-<!--                  <label for="createTime" class="input-label">*创建时间</label>-->
-<!--                  <input v-model="modelForm.createTime" type="text" id="createTime" class="input-field" :placeholder="currentDate" readonly />-->
+<!--                  <label for="input1" class="input-label" style="margin-top: -100px;">*输入参数:</label>-->
+<!--                  <textarea v-model="modelForm.inputParameter" id="input1" class="input-field" style="min-height:200px; overflow-y: auto;" readonly></textarea>-->
 <!--                </div>-->
-              </div>
-              <div class="dialog-column">
-                <div class="form-row">
-                  <label for="input1" class="input-label" style="margin-top: -100px;">*输入参数:</label>
-                  <textarea v-model="modelForm.inputParameter" id="input1" class="input-field" style="min-height:200px; overflow-y: auto;" readonly></textarea>
-                </div>
-                <div class="form-row">
-                  <label for="input2" class="input-label" style="margin-top: -100px;">*输出参数:</label>
-                  <textarea v-model="modelForm.outputParameter" id="input2" class="input-field" style="min-height:200px; overflow-y: auto;" readonly></textarea>
-                </div>
-              </div>
+<!--                <div class="form-row">-->
+<!--                  <label for="input2" class="input-label" style="margin-top: -100px;">*输出参数:</label>-->
+<!--                  <textarea v-model="modelForm.outputParameter" id="input2" class="input-field" style="min-height:200px; overflow-y: auto;" readonly></textarea>-->
+<!--                </div>-->
+<!--              </div>-->
             </div>
             <div class="dialog-footer">
               <!--              <button class="button"@click="dialogVisible = false">取消</button>-->
@@ -92,7 +149,7 @@
             <el-table-column prop="modelName" label="模型名称" width="240" />
             <el-table-column prop="modelType" label="模型类型" width="240" />
             <el-table-column prop="createTime" label="创建时间" width="300" />
-            <el-table-column prop="parameter" label="参数" width="648" />
+            <el-table-column prop="parameter" label="参数" width="662" />
           </el-table>
         </div>
 
@@ -156,7 +213,7 @@ const props = defineProps({
   isShow: Boolean
 });
 
-const emit = defineEmits(['update:isShow']);
+const emit = defineEmits(['update:isShow', 'showNewModelDialog']);
 
 const closeModal = () => {
   emit('update:isShow', false);
@@ -306,6 +363,9 @@ let tableData = ref([
   // },
 ]);
 
+// 存储模型数据
+const models = ref<Model[]>([]);
+
 // 分页查询方法
 const fetchTableData = async (
     modelName = "",
@@ -357,6 +417,13 @@ const fetchTableData = async (
       });
 
       console.log("更新后的表格数据:", tableData.value);
+
+      // 存储模型数据
+      models.value = newData.map((record) => ({
+        modelId: record.modelId,
+        modelName: record.modelName || '',
+      }));
+
     } else {
       console.error("请求数据失败: ", response.data.message);
     }
@@ -412,104 +479,193 @@ const handlePageChange = (newPage) => {
 const dialogVisible = ref(false);
 
 const modelForm = ref({
-  id: 0,
+  id: null,
   modelName: '',
-  modelType: '',
+  modelType: null,
   createTime: '',
-  inputParameter: '',
-  inputedParameter: '',
-  outputParameter: ''
+  inputParameter: {
+    targetType: '',
+    indicator:'',
+    modelType: null,
+    conditionGroup: '',
+    side: ''
+  },
+  outputParameter: {
+    damageLevel: ''
+  },
+  targetType:'',
+  indicator:'',
+  conditionGroup:'',
+  side:''
 });
 
-// ref变量保存上传的文件名
-const uploadedFileName = ref<string | null>(null);
+// // ref变量保存上传的文件名
+// const uploadedFileName = ref<string | null>(null);
+//
+// const uploadParameters = async () => {
+//   try {
+//     const requestData = {
+//       modelName: "测试模型7",
+//       modelType: "动能模型",
+//       input: {
+//         targetType: [modelForm.value.targetType],
+//         indicator: [modelForm.value.indicator],
+//         conditionGroup: [modelForm.value.conditionGroup],
+//         side: [modelForm.value.side]
+//       },
+//       output: "damageLevel"  // 假设是固定值，可以根据实际情况调整
+//     };
+//
+//     const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/add', requestData);
+//
+//     // 处理响应
+//     console.log('上传成功:', response.data);
+//   } catch (error) {
+//     console.error('上传失败:', error);
+//   }
+// };
+//
+// // 下载文件
+// const downloadFile = async () => {
+//   try {
+//     const response = await axios.get('http://192.168.43.234:3001/api/judgeModel/downloadFramework', {
+//       params: {
+//         token: '',
+//         name: name,
+//       },
+//       responseType: 'blob',
+//     });
+//
+//     const blob = new Blob([response.data], { type: 'application/octet-stream' });
+//     const url = window.URL.createObjectURL(blob);
+//     const link = document.createElement('a');
+//     link.href = url;
+//     link.setAttribute('download', name);
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+//     window.URL.revokeObjectURL(url);
+//   } catch (error) {
+//     console.error('下载文件失败:', error);
+//
+//   }
+// };
+//
+// // 触发文件选择框的点击事件
+// const triggerFileInput = () => {
+//   const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
+//   fileInput?.click();  // 触发文件选择框
+// };
+//
+// // 处理文件上传
+// const handleFileUpload = async (event: Event) => {
+//   const input = event.target as HTMLInputElement;
+//   const file = input?.files?.[0]; // 获取选择的第一个文件
+//   if (file) {
+//     // 将文件名保存到 uploadedFileName 中
+//     uploadedFileName.value = file.name;
+//
+//     // 调用上传文件方法
+//     await uploadFile(file);
+//   }
+// };
+//
+// // 上传文件至后端接口
+// const uploadFile = async (file: File) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append('file', file);  // 将文件添加到 FormData 对象
+//     formData.append('modelName', '测试模型');  // 你可以根据需求设置动态模型名称
+//     formData.append('token', 'your_token_here');  // 替换为实际的 token
+//
+//     // 发送 POST 请求上传文件
+//     const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/upload', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data', // 必须指定Content-Type为multipart/form-data
+//       },
+//     });
+//
+//     // 处理响应
+//     if (response.data.code === 0) {
+//       console.log('文件上传成功');
+//       // 这里可以进行成功后的处理，如显示提示信息
+//     } else {
+//       console.error('文件上传失败', response.data.message);
+//       // 处理上传失败的情况
+//     }
+//   } catch (error) {
+//     console.error('文件上传请求失败:', error);
+//     // 处理网络错误等情况
+//   }
+// };
+//
+// // 格式化接口返回的 input 数据
+// const formatInputData = (inputData: any) => {
+//   console.log("inputData", inputData);
+//   let formattedString = '';
+//
+//   for (const [key, value] of Object.entries(inputData)) {
+//     if (Array.isArray(value)) {
+//       formattedString += `${key}: ${value.join(', ')}\n`; // 如果是数组，使用逗号连接
+//     } else {
+//       formattedString += `${key}: ${value}\n`; // 否则直接显示字段值
+//     }
+//   }
+//
+//   console.log("formattedString.trim()", formattedString.trim());
+//   // 确保字符串末尾没有额外的换行符
+//   return formattedString.trim();
+// };
+//
+// // 格式化接口返回的 output 数据
+// const formatOutputData = (outputData: any) => {
+//   let formattedString = '';
+//
+//   for (const [key, value] of Object.entries(outputData)) {
+//     if (Array.isArray(value)) {
+//       formattedString += `${key}: ${value.join(', ')}\n`; // 如果是数组，使用逗号连接
+//     } else {
+//       formattedString += `${key}: ${value}\n`; // 否则直接显示字段值
+//     }
+//   }
+//
+//   return formattedString.trim();
+// };
 
-// 处理文件上传
-const handleFileUpload = async (event: Event) => {
-  const input = event.target as HTMLInputElement;
-  const file = input?.files?.[0];
-  if (file) {
-    console.log("上传的文件:", file);
-    // 将文件名保存在 uploadedFileName 中
-    uploadedFileName.value = file.name;
+// // 文件上传处理
+// const uploadFile = async (file: File) => {
+//   try {
+//     const formData = new FormData();
+//     formData.append('file', file);
+//
+//     // 发送文件上传请求
+//     const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/parse', formData, {
+//       headers: {
+//         'Content-Type': 'multipart/form-data',
+//       }
+//     });
+//
+//     console.log('文件上传成功', response.data);
+//
+//     // 从接口响应中提取 input 和 output 参数并格式化
+//     if (response.data && response.data.data) {
+//       const inputData = response.data.data.input;
+//       const outputData = response.data.data.output;
+//
+//       // 格式化 input 和 output 参数并赋值给输入框
+//       modelForm.value.inputParameter = formatInputData(inputData);
+//       modelForm.value.outputParameter = formatOutputData(outputData);
+//     }
+//   } catch (error) {
+//     console.error('文件上传失败', error);
+//   }
+// };
 
-    // 进行文件上传
-    await uploadFile(file);
-  }
-};
-
-// 触发文件输入框
-const triggerFileInput = () => {
-  const fileInput = document.getElementById('fileUpload') as HTMLInputElement;
-  fileInput?.click();
-};
-
-// 格式化接口返回的 input 数据
-const formatInputData = (inputData: any) => {
-  console.log("inputData", inputData);
-  let formattedString = '';
-
-  for (const [key, value] of Object.entries(inputData)) {
-    if (Array.isArray(value)) {
-      formattedString += `${key}: ${value.join(', ')}\n`; // 如果是数组，使用逗号连接
-    } else {
-      formattedString += `${key}: ${value}\n`; // 否则直接显示字段值
-    }
-  }
-
-  console.log("formattedString.trim()", formattedString.trim());
-  // 确保字符串末尾没有额外的换行符
-  return formattedString.trim();
-};
-
-// 格式化接口返回的 output 数据
-const formatOutputData = (outputData: any) => {
-  let formattedString = '';
-
-  for (const [key, value] of Object.entries(outputData)) {
-    if (Array.isArray(value)) {
-      formattedString += `${key}: ${value.join(', ')}\n`; // 如果是数组，使用逗号连接
-    } else {
-      formattedString += `${key}: ${value}\n`; // 否则直接显示字段值
-    }
-  }
-
-  return formattedString.trim();
-};
-
-// 文件上传处理
-const uploadFile = async (file: File) => {
-  try {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    // 发送文件上传请求
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/parse', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      }
-    });
-
-    console.log('文件上传成功', response.data);
-
-    // 从接口响应中提取 input 和 output 参数并格式化
-    if (response.data && response.data.data) {
-      const inputData = response.data.data.input;
-      const outputData = response.data.data.output;
-
-      // 格式化 input 和 output 参数并赋值给输入框
-      modelForm.value.inputParameter = formatInputData(inputData);
-      modelForm.value.outputParameter = formatOutputData(outputData);
-    }
-  } catch (error) {
-    console.error('文件上传失败', error);
-  }
-};
-
-// 编辑任务
-const editTask = (task) => {
+// 添加模型
+const addModel = (task) => {
   modelForm.value = { ...task }; // 填充选中的任务数据到表单
-  dialogVisible.value = true; // 打开对话框
+  // dialogVisible.value = true; // 打开对话框
+  emit('showNewModelDialog');
 };
 
 // 提交任务
@@ -519,9 +675,9 @@ const submitTask = async () => {
   // 将表单数据添加到 FormData
   formData.append('modelName', modelForm.value.modelName);
   formData.append('modelType', modelForm.value.modelType);
-  // formData.append('createTime', modelForm.value.createTime);
-  formData.append('inputParameter', modelForm.value.inputParameter);
-  formData.append('outputParameter', modelForm.value.outputParameter);
+  // // formData.append('createTime', modelForm.value.createTime);
+  // formData.append('inputParameter', modelForm.value.inputParameter);
+  // formData.append('outputParameter', modelForm.value.outputParameter);
 
   // 添加文件数据
   const file = document.getElementById('fileUpload') as HTMLInputElement;
@@ -567,7 +723,7 @@ const handleSelectionChange = (rows: any[]) => {
 };
 
 // 删除选中的任务
-const deleteTask = () => {
+const deleteModel = () => {
   if (selectedRows.value.length === 0) {
     // 如果没有选中项，直接返回
     console.log("没有选中项，无法删除");
@@ -862,7 +1018,7 @@ onMounted(() => {
   width: 70%;
 }
 
-.add-file-btn {
+.add-file-btn, .download-file-btn {
   width: 90px;
   height: 36px;
   background: inherit;
@@ -878,7 +1034,7 @@ onMounted(() => {
   margin-bottom: 5px;
 }
 
-.add-file-btn:hover {
+.add-file-btn:hover, .download-file-btn:hover {
   background-color: rgba(50, 130, 230, 1);
 }
 
