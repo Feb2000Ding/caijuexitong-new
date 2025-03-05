@@ -379,7 +379,7 @@ const fetchTableData = async (
     console.log("正在请求数据...");
 
     // 发起请求，修改请求体结构
-    const response = await axios.post("http://192.168.43.234:3001/api/judgeModel/pageList", {
+    const response = await axios.post("http://localhost:3001/api/judgeModel/pageList", {
       current,
       pageSize,
       sortField,
@@ -686,7 +686,7 @@ const submitTask = async () => {
   }
 
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/add', formData, {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/add', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       }

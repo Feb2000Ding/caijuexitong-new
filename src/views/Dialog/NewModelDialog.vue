@@ -28,7 +28,7 @@
               <label for="modelType">裁决模型</label>
               <select id="modelType" class="select-box" v-model="formData.modelType" style="margin-left: -3px;">
                 <option value="" selected disabled>请选择裁决模型</option>
-                <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
+                <option v-for="model in modelOptions" :key="model.modelType" :value="model.modelType">{{ model.modelType }}</option>
               </select>
             </div>
 
@@ -50,122 +50,133 @@
 
             <!-- 目标类型输入框 -->
             <div v-for="(target, index) in formData.inputParam" :key="index" style="display: flex; align-items: center; margin-top: 20px;">
-              <label style="color:white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left:40px;">
+              <label style="color: white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left: 40px;">
                 目标类型
               </label>
-              <input type="text"
-                     v-model="target.targetType"
-                     placeholder="默认目标类型"
-                     class="input-field"
-                     style="width:237px; height:32px; margin-top:85px; margin-left:120px;" />
 
-              <!-- 输入框 -->
-              <input type="text"
-                     v-model="target.targetType"
-                     placeholder="默认目标类型"
-                     class="input-field"
-                     style="width:237px; height:32px; margin-top:85px; margin-left:120px;" />
+              <!-- 目标类型输入框 -->
+              <input
+                  type="text"
+                  v-model="target.targetType"
+                  placeholder="默认目标类型"
+                  class="input-field"
+                  :style="{ marginTop: 150 + (index - 1) * 65 + 'px' }"
+                  style="width: 237px; height: 32px; margin-left: 120px;"
+              />
 
-              <!-- 添加目标按钮 (仅在最后一个目标框时显示) -->
-<!--              <button v-if="index === formData.inputParam.length - 1" @click="addTarget" class="add-button" style="margin-top:0; margin-left:300px;">-->
-<!--                添加目标-->
-<!--              </button>-->
+              <!-- 仅在最后一个输入框显示 "添加目标" 按钮 -->
+              <button
+                  v-if="index === formData.inputParam.length - 1"
+                  @click="addTarget"
+                  class="add-button"
+                  style="margin-left: 313px; margin-top: 0px;"
+              >
+                添加目标
+              </button>
 
-              <!-- 删除目标按钮 (仅在有多个目标时显示) -->
-              <button v-if="formData.inputParam.length > 1 && index === formData.inputParam.length - 1" @click="deleteTarget(index)" class="delete-button" :style="{ marginTop: deleteButtonTop + 'px' }" style="margin-top:135px; margin-left:10px;">
+              <!-- 仅 index > 0 时显示删除按钮 -->
+              <button
+                  v-if="index !== 0"
+                  @click="deleteTarget(index)"
+                  class="delete-button"
+                  :style="{ marginLeft: '10px', marginTop: 150 + (index - 1) * 60 + 'px' }"
+              >
                 删除目标
               </button>
             </div>
 
             <!-- 输入参数 1 输入框 -->
-            <div class="condition-container">
-              <div class="input-container">
-                <label style="color:white; font-size: 20px; font-style: normal; font-weight: 700; line-height: normal; margin-left:32px;">参数结果</label>
-                <button class="example-button" @click="openExamplePanel" style="margin-left:140px;">保存参数</button>
-              </div>
+<!--            <div class="condition-container">-->
+<!--              <div class="input-container">-->
+<!--                <label style="color:white; font-size: 20px; font-style: normal; font-weight: 700; line-height: normal; margin-left:32px;">参数结果</label>-->
+<!--                <button class="example-button" @click="openExamplePanel" style="margin-left:140px;">保存参数</button>-->
+<!--              </div>-->
 
               <!-- 条件参数输入框和删除参数按钮 -->
               <div style="display: flex; align-items: center; margin-top: 20px;">
                 <label style="color:white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left:40px;">输入参数</label>
-                <input type="text"
-                       v-model="formData.inputParam1"
-                       placeholder="xxxxxx"
-                       class="input-field"
-                       style="width:237px; height:32px;margin-top:63px; margin-left:120px;" />
-                <input type="text"
-                       v-model="formData.inputParam2"
-                       placeholder="xx,xx,xx"
-                       class="input-field"
-                       style="width:237px; height:32px;margin-top:63px; margin-left:400px;" />
-                <button class="delete-button" style="margin-top:60px;margin-left:100px;">删除参数</button>
+<!--                <input type="text"-->
+<!--                       v-model="formData.inputParam1"-->
+<!--                       placeholder="xxxxxx"-->
+<!--                       class="input-field"-->
+<!--                       style="width:237px; height:32px;margin-top:147px; margin-left:120px;" />-->
+<!--                <input type="text"-->
+<!--                       v-model="formData.inputParam2"-->
+<!--                       placeholder="xx,xx,xx"-->
+<!--                       class="input-field"-->
+<!--                       style="width:237px; height:32px;margin-top:147px; margin-left:400px;" />-->
+                <input
+                    type="text"
+                    v-model="formData.inputParam1"
+                    placeholder="xxxxxx"
+                    class="input-field"
+                    :style="{ width: '237px', height: '32px', marginTop: 147 + (formData.inputParam.length - 1) * 68 + 'px', marginLeft: '120px' }"
+                />
+
+                <input
+                    type="text"
+                    v-model="formData.inputParam2"
+                    placeholder="xx,xx,xx"
+                    class="input-field"
+                    :style="{ width: '237px', height: '32px', marginTop: 147 + (formData.inputParam.length - 1) * 68 + 'px', marginLeft: '400px' }"
+                />
+<!--                <button class="example-button" @click="addInputParam" style="margin-top:-3px; margin-left:700px;">添加参数</button>-->
+<!--                <button-->
+<!--                    class="delete-button"-->
+<!--                    @click="deleteInputParam"-->
+<!--                    :style="{ marginTop: deleteParamTop + 'px', marginLeft: '-100px' }"-->
+<!--                >-->
+<!--                  删除参数-->
+<!--                </button>-->
               </div>
-            </div>
+<!--            </div>-->
 
-            <!-- 下载框架按钮 -->
-            <button class="add-button" style="margin-left:35px;" @click="downloadFramework">下载框架</button>
-
-            <!-- 最终指标部分 -->
-            <div class="index-container">
-              <div class="input-container">
-                <div class="target-type-definition2" style="margin-top:-4px;margin-left:32px;">
-                  上传文件
-                </div>
-              </div>
-
-              <div >
-                <div class="form-row1" style="margin-top:20px; display: flex;">
-                  <!-- 模型名称选择 -->
-                  <div class="form-column1">
-                    <label for="maxValue">选择模型</label>
-                    <select id="maxValue" v-model="formData.modelName1" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
-                      <option value="" selected disabled>请选择裁决模型</option>
-                      <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
-                    </select>
-                  </div>
-
-                  <!-- 模型类型选择 -->
-                  <div class="form-column1">
-                    <label for="destroyLevel">模型类型</label>
-                    <select id="destroyLevel" v-model="formData.modelType1" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
-                      <option value="" selected disabled>请选择模型类型</option>
-                      <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
-                    </select>
-                  </div>
-
-                  <input type="file" id="fileUpload" style="display:none" @change="handleFileUpload" />
-                  <button class="add-button" style="margin-left:35px;" @click="triggerFileInput">上传文件</button>
-
-
-                </div>
-                <div v-if="uploadedFileName" class="form-row1" style="margin-top: 10px; display: flex; flex-direction: column;">
-                  <div class="target-type-definition3" style="min-width:500px;">
-                    已上传: {{ uploadedFileName }}
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           <!-- 输出参数容器 (默认只渲染一个) -->
           <div class="target-container">
-            <!-- 目标类型输入框和添加目标类型按钮 -->
+            <!-- 输出参数输入框和添加按钮 -->
             <div class="input-container">
               <div class="target-type-definition2" style="margin-top:-4px;margin-left:32px;">
                 输出参数
-                <button class="example-button" @click="addOutputParam">添加输出参数</button>
+                <button type="button" class="example-button" @click="addOutputParam">添加输出参数</button>
               </div>
             </div>
 
-            <!-- 条件参数输入框和删除参数按钮 -->
-            <div v-for="(param, index) in formData.outputParam" :key="index" style="display: flex; align-items: center; margin-top: 20px;">
-              <label style="color:white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left:40px;">输出参数</label>
+            <!-- 输出参数输入框 & 删除按钮 -->
+            <div v-for="(param, index) in formData.outputParam" :key="index" style="display: flex; align-items: center;">
+              <label style="color:white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left:40px;">
+                输出参数
+              </label>
 
-              <!-- 输入框 -->
-              <input type="text" v-model="param.outputParam1" class="input-field" style="width:237px; height:32px;margin-top:80px; margin-left:120px;" />
-              <input type="text" v-model="param.outputParam2" class="input-field" style="width:237px; height:32px;margin-top:80px; margin-left:400px;" />
+              <!-- 输入框1，仅输入框动态下移 -->
+              <input
+                  type="text"
+                  v-model="param.outputParam1"
+                  class="input-field"
+                  :style="{ marginTop: 110 + (index - 1) * 45 + 'px' }"
+                  style="width:237px; height:32px; margin-left:120px;"
+              />
 
-              <!-- 删除按钮 -->
-              <button v-if="formData.outputParam.length > 1" @click="deleteOutputParam(index)" class="delete-button" style="margin-top:60px;margin-left:100px;">删除参数</button>
+              <!-- 输入框2，仅输入框动态下移 -->
+              <input
+                  type="text"
+                  v-model="param.outputParam2"
+                  class="input-field"
+                  :style="{ marginTop: 110 + (index - 1) * 45 + 'px' }"
+                  style="width:237px; height:32px; margin-left:400px;"
+              />
+
+              <!-- 仅 index > 0 时显示删除按钮 -->
+              <button
+                  v-if="index !== 0"
+                  @click="deleteOutputParam(index)"
+                  class="delete-button"
+                  :style="{ marginTop: 110 + (index - 1) * 45 + 'px' }"
+                  style="margin-left:100px;"
+              >
+                删除参数
+              </button>
             </div>
           </div>
 
@@ -175,26 +186,86 @@
             <div class="input-container">
               <div class="target-type-definition2" style="margin-top:-4px;margin-left:32px;">
                 方法名
-                <button class="example-button" @click="addMethodName">添加方法名</button>
+                <button type="button" class="example-button" @click="addMethodName">添加方法名</button>
               </div>
             </div>
 
-            <!-- 条件参数输入框和删除参数按钮 -->
-            <div v-for="(method, index) in formData.methods" :key="index" style="display: flex; align-items: center; margin-top: 20px;">
-              <label style="color:white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left:40px;">方法名</label>
+            <!-- 方法名输入框 & 删除按钮 -->
+            <div v-for="(method, index) in formData.methods" :key="index" style="display: flex; align-items: center;">
+              <label style="color:white; font-size: 20px; font-style: normal; font-weight: 400; line-height: normal; margin-left:40px;">
+                方法名
+              </label>
 
               <!-- 输入框 -->
-              <input type="text" v-model="method.method1" class="input-field" style="width:237px; height:32px;margin-top:80px; margin-left:120px;" />
+              <input
+                  type="text"
+                  v-model="method.method1"
+                  class="input-field"
+                  :style="{ marginTop: 110 + (index - 1) * 45 + 'px' }"
+                  style="width:237px; height:32px; margin-left:120px;"
+              />
 
-              <!-- 删除按钮 -->
-              <button v-if="formData.methods.length > 1" @click="deleteMethod(index)" class="delete-button" style="margin-top:60px;margin-left:100px;">删除方法名</button>
+              <!-- 仅 index > 0 时显示删除按钮 -->
+              <button
+                  v-if="index > 0"
+                  @click="deleteMethod(index)"
+                  class="delete-button"
+                  :style="{ marginTop: 110 + (index - 1) * 45 + 'px' }"
+                  style="margin-left:100px;"
+              >
+                删除方法名
+              </button>
+            </div>
+          </div>
+
+          <!-- 下载框架按钮 -->
+          <button class="add-button" style="margin-left:35px;margin-top:20px;margin-bottom:20px;" @click="downloadFramework">下载框架</button>
+
+          <!-- 上传文件部分 -->
+          <div class="index-container">
+            <div class="input-container">
+              <div class="target-type-definition2" style="margin-top:-4px;margin-left:32px;">
+                上传文件
+              </div>
+            </div>
+
+            <div >
+              <div class="form-row1" style="margin-top:20px; display: flex;">
+                <!-- 模型名称选择 -->
+                <div class="form-column1">
+                  <label for="maxValue">选择模型</label>
+                  <select id="maxValue" v-model="formData.modelName1" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                    <option value="" selected disabled>请选择裁决模型</option>
+                    <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
+                  </select>
+                </div>
+
+                <!-- 模型类型选择 -->
+                <div class="form-column1">
+                  <label for="destroyLevel">模型类型</label>
+                  <select id="destroyLevel" v-model="formData.modelType1" class="select-box" style="height:32px; width:237px; margin-left:-2px;">
+                    <option value="" selected disabled>请选择模型类型</option>
+                    <option v-for="model in modelOptions" :key="model.modelId" :value="model.modelId">{{ model.modelName }}</option>
+                  </select>
+                </div>
+
+                <input type="file" id="fileUpload" style="display:none" @change="handleFileUpload" />
+                <button class="add-button" style="margin-left:35px;" @click="triggerFileInput">上传文件</button>
+
+
+              </div>
+              <div v-if="uploadedFileName" class="form-row1" style="margin-top: 10px; display: flex; flex-direction: column;">
+                <div class="target-type-definition3" style="min-width:500px;">
+                  已上传: {{ uploadedFileName }}
+                </div>
+              </div>
             </div>
           </div>
 
         </div>
       </div>
       <div class="dialog-footer">
-        <button class="button" @click="saveModelData" style="margin-top:20px">保存参数</button>
+        <button class="button" @click="saveModel" style="margin-top:20px">保存参数</button>
         <button class="button" @click="closeDialog" style="margin-top:20px">返回</button>
       </div>
     </div>
@@ -243,11 +314,12 @@ function setCurrentTime() {
 
 // 裁决模型的下拉框数据
 const modelOptions = ref([]);
+const modelMap = ref({}); // 存储 id => name 的映射
 
 // 获取裁决模型的列表
 const getModels = async () => {
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/pageList', {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/pageList', {
       current: 0,
       pageSize: 100,
       sortField: "",
@@ -259,6 +331,12 @@ const getModels = async () => {
     if (response.data.code === 0) {
 
       modelOptions.value = response.data.data.records || [];
+
+      // 生成 id => name 的映射
+      modelMap.value = modelOptions.value.reduce((map, model) => {
+        map[model.id] = model.modelName;
+        return map;
+      }, {});
     } else {
       console.error('获取裁决模型失败:', response.data.message);
     }
@@ -267,14 +345,17 @@ const getModels = async () => {
   }
 };
 
-const deleteButtonTop = ref(0);  // 用来动态调整删除按钮的位置
+const deleteButtonTop = ref(0);  // 删除目标类型按钮的初始位置
+const deleteParamTop = ref(150); // 输入参数删除按钮的初始位置
 
 const addTarget = () => {
   // 每次添加一个新的目标类型输入框
   formData.value.inputParam.push({ targetType: '' });
 
   // 调整删除按钮位置
-  deleteButtonTop.value += 60;  // 每次添加一个新目标框，删除按钮向下移动
+  deleteButtonTop.value += 47 // 每次添加一个新目标框，删除按钮向下移动
+  deleteParamTop.value += 65;
+
 };
 
 const deleteTarget = (index) => {
@@ -284,15 +365,25 @@ const deleteTarget = (index) => {
 
     // 调整删除按钮位置
     deleteButtonTop.value -= 53;  // 每次删除一个目标框，删除按钮向上移动
+    deleteParamTop.value -= 65;
   }
 };
+
+// 添加输入参数
+const addInputParam = () => {
+  formData.value.inputParam.push({
+    inputParam1: '',
+    inputParam2: ''
+  });
+};
+
 
 // 添加输出参数
 const addOutputParam = () => {
   formData.value.outputParam.push({ outputParam1: '', outputParam2: '' });
 };
 
-// 删除输出参数
+// 删除输出参数（确保至少留一个）
 const deleteOutputParam = (index) => {
   if (formData.value.outputParam.length > 1) {
     formData.value.outputParam.splice(index, 1);
@@ -304,7 +395,7 @@ const addMethodName = () => {
   formData.value.methods.push({ method1: '' });
 };
 
-// 删除方法名
+// 删除方法名（确保至少留一个）
 const deleteMethod = (index) => {
   if (formData.value.methods.length > 1) {
     formData.value.methods.splice(index, 1);
@@ -314,10 +405,10 @@ const deleteMethod = (index) => {
 const downloadFramework = async () => {
   console.log("下载");
   try {
-    const response = await axios.get('http://192.168.43.234:3001/api/judgeModel/downloadFramework', {
+    const response = await axios.get('http://localhost:3001/api/judgeModel/downloadFrameworkQT', {
       params: {
         modelName: formData.value.modelName,
-        token: '', // 根据需要填入 token
+        token: '',
       },
       responseType: 'blob',
     });
@@ -326,7 +417,7 @@ const downloadFramework = async () => {
     console.log("下载中");
 
     // 创建 Blob 对象并开始下载
-    const blob = new Blob([response.data], { type: 'application/octet-stream' });
+    const blob = new Blob([response.data], { type: 'application/zip' });
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -336,7 +427,6 @@ const downloadFramework = async () => {
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
   } catch (error) {
-    // 打印详细的错误信息
     console.error('下载文件失败:', error.response ? error.response.data : error.message);
   }
 };
@@ -363,7 +453,7 @@ const uploadFile = async (file: File) => {
     formData.append('token', '');
 
     // 发送 POST 请求上传文件
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/upload', formData, {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/upload', formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -389,66 +479,45 @@ const triggerFileInput = () => {
   fileInput?.click();  // 触发文件选择框
 };
 
-// 提交表单数据
-const saveModelData = async () => {
-  try {
-    const requestData = {
-      modelName: formData.value.modelName,
-      modelType: formData.value.modelType, // 模型类型
-      inputParam: formData.value.inputParam.reduce((acc, param) => {
-        // 使用 reduce 构建一个对象形式的 inputParam
-        acc[param.targetType] = {
-          indicator: param.indicator || [], // 如果没有 indicator，默认为空数组
-        };
-        return acc;
-      }, {}),
-      outputParam: formData.value.outputParam,
-      method: [formData.value.method1] // 方法数组
-    };
-
-    console.log('请求体:', requestData);
-
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/add', requestData);
-
-    if (response.status === 200) {
-      closeDialog();  // 关闭模态框
-    } else {
-
-    }
-  } catch (error) {
-    console.error(error);
-  }
-};
-
-const closeDialog = () => {
-  emit('update:isShow', false);
-  emit('showModelDialog');
-};
-
 const saveModel = async () => {
+  console.log("formData.inputParam1", formData.value.inputParam)
+  console.log("formData.value", formData.value)
+  console.log("modelMap.value", modelMap.value)
   // 整理请求体
   const requestBody = {
-    modelName: formData.value.modelName,
-    modelType: formData.value.modelType,
+    modelName: formData.value.modelName || "默认模型名称",
+    modelType: formData.value.modelType || "定向能模型",
+
     inputParam: formData.value.inputParam.map(item => ({
-      targetType: item.targetType.split(',').map(type => type.trim()), // 假设输入的目标类型是逗号分隔
-      modelType: item.modelType,
-      side: item.side.split(',').map(side => side.trim()), // 假设输入的阵营是逗号分隔
+      targetType: item.targetType
+          ? item.targetType.split(',').map(type => type.trim())
+          : ["主体结构", "太阳能板", "光学器件", "表面涂层"], // 兜底默认值
+
+      modelType: item.inputParam1 && item.inputParam1.trim() !== ""
+          ? item.inputParam1.trim()
+          : "定向能模型", // 兜底默认值
+
+      side: item.inputParam2 && item.inputParam2.trim() !== ""
+          ? item.inputParam2.split(',').map(side => side.trim())
+          : ["红方", "蓝方"] // 兜底默认值
     })),
+
     outputParam: {
-      indicator: [
-        ...formData.value.outputParam[0].outputParam1.split(',').map(indicator => indicator.trim()),
-        ...formData.value.outputParam[0].outputParam2.split(',').map(indicator => indicator.trim())
-      ]
+      indicator: formData.value.outputParam[0].outputParam1
+          ? formData.value.outputParam[0].outputParam1.split(',').map(i => i.trim())
+          : ["倒靶功率密度", "出光时长"], // 兜底默认值
     },
-    methodName: formData.value.methods.map(item => item.method1),
+
+    methodName: formData.value.methods.length
+        ? formData.value.methods.map(item => item.method1)
+        : ["int a0", "int a(int b)"], // 兜底默认值
   };
 
   console.log('整理后的请求体:', requestBody);
 
   // 发送 POST 请求
   try {
-    const response = await axios.post('http://192.168.43.234:3001/api/judgeModel/add', requestBody, {
+    const response = await axios.post('http://localhost:3001/api/judgeModel/add', requestBody, {
       headers: {
         'Content-Type': 'application/json',
       }
@@ -460,6 +529,11 @@ const saveModel = async () => {
     console.error('请求失败:', error);
 
   }
+};
+
+const closeDialog = () => {
+  emit('update:isShow', false);
+  emit('showModelDialog');
 };
 
 onMounted(() => {
@@ -1034,14 +1108,14 @@ onMounted(() => {
 }
 
 .index-container {
-  width: calc(100% - 64px);
+  width: calc(100%-40px);
   /*height: 173px;*/
   flex-shrink: 0;
   border-radius: 4px;
   border: 1px solid #1FFFD7;
   background: rgba(6, 42, 81, 0.10);
-  margin-left: 32px;
-  margin-right: 32px;
+  margin-left: 20px;
+  margin-right: 20px;
   /*margin-top: 20px;*/
   padding-bottom: 20px;
   position: relative;
