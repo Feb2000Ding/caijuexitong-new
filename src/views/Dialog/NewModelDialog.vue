@@ -28,7 +28,7 @@
               <label for="modelType">裁决模型</label>
               <select id="modelType" class="select-box" v-model="formData.modelType" style="margin-left: -3px;">
                 <option value="" selected disabled>请选择裁决模型</option>
-                <option v-for="model in modelOptions" :key="model.modelType" :value="model.modelType">{{ model.modelType }}</option>
+                <option v-for="model in modelOptions" :key="model.modelName" :value="model.modelName">{{ model.modelName }}</option>
               </select>
             </div>
 
@@ -120,14 +120,14 @@
                     class="input-field"
                     :style="{ width: '237px', height: '32px', marginTop: 147 + (formData.inputParam.length - 1) * 68 + 'px', marginLeft: '400px' }"
                 />
-<!--                <button class="example-button" @click="addInputParam" style="margin-top:-3px; margin-left:700px;">添加参数</button>-->
-<!--                <button-->
-<!--                    class="delete-button"-->
-<!--                    @click="deleteInputParam"-->
-<!--                    :style="{ marginTop: deleteParamTop + 'px', marginLeft: '-100px' }"-->
-<!--                >-->
-<!--                  删除参数-->
-<!--                </button>-->
+                <button class="example-button" @click="addInputParam" style="margin-top: -3px; margin-left: 700px;">添加参数</button>
+                <button
+                    class="delete-button"
+                    @click="deleteInputParam"
+                    :style="{ marginTop: deleteParamTop + 'px', marginLeft: '-100px' }"
+                >
+                  删除参数
+                </button>
               </div>
 <!--            </div>-->
 
@@ -372,11 +372,20 @@ const deleteTarget = (index) => {
 // 添加输入参数
 const addInputParam = () => {
   formData.value.inputParam.push({
-    inputParam1: '',
-    inputParam2: ''
+    inputParam1: "",
+    inputParam2: "",
+    targetType: "",
+    modelName1: "",
+    modelType1: "",
   });
 };
 
+// 删除输入参数
+const deleteInputParam = () => {
+  if (formData.value.inputParam.length > 1) {
+    formData.value.inputParam.pop();
+  }
+};
 
 // 添加输出参数
 const addOutputParam = () => {
@@ -485,33 +494,39 @@ const saveModel = async () => {
   console.log("modelMap.value", modelMap.value)
   // 整理请求体
   const requestBody = {
-    modelName: formData.value.modelName || "默认模型名称",
+    modelName: formData.value.modelName || "test",
     modelType: formData.value.modelType || "定向能模型",
 
     inputParam: formData.value.inputParam.map(item => ({
       targetType: item.targetType
           ? item.targetType.split(',').map(type => type.trim())
-          : ["主体结构", "太阳能板", "光学器件", "表面涂层"], // 兜底默认值
-
+          : ["主体结构", "太阳能板", "光学器件", "表面涂层"],
       modelType: item.inputParam1 && item.inputParam1.trim() !== ""
           ? item.inputParam1.trim()
-          : "定向能模型", // 兜底默认值
-
+          : "定向能模型",
       side: item.inputParam2 && item.inputParam2.trim() !== ""
           ? item.inputParam2.split(',').map(side => side.trim())
-          : ["红方", "蓝方"] // 兜底默认值
+          : ["红方", "蓝方"]
     })),
 
     outputParam: {
-      indicator: formData.value.outputParam[0].outputParam1
-          ? formData.value.outputParam[0].outputParam1.split(',').map(i => i.trim())
-          : ["倒靶功率密度", "出光时长"], // 兜底默认值
+      indicator: formData.value.outputParam[0].outputParam1 || formData.value.outputParam[0].outputParam2
+          ? [
+            ...(formData.value.outputParam[0].outputParam1
+                ? formData.value.outputParam[0].outputParam1.split(',').map(i => i.trim())
+                : []),
+            ...(formData.value.outputParam[0].outputParam2
+                ? formData.value.outputParam[0].outputParam2.split(',').map(i => i.trim())
+                : [])
+          ]
+          : ["倒靶功率密度", "出光时长"]
     },
 
     methodName: formData.value.methods.length
         ? formData.value.methods.map(item => item.method1)
-        : ["int a0", "int a(int b)"], // 兜底默认值
+        : ["int a0", "int a(int b)"],
   };
+
 
   console.log('整理后的请求体:', requestBody);
 

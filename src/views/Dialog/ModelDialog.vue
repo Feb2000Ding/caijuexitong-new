@@ -150,6 +150,36 @@
             <el-table-column prop="modelType" label="模型类型" width="240" />
             <el-table-column prop="createTime" label="创建时间" width="300" />
             <el-table-column prop="parameter" label="参数" width="662" />
+<!--            <el-table-column v-if="!isExpandedView" prop="parameters" label="参数" width="662">-->
+<!--              <template #default="scope">-->
+<!--                <div-->
+<!--                    class="text-container"-->
+<!--                    :style="{ height: scope.row.isExpanded ? 'auto' : '40px' }"-->
+<!--                >-->
+<!--                  <div-->
+<!--                      class="text-content"-->
+<!--                      @click="toggleExpand(scope.row)"-->
+<!--                  >-->
+<!--                    {{ scope.row.parameters }}-->
+<!--                  </div>-->
+<!--                </div>-->
+<!--              </template>-->
+<!--            </el-table-column>-->
+
+            <!-- 展开显示模式：显示完整内容 -->
+            <el-table-column
+                v-if="isExpandedView"
+                prop="parameters"
+                label="参数"
+                width="700"
+            >
+              <template #default="scope">
+                <div class="expanded-content" @click="toggleExpand(scope.row)">
+                  <p>{{ scope.row.parameters }}</p>
+                </div>
+              </template>
+            </el-table-column>
+
           </el-table>
         </div>
 
@@ -366,6 +396,21 @@ let tableData = ref([
 // 存储模型数据
 const models = ref<Model[]>([]);
 
+// 控制是否切换到展开视图
+const isExpandedView = ref(false);
+
+// 切换参数列的视图
+function toggleExpand(row) {
+  isExpandedView.value = !isExpandedView.value;  // 切换视图显示方式
+  console.log("isExpandedView.value", isExpandedView.value)
+}
+
+// 获取简略文本
+function getShortenedText(text) {
+  const maxLength = 50;
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
 // 分页查询方法
 const fetchTableData = async (
     modelName = "",
@@ -398,8 +443,8 @@ const fetchTableData = async (
 
       // 遍历返回的数据并更新 tableData
       newData.forEach((record) => {
-        const inputFormatted = formatParameters(record.input); // 格式化 input
-        const outputFormatted = formatParameters(record.output); // 格式化 output
+        const inputFormatted = formatParameters(record.inputParam);
+        const outputFormatted = formatParameters(record.outputParam);
 
         tableData.value.push({
           id: record.modelId || '',
@@ -411,7 +456,7 @@ const fetchTableData = async (
           apiId: record.apiId || '', // API ID
           fileName: record.fileName || '', // 文件名
           fileContent: record.fileContent || '', // 文件内容
-          actions: '编辑',  // 默认动作
+          actions: '编辑',
           parameter: `${inputFormatted}\n${outputFormatted}`,  // 格式化后的参数
         });
       });
